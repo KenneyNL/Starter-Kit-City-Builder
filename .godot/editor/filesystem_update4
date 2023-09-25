@@ -1,0 +1,17 @@
+res://scenes/main.tscn
+res://scenes/main-environment.tres
+res://structures/road-straight.tres
+res://structures/road-corner.tres
+res://structures/road-straight-lightposts.tres
+res://structures/pavement.tres
+res://structures/building-small-a.tres
+res://structures/building-small-b.tres
+res://structures/road-split.tres
+res://structures/road-intersection.tres
+res://structures/pavement-fountain.tres
+res://structures/grass.tres
+res://structures/building-small-c.tres
+res://structures/grass-trees.tres
+res://structures/building-small-d.tres
+res://structures/grass-trees-tall.tres
+res://structures/building-garage.tres

@@ -1,0 +1,49 @@
+[gd_scene load_steps=10 format=3 uid="uid://vgwrcfy1qawf"]
+
+[ext_resource type="Script" path="res://scripts/builder.gd" id="1_jybm7"]
+[ext_resource type="Environment" uid="uid://jbptgqvstei3" path="res://scenes/main-environment.tres" id="1_yndf3"]
+[ext_resource type="Resource" uid="uid://dv14kkhb6umkv" path="res://structures/road-straight.tres" id="2_bwyku"]
+[ext_resource type="Resource" uid="uid://d2jplegnkl6u2" path="res://structures/road-corner.tres" id="3_6fpyf"]
+[ext_resource type="Resource" uid="uid://ch8vtcpine1lc" path="res://structures/pavement.tres" id="4_b632v"]
+[ext_resource type="Texture2D" uid="uid://cbk07cxgshg26" path="res://sprites/selector.png" id="4_wr1wv"]
+[ext_resource type="Resource" uid="uid://cntgl86ianngh" path="res://structures/building-small-a.tres" id="5_v5o2m"]
+[ext_resource type="Resource" uid="uid://c5fveedgvunju" path="res://structures/building-small-b.tres" id="6_f4603"]
+[ext_resource type="Script" path="res://scripts/view.gd" id="8_yovpv"]
+
+[node name="Main" type="Node3D"]
+
+[node name="Builder" type="Node3D" parent="." node_paths=PackedStringArray("selector", "selector_container", "view_camera", "gridmap")]
+script = ExtResource("1_jybm7")
+structures = Array[Resource("res://scripts/structure.gd")]([ExtResource("2_bwyku"), ExtResource("3_6fpyf"), ExtResource("4_b632v"), ExtResource("5_v5o2m"), ExtResource("6_f4603")])
+selector = NodePath("Selector")
+selector_container = NodePath("Selector/Container")
+view_camera = NodePath("../View/Camera")
+gridmap = NodePath("../GridMap")
+
+[node name="Selector" type="Node3D" parent="Builder"]
+
+[node name="Sprite" type="Sprite3D" parent="Builder/Selector"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
+texture = ExtResource("4_wr1wv")
+
+[node name="Container" type="Node3D" parent="Builder/Selector"]
+
+[node name="View" type="Node3D" parent="."]
+transform = Transform3D(0.707107, -0.40558, 0.579228, 0, 0.819152, 0.573576, -0.707107, -0.40558, 0.579228, 0, 0, 0)
+script = ExtResource("8_yovpv")
+
+[node name="Camera" type="Camera3D" parent="View"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 30)
+environment = ExtResource("1_yndf3")
+fov = 20.0
+
+[node name="GridMap" type="GridMap" parent="."]
+cell_size = Vector3(1, 1, 1)
+cell_center_x = false
+cell_center_y = false
+cell_center_z = false
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.422618, -0.694272, 0.582563, 0, 0.642788, 0.766044, -0.906308, 0.323744, -0.271654, 0, 0, 0)
+shadow_enabled = true
+shadow_opacity = 0.75

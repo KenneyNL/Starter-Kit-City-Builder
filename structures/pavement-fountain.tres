@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="Structure" load_steps=3 format=3 uid="uid://dqqe3iofnleup"]
+
+[ext_resource type="PackedScene" uid="uid://6v0t536s83vb" path="res://models/pavement-fountain.glb" id="1_r2n53"]
+[ext_resource type="Script" path="res://scripts/structure.gd" id="2_wqyte"]
+
+[resource]
+script = ExtResource("2_wqyte")
+model = ExtResource("1_r2n53")
+price = 10
