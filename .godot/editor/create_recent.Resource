@@ -1,2 +1,0 @@
-DataStructure
-Structure
