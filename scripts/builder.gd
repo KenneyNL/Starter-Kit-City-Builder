@@ -128,6 +128,7 @@ func action_save():
 	if Input.is_action_just_pressed("save"):
 		print("Saving map...")
 		
+		map.structures.clear()
 		for cell in gridmap.get_used_cells():
 			
 			var data_structure:DataStructure = DataStructure.new()
@@ -147,7 +148,8 @@ func action_load():
 		gridmap.clear()
 		
 		map = ResourceLoader.load("user://map.res")
-		
+		if not map:
+			map = DataMap.new()
 		for cell in map.structures:
 			gridmap.set_cell_item(Vector3i(cell.position.x, 0, cell.position.y), cell.structure, cell.orientation)
 			
