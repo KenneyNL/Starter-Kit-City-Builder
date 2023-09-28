@@ -34,6 +34,11 @@ func handle_input(_delta):
 	input = input.rotated(Vector3.UP, rotation.y).normalized()
 	
 	camera_position += input / 4
+	
+	# Back to center
+	
+	if Input.is_action_pressed("camera_center"):
+		camera_position = Vector3()
 
 func _input(event):
 	
