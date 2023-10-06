@@ -1,6 +1,6 @@
 extends Node3D
 
-@export var structures: Array[Structure] = []
+var structures: Array[Structure] = []
 
 var map:DataMap
 
@@ -23,6 +23,8 @@ func _ready():
 	# See: https://docs.godotengine.org/en/stable/tutorials/3d/using_gridmaps.html
 	
 	var mesh_library = MeshLibrary.new()
+	
+	loadStructures()
 	
 	for structure in structures:
 		
@@ -154,3 +156,17 @@ func action_load():
 			gridmap.set_cell_item(Vector3i(cell.position.x, 0, cell.position.y), cell.structure, cell.orientation)
 			
 		update_cash()
+		
+# load structures from folder
+		
+func loadStructures():
+	var dir = DirAccess.open("res://structures")
+	dir.list_dir_begin()
+	var file_name = dir.get_next()
+	while (file_name!=""):
+		if dir.current_is_dir():
+			pass
+		else:
+			print("loading: " + file_name)
+			structures.append(ResourceLoader.load("res://structures/"+file_name))
+		file_name = dir.get_next()
