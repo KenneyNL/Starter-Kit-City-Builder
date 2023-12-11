@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="Structure" load_steps=3 format=3 uid="uid://mxrnqinnsqnt"]
+
+[ext_resource type="PackedScene" uid="uid://5kchntr735l" path="res://models/road-straight-lightposts.glb" id="1_i07jw"]
+[ext_resource type="Script" path="res://scripts/structure.gd" id="2_470aq"]
+
+[resource]
+script = ExtResource("2_470aq")
+model = ExtResource("1_i07jw")
+price = 25
