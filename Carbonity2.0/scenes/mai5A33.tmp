@@ -1,0 +1,27 @@
+[gd_scene load_steps=4 format=3 uid="uid://btiwv4l7b2bcm"]
+
+[ext_resource type="Script" path="res://scripts/building.gd" id="1_a6qo0"]
+[ext_resource type="Environment" uid="uid://jbptgqvstei3" path="res://scenes/main-environment.tres" id="1_yndf3"]
+[ext_resource type="MeshLibrary" uid="uid://duf40il2303gn" path="res://library/mesh_library.tres" id="2_8lic4"]
+
+[node name="box" type="Node3D"]
+script = ExtResource("1_a6qo0")
+
+[node name="View" type="Node3D" parent="."]
+transform = Transform3D(0.707107, -0.40558, 0.579228, 0, 0.819152, 0.573576, -0.707107, -0.40558, 0.579228, 0, 0, 0)
+
+[node name="Camera3D" type="Camera3D" parent="View"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 30)
+environment = ExtResource("1_yndf3")
+fov = 20.0
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.422618, -0.694272, 0.582563, 0, 0.642788, 0.766044, -0.906308, 0.323744, -0.271654, 0, 0, 0)
+shadow_enabled = true
+shadow_opacity = 0.75
+
+[node name="GridMap" type="GridMap" parent="."]
+mesh_library = ExtResource("2_8lic4")
+cell_size = Vector3(1, 1, 1)
+
+[node name="Selector" type="CSGBox3D" parent="."]
