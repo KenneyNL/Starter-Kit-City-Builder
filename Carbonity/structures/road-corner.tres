@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="Structure" load_steps=3 format=3 uid="uid://d2jplegnkl6u2"]
+
+[ext_resource type="PackedScene" uid="uid://c4ccm2qr5wa58" path="res://models/road-corner.glb" id="1_r8n8k"]
+[ext_resource type="Script" path="res://scripts/structure.gd" id="3_oloyn"]
+
+[resource]
+script = ExtResource("3_oloyn")
+model = ExtResource("1_r8n8k")
+price = 25

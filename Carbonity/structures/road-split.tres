@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="Structure" load_steps=3 format=3 uid="uid://cqvwy36htu81"]
+
+[ext_resource type="PackedScene" uid="uid://mu30r6rmht07" path="res://models/road-split.glb" id="1_ku0rj"]
+[ext_resource type="Script" path="res://scripts/structure.gd" id="2_xa71m"]
+
+[resource]
+script = ExtResource("2_xa71m")
+model = ExtResource("1_ku0rj")
+price = 25
