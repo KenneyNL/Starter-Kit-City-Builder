@@ -58,7 +58,9 @@ func _process(delta):
 	
 	action_build(gridmap_position)
 	action_demolish(gridmap_position)
-
+	action_demolish(gridmap_position)
+	
+	cursorUp(gridmap_position)
 # Retrieve the mesh from a PackedScene, used for dynamically creating a MeshLibrary
 
 func get_mesh(packed_scene):
@@ -76,10 +78,19 @@ func get_mesh(packed_scene):
 
 func action_build(gridmap_position):
 	if Input.is_action_just_pressed("build"):
-		
+
+
 		var previous_tile = gridmap.get_cell_item(gridmap_position)
-		gridmap.set_cell_item(gridmap_position, index, gridmap.get_orthogonal_index_from_basis(selector.basis))
+		var gridmap_position_up = Vector3(gridmap_position.x, gridmap_position.y + 1, gridmap_position.z)
+		print("structure position up", gridmap_position_up)
 		
+		if (previous_tile == index):
+			print("set structure position at", gridmap_position_up)
+			gridmap.set_cell_item(gridmap_position_up, index, gridmap.get_orthogonal_index_from_basis(selector.basis))
+		else:
+			print("set structure position at", gridmap_position)
+			gridmap.set_cell_item(gridmap_position, index, gridmap.get_orthogonal_index_from_basis(selector.basis))
+	
 		if previous_tile != index:
 			map.cash -= structures[index].price
 			update_cash()
@@ -123,6 +134,14 @@ func update_cash():
 	cash_display.text = "$" + str(map.cash)
 
 # Saving/load
+
+func cursorUp(gridmap_position):
+	if Input.is_action_just_pressed("cursorUp"):
+		print("cursorup")
+	
+	return
+		
+
 
 func action_save():
 	if Input.is_action_just_pressed("save"):
