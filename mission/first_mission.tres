@@ -30,4 +30,4 @@ objectives = Array[ExtResource("1_yfbrc")]([SubResource("Resource_ywws1"), SubRe
 rewards = {
 "cash": 500
 }
-next_mission_id = "second_mission"
+next_mission_id = "2"

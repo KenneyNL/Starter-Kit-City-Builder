@@ -26,6 +26,10 @@ project/assembly_name="Starter Kit City Builder"
 
 movie_writer/movie_file="D:/Godot/recording.avi"
 
+[global_classes]
+
+LearningPanel="*res://scripts/mission/learning_panel.gd"
+
 [input]
 
 build={

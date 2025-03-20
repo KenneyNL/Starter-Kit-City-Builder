@@ -8,15 +8,15 @@ script = ExtResource("1_dhx01")
 type = 7
 target_count = 1
 current_count = 0
-description = ""
+description = "Compare two construction companies and determine which one is more efficient for building 40 houses in a week."
 structure_index = -1
 completed = false
 
 [resource]
 script = ExtResource("2_mum3p")
 id = "2"
-title = "Determine how many workers you need to build more houses"
-description = "Use Point Slope to determine"
+title = "Compare Construction Companies"
+description = "Your city is rapidly growing and you need to build houses for new residents. Two different construction companies offer to help, each with a different rate of building houses. Study their data, find the unit rates, write equations, and determine which company would require fewer workers to build 40 houses in a week."
 objectives = Array[ExtResource("1_dhx01")]([SubResource("Resource_c06be")])
 rewards = {
 "cash": 0

@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://vgwrcfy1qawf"]
+[gd_scene load_steps=22 format=3 uid="uid://vgwrcfy1qawf"]
 
 [ext_resource type="Script" path="res://scripts/builder.gd" id="1_jybm7"]
 [ext_resource type="Environment" uid="uid://jbptgqvstei3" path="res://scenes/main-environment.tres" id="1_yndf3"]
@@ -10,14 +10,69 @@
 [ext_resource type="Script" path="res://scripts/mission/mission_manager.gd" id="10_oe3re"]
 [ext_resource type="Script" path="res://scripts/mission/mission_data.gd" id="11_msovb"]
 [ext_resource type="Resource" uid="uid://x5h4xutbldq3" path="res://mission/first_mission.tres" id="12_ms7i7"]
+[ext_resource type="Resource" uid="uid://cjr36hqnmyn0x" path="res://mission/second_mission.tres" id="13_xom8j"]
 [ext_resource type="Script" path="res://scripts/mission/mission_ui.gd" id="13_xvw5w"]
+[ext_resource type="Script" path="res://scripts/mission/learning_panel.gd" id="14_q2ymb"]
 [ext_resource type="FontFile" uid="uid://d0cxd77jybrcn" path="res://fonts/lilita_one_regular.ttf" id="16_vlub6"]
 [ext_resource type="Texture2D" uid="uid://bng0d1sou7c8a" path="res://sprites/coin.png" id="17_cjamx"]
+[ext_resource type="PackedScene" uid="uid://b4gkfwf4i3ydl" path="res://scenes/character.tscn" id="18_8lrh8"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_q176i"]
 font = ExtResource("16_vlub6")
 font_size = 24
 shadow_color = Color(0, 0, 0, 0.392157)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mission"]
+bg_color = Color(0.145098, 0.172549, 0.231373, 0.941176)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.356863, 0.670588, 0.768627, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_size = 5
+shadow_offset = Vector2(2, 2)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lsmd5"]
+bg_color = Color(0.196078, 0.196078, 0.196078, 0.960784)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.294118, 0.478431, 0.729412, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_size = 5
+shadow_offset = Vector2(3, 3)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_description"]
+bg_color = Color(0.145098, 0.145098, 0.164706, 0.768627)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.294118, 0.478431, 0.729412, 0.301961)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_graph"]
+bg_color = Color(0.117647, 0.137255, 0.160784, 0.768627)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.294118, 0.478431, 0.729412, 0.301961)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
 
 [node name="Main" type="Node3D"]
 
@@ -86,63 +141,186 @@ label_settings = SubResource("LabelSettings_q176i")
 
 [node name="MissionManager" type="Node" parent="." node_paths=PackedStringArray("mission_ui", "builder")]
 script = ExtResource("10_oe3re")
-missions = Array[ExtResource("11_msovb")]([ExtResource("12_ms7i7")])
+missions = Array[ExtResource("11_msovb")]([ExtResource("12_ms7i7"), ExtResource("13_xom8j")])
 mission_ui = NodePath("MissionPanel")
 builder = NodePath("../Builder")
+character_scene = ExtResource("18_8lrh8")
 
-[node name="MissionPanel" type="Panel" parent="MissionManager" node_paths=PackedStringArray("mission_title_label", "mission_description_label", "objectives_container")]
+[node name="MissionPanel" type="PanelContainer" parent="MissionManager" node_paths=PackedStringArray("mission_title_label", "mission_description_label", "objectives_container")]
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -300.0
+offset_left = -450.0
 offset_top = 20.0
 offset_right = -20.0
-offset_bottom = 200.0
 grow_horizontal = 0
+size_flags_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_mission")
 script = ExtResource("13_xvw5w")
 mission_title_label = NodePath("MarginContainer/VBoxContainer/MissionTitleLabel")
 mission_description_label = NodePath("MarginContainer/VBoxContainer/MissionDescriptionLabel")
 objectives_container = NodePath("MarginContainer/VBoxContainer/ObjectivesContainer")
 
 [node name="MarginContainer" type="MarginContainer" parent="MissionManager/MissionPanel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 10
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
 
 [node name="VBoxContainer" type="VBoxContainer" parent="MissionManager/MissionPanel/MarginContainer"]
 layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 15
 
 [node name="MissionTitleLabel" type="Label" parent="MissionManager/MissionPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
+theme_override_fonts/font = ExtResource("16_vlub6")
+theme_override_font_sizes/font_size = 24
 text = "Mission Title"
+horizontal_alignment = 1
 
 [node name="HSeparator" type="HSeparator" parent="MissionManager/MissionPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
 
 [node name="MissionDescriptionLabel" type="Label" parent="MissionManager/MissionPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
+size_flags_vertical = 1
+theme_override_font_sizes/font_size = 16
 text = "Mission description goes here..."
 autowrap_mode = 2
+text_overrun_behavior = 4
 
 [node name="HSeparator2" type="HSeparator" parent="MissionManager/MissionPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
 
 [node name="ObjectivesLabel" type="Label" parent="MissionManager/MissionPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.678431, 0.847059, 1, 1)
+theme_override_font_sizes/font_size = 18
 text = "Objectives:"
 
 [node name="ObjectivesContainer" type="VBoxContainer" parent="MissionManager/MissionPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 10
 
 [node name="ObjectiveLabel" type="Label" parent="MissionManager"]
 offset_right = 40.0
 offset_bottom = 23.0
 text = "Objective"
+
+[node name="LearningPanel" type="PanelContainer" parent="MissionManager"]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 50.0
+offset_top = 50.0
+offset_right = -50.0
+offset_bottom = -50.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_lsmd5")
+script = ExtResource("14_q2ymb")
+
+[node name="MarginContainer" type="MarginContainer" parent="MissionManager/LearningPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 30
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 30
+theme_override_constants/margin_bottom = 30
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MissionManager/LearningPanel/MarginContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 20
+
+[node name="TitleLabel" type="Label" parent="MissionManager/LearningPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("16_vlub6")
+theme_override_font_sizes/font_size = 32
+text = "Learning Module"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="MissionManager/LearningPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="DescriptionPanel" type="PanelContainer" parent="MissionManager/LearningPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.5
+theme_override_styles/panel = SubResource("StyleBoxFlat_description")
+
+[node name="MarginContainer" type="MarginContainer" parent="MissionManager/LearningPanel/MarginContainer/VBoxContainer/DescriptionPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 15
+theme_override_constants/margin_bottom = 15
+
+[node name="DescriptionLabel" type="Label" parent="MissionManager/LearningPanel/MarginContainer/VBoxContainer/DescriptionPanel/MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+text = "Description goes here..."
+autowrap_mode = 2
+
+[node name="GraphTitle" type="Label" parent="MissionManager/LearningPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Graph:"
+horizontal_alignment = 1
+
+[node name="GraphContainer" type="Panel" parent="MissionManager/LearningPanel/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 500)
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 2.5
+theme_override_styles/panel = SubResource("StyleBoxFlat_graph")
+
+[node name="AnswerContainer" type="VBoxContainer" parent="MissionManager/LearningPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="QuestionLabel" type="Label" parent="MissionManager/LearningPanel/MarginContainer/VBoxContainer/AnswerContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "How many workers do we need to build 10 houses in a week?"
+horizontal_alignment = 1
+
+[node name="AnswerField" type="LineEdit" parent="MissionManager/LearningPanel/MarginContainer/VBoxContainer/AnswerContainer"]
+custom_minimum_size = Vector2(150, 40)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 18
+placeholder_text = "Enter answer"
+alignment = 1
+max_length = 5
+
+[node name="CheckButton" type="Button" parent="MissionManager/LearningPanel/MarginContainer/VBoxContainer/AnswerContainer"]
+custom_minimum_size = Vector2(150, 40)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 16
+text = "Check Answer"
+
+[node name="FeedbackLabel" type="Label" parent="MissionManager/LearningPanel/MarginContainer/VBoxContainer/AnswerContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+autowrap_mode = 2
+text_overrun_behavior = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MissionManager/LearningPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="CompleteButton" type="Button" parent="MissionManager/LearningPanel/MarginContainer/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(200, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+disabled = true
+text = "Complete"
+
+[connection signal="pressed" from="MissionManager/LearningPanel/MarginContainer/VBoxContainer/HBoxContainer/CompleteButton" to="MissionManager/LearningPanel" method="_on_complete_button_pressed"]

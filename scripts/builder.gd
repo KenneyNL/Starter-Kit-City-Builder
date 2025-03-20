@@ -13,6 +13,7 @@ var index:int = 0 # Index of structure being built
 @export var cash_display:Label
 
 var plane:Plane # Used for raycasting mouse
+var disabled: bool = false # Used to disable building functionality
 
 signal structure_placed(structure_index, position) # For our mission flow
 
@@ -40,9 +41,18 @@ func _ready():
 	update_cash()
 
 func _process(delta):
+	# Skip all building functionality if disabled
+	if disabled:
+		# Hide selector when disabled
+		if selector.visible:
+			selector.visible = false
+		return
+		
+	# Make sure selector is visible
+	if !selector.visible:
+		selector.visible = true
 	
 	# Controls
-	
 	action_rotate() # Rotates selection 90 degrees
 	action_structure_toggle() # Toggles between structures
 	
@@ -50,7 +60,6 @@ func _process(delta):
 	action_load() # Loading
 	
 	# Map position based on mouse
-	
 	var world_position = plane.intersects_ray(
 		view_camera.project_ray_origin(get_viewport().get_mouse_position()),
 		view_camera.project_ray_normal(get_viewport().get_mouse_position()))

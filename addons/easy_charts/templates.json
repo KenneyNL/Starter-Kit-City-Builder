@@ -1,0 +1,44 @@
+{
+	"default":
+	{
+	"function_colors" : ["#1e1e1e","#1e1e1e","#1e1e1e","#1e1e1e"],
+	"v_lines_color" : "#cacaca",
+	"h_lines_color" : "#cacaca",
+	"outline_color" : "#1e1e1e",
+	"font_color" : "#1e1e1e"
+	},
+	"clean":
+	{
+	"function_colors" : ["#f7aa29","#f4394a","#5a6b7b","#8fbf59","#504538","#B7A99A","#00D795","#FFECCC","#FF8981"],
+	"v_lines_color" : "#00000000",
+	"h_lines_color" : "#3cffffff",
+	"outline_color" : "#00000000",
+	"font_color" : "#3cffffff"
+	},
+	"gradient":
+	{
+		"function_colors" : ["#F7AA29","#B8A806","#79A117","#2C9433","#00854C","#006571","#2F4858","#2a364f","#27294a"],
+		"v_lines_color" : "#64ffffff",
+		"h_lines_color" : "#64ffffff",
+		"outline_color" : "#64ffffff",
+		"font_color" : "#64ffffff",
+	},
+	"minimal":
+	{
+	"function_colors" : ["#1e1e1e","#1e1e1e","#1e1e1e","#1e1e1e"],
+	"v_lines_color" : "#00000000",
+	"h_lines_color" : "#00000000",
+	"outline_color" : "#00000000",
+	"font_color" : "#00000000"
+	},
+	"invert":
+	{
+	"function_colors" : ["#ffffff","#ffffff","#ffffff","#ffffff"],
+	"v_lines_color" : "#3b3b3b",
+	"h_lines_color" : "#3b3b3b",
+	"outline_color" : "#ffffff",
+	"font_color" : "#ffffff"
+	},
+}
+
+
