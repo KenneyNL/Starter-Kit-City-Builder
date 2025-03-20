@@ -221,6 +221,8 @@ offset_right = -50.0
 offset_bottom = -50.0
 grow_horizontal = 2
 grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_lsmd5")
 script = ExtResource("14_q2ymb")
 
@@ -273,10 +275,11 @@ text = "Graph:"
 horizontal_alignment = 1
 
 [node name="GraphContainer" type="Panel" parent="MissionManager/LearningPanel/MarginContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 500)
+custom_minimum_size = Vector2(0, 300)
 layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 3
-size_flags_stretch_ratio = 2.5
+size_flags_stretch_ratio = 2.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_graph")
 
 [node name="AnswerContainer" type="VBoxContainer" parent="MissionManager/LearningPanel/MarginContainer/VBoxContainer"]
@@ -307,10 +310,12 @@ text = "Check Answer"
 
 [node name="FeedbackLabel" type="Label" parent="MissionManager/LearningPanel/MarginContainer/VBoxContainer/AnswerContainer"]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 18
 horizontal_alignment = 1
 autowrap_mode = 2
 text_overrun_behavior = 3
+max_lines_visible = 6
 
 [node name="HBoxContainer" type="HBoxContainer" parent="MissionManager/LearningPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2

@@ -108,12 +108,12 @@ func create_chart():
 	var container_height = container.size.y
 	print("Container size: ", container.size)
 	
-	# Set fixed dimensions since the container has a forced minimum height
-	var max_height = 400  # Fixed height for chart
+	# Calculate responsive dimensions based on container size
+	var max_height = min(container_height * 0.8, 400)  # Responsive height, max 400
 	var chart_width = container_width * 0.85
-	var margin_left = 80  # Larger left margin for axis labels
-	var margin_bottom = 40
-	var base_y = 450  # Position base at a fixed height
+	var margin_left = min(container_width * 0.08, 80)  # Responsive left margin
+	var margin_bottom = min(container_height * 0.08, 40)
+	var base_y = max_height + margin_bottom  # Calculate base position dynamically
 	
 	# Create a background panel for the chart
 	var panel = Panel.new()
@@ -140,10 +140,10 @@ func create_chart():
 	var title = Label.new()
 	title.text = "Houses Built by Construction Companies"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 24)
+	title.add_theme_font_size_override("font_size", min(container_width * 0.04, 24))
 	
 	# Center the title properly
-	var title_width = 400  # Approximate width needed
+	var title_width = min(container_width * 0.9, 500)  # Responsive width
 	title.position = Vector2(margin_left + (chart_width - title_width)/2, 15)
 	title.custom_minimum_size = Vector2(title_width, 30)
 	container.add_child(title)
@@ -190,9 +190,10 @@ func create_chart():
 		if point.x in [2, 6, 10] or point.y == 40:
 			var label = Label.new()
 			label.text = str(point.y)
-			label.add_theme_font_size_override("font_size", 20)
+			var font_size = min(container_width * 0.035, 20)
+			label.add_theme_font_size_override("font_size", font_size)
 			label.add_theme_color_override("font_color", Color(0.2, 0.6, 1.0))
-			label.position = Vector2(x_pos - 15, y_pos - 30)
+			label.position = Vector2(x_pos - (font_size * 0.75), y_pos - (font_size * 1.5))
 			container.add_child(label)
 	
 	# Add data points for Company B
@@ -209,9 +210,10 @@ func create_chart():
 		if point.x in [3, 9, 12] or point.y == 40:
 			var label = Label.new()
 			label.text = str(point.y)
-			label.add_theme_font_size_override("font_size", 20)
+			var font_size = min(container_width * 0.035, 20)
+			label.add_theme_font_size_override("font_size", font_size)
 			label.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
-			label.position = Vector2(x_pos - 10, y_pos - 25)
+			label.position = Vector2(x_pos - (font_size * 0.5), y_pos - (font_size * 1.25))
 			container.add_child(label)
 	
 	# Add the lines to the container
@@ -249,8 +251,9 @@ func create_chart():
 		var y_value = int(i * (max_y / 5))
 		var y_label = Label.new()
 		y_label.text = str(y_value)
-		y_label.add_theme_font_size_override("font_size", 16)
-		y_label.position = Vector2(margin_left - 35, y_pos - 10)
+		var font_size = min(container_width * 0.03, 16)
+		y_label.add_theme_font_size_override("font_size", font_size)
+		y_label.position = Vector2(margin_left - (font_size * 2), y_pos - (font_size * 0.5))
 		container.add_child(y_label)
 	
 	# Add x-axis labels
@@ -268,26 +271,28 @@ func create_chart():
 		# Add x-axis label
 		var x_label = Label.new()
 		x_label.text = str(i)
-		x_label.add_theme_font_size_override("font_size", 16)
-		x_label.position = Vector2(x_pos - 5, base_y + 10)
+		var font_size = min(container_width * 0.03, 16)
+		x_label.add_theme_font_size_override("font_size", font_size)
+		x_label.position = Vector2(x_pos - (font_size * 0.3), base_y + (font_size * 0.5))
 		container.add_child(x_label)
 	
-	# Add axis labels with larger font and better positioning
+	# Add axis labels with responsive font sizes and positioning
 	var x_axis_label = Label.new()
 	x_axis_label.text = "Number of Workers"
-	x_axis_label.add_theme_font_size_override("font_size", 20)
+	var axis_font_size = min(container_width * 0.04, 20)
+	x_axis_label.add_theme_font_size_override("font_size", axis_font_size)
 	# Center the X axis label
 	x_axis_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	x_axis_label.custom_minimum_size = Vector2(chart_width, 30)
-	x_axis_label.position = Vector2(margin_left, base_y + 30)
+	x_axis_label.position = Vector2(margin_left, base_y + axis_font_size * 1.5)
 	container.add_child(x_axis_label)
 	
 	var y_axis_label = Label.new()
 	y_axis_label.text = "Houses Built"
-	y_axis_label.add_theme_font_size_override("font_size", 20)
+	y_axis_label.add_theme_font_size_override("font_size", axis_font_size)
 	y_axis_label.rotation = -PI/2
 	# Position Y axis label centered along the axis
-	y_axis_label.position = Vector2(margin_left - 55, base_y - max_height/2)
+	y_axis_label.position = Vector2(margin_left - (axis_font_size * 2.5), base_y - max_height/2)
 	y_axis_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	y_axis_label.custom_minimum_size = Vector2(max_height, 30)
 	container.add_child(y_axis_label)
@@ -295,38 +300,41 @@ func create_chart():
 	# Add legend - position relative to chart size
 	var legend_bg = ColorRect.new()
 	legend_bg.color = Color(0.1, 0.1, 0.1, 0.8)
-	legend_bg.position = Vector2(margin_left + chart_width - chart_width * 0.4, 30)
-	legend_bg.size = Vector2(chart_width * 0.35, 80)
+	var legend_width = min(chart_width * 0.4, 200)
+	var legend_height = min(container_height * 0.16, 80)
+	legend_bg.position = Vector2(margin_left + chart_width - legend_width - 10, 30)
+	legend_bg.size = Vector2(legend_width, legend_height)
 	container.add_child(legend_bg)
 	
 	# Calculate legend positions relative to the legend background
 	var legend_x = legend_bg.position.x + 10
 	var legend_text_x = legend_x + 20
+	var legend_font_size = min(container_width * 0.03, 18)
 	
 	# Company A legend
 	var legend_a_color = ColorRect.new()
 	legend_a_color.color = Color(0.2, 0.6, 1.0)
-	legend_a_color.position = Vector2(legend_x, 40)
+	legend_a_color.position = Vector2(legend_x, legend_bg.position.y + legend_height * 0.25)
 	legend_a_color.size = Vector2(15, 15)
 	container.add_child(legend_a_color)
 	
 	var legend_a_text = Label.new()
 	legend_a_text.text = "Company A: City Builders"
-	legend_a_text.add_theme_font_size_override("font_size", 18)
-	legend_a_text.position = Vector2(legend_text_x, 38)
+	legend_a_text.add_theme_font_size_override("font_size", legend_font_size)
+	legend_a_text.position = Vector2(legend_text_x, legend_a_color.position.y - 2)
 	container.add_child(legend_a_text)
 	
 	# Company B legend
 	var legend_b_color = ColorRect.new()
 	legend_b_color.color = Color(1.0, 0.4, 0.4)
-	legend_b_color.position = Vector2(legend_x, 70)
+	legend_b_color.position = Vector2(legend_x, legend_bg.position.y + legend_height * 0.65)
 	legend_b_color.size = Vector2(15, 15)
 	container.add_child(legend_b_color)
 	
 	var legend_b_text = Label.new()
 	legend_b_text.text = "Company B: Urban Growth"
-	legend_b_text.add_theme_font_size_override("font_size", 18)
-	legend_b_text.position = Vector2(legend_text_x, 68)
+	legend_b_text.add_theme_font_size_override("font_size", legend_font_size)
+	legend_b_text.position = Vector2(legend_text_x, legend_b_color.position.y - 2)
 	container.add_child(legend_b_text)
 
 func _on_check_button_pressed():
