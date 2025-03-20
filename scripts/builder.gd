@@ -14,6 +14,8 @@ var index:int = 0 # Index of structure being built
 
 var plane:Plane # Used for raycasting mouse
 
+signal structure_placed(structure_index, position) # For our mission flow
+
 func _ready():
 	
 	map = DataMap.new()
@@ -83,6 +85,9 @@ func action_build(gridmap_position):
 		if previous_tile != index:
 			map.cash -= structures[index].price
 			update_cash()
+			# Emit the signal that a structure was placed
+			structure_placed.emit(index, gridmap_position)
+			
 
 # Demolish (remove) a structure
 

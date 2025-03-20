@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="MissionData" load_steps=5 format=3 uid="uid://x5h4xutbldq3"]
+
+[ext_resource type="Script" path="res://scripts/mission/mission_data.gd" id="1_nv6c6"]
+[ext_resource type="Script" path="res://scripts/mission/mission_objective.gd" id="1_yfbrc"]
+
+[sub_resource type="Resource" id="Resource_ywws1"]
+script = ExtResource("1_yfbrc")
+type = 2
+target_count = 1
+current_count = 0
+description = "Build a road"
+structure_index = -1
+completed = false
+
+[sub_resource type="Resource" id="Resource_7c02e"]
+script = ExtResource("1_yfbrc")
+type = 3
+target_count = 1
+current_count = 0
+description = "Build a residential building"
+structure_index = -1
+completed = false
+
+[resource]
+script = ExtResource("1_nv6c6")
+id = "1"
+title = "Getting Started"
+description = "Welcome to the city builder! Let's start by placing your first building and connecting it with a road."
+objectives = Array[ExtResource("1_yfbrc")]([SubResource("Resource_ywws1"), SubResource("Resource_7c02e")])
+rewards = {
+"cash": 500
+}
+next_mission_id = "second_mission"

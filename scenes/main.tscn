@@ -1,25 +1,16 @@
-[gd_scene load_steps=24 format=3 uid="uid://vgwrcfy1qawf"]
+[gd_scene load_steps=15 format=3 uid="uid://vgwrcfy1qawf"]
 
 [ext_resource type="Script" path="res://scripts/builder.gd" id="1_jybm7"]
 [ext_resource type="Environment" uid="uid://jbptgqvstei3" path="res://scenes/main-environment.tres" id="1_yndf3"]
 [ext_resource type="Script" path="res://scripts/structure.gd" id="2_54v6r"]
 [ext_resource type="Resource" uid="uid://dv14kkhb6umkv" path="res://structures/road-straight.tres" id="2_bwyku"]
-[ext_resource type="Resource" uid="uid://d2jplegnkl6u2" path="res://structures/road-corner.tres" id="3_6fpyf"]
-[ext_resource type="Resource" uid="uid://mxrnqinnsqnt" path="res://structures/road-straight-lightposts.tres" id="3_o6o81"]
-[ext_resource type="Resource" uid="uid://ch8vtcpine1lc" path="res://structures/pavement.tres" id="4_b632v"]
 [ext_resource type="Texture2D" uid="uid://cbk07cxgshg26" path="res://sprites/selector.png" id="4_wr1wv"]
 [ext_resource type="Resource" uid="uid://cntgl86ianngh" path="res://structures/building-small-a.tres" id="5_v5o2m"]
-[ext_resource type="Resource" uid="uid://c5fveedgvunju" path="res://structures/building-small-b.tres" id="6_f4603"]
-[ext_resource type="Resource" uid="uid://cqvwy36htu81" path="res://structures/road-split.tres" id="7_kqu4g"]
-[ext_resource type="Resource" uid="uid://dveu4dnue0d54" path="res://structures/road-intersection.tres" id="8_1swhv"]
-[ext_resource type="Resource" uid="uid://dqqe3iofnleup" path="res://structures/pavement-fountain.tres" id="8_4il2q"]
 [ext_resource type="Script" path="res://scripts/view.gd" id="8_yovpv"]
-[ext_resource type="Resource" uid="uid://tm532uesguhk" path="res://structures/grass.tres" id="9_ifw7y"]
-[ext_resource type="Resource" uid="uid://bh65eqgid4kxy" path="res://structures/building-small-c.tres" id="10_84or2"]
-[ext_resource type="Resource" uid="uid://ccb475jeg7ym5" path="res://structures/grass-trees.tres" id="10_vaeah"]
-[ext_resource type="Resource" uid="uid://dtal0tl2ee336" path="res://structures/building-small-d.tres" id="12_8obn7"]
-[ext_resource type="Resource" uid="uid://y6jafhfnhbrp" path="res://structures/grass-trees-tall.tres" id="13_t5d2v"]
-[ext_resource type="Resource" uid="uid://bqb6g3t0tebno" path="res://structures/building-garage.tres" id="13_ut2cy"]
+[ext_resource type="Script" path="res://scripts/mission/mission_manager.gd" id="10_oe3re"]
+[ext_resource type="Script" path="res://scripts/mission/mission_data.gd" id="11_msovb"]
+[ext_resource type="Resource" uid="uid://x5h4xutbldq3" path="res://mission/first_mission.tres" id="12_ms7i7"]
+[ext_resource type="Script" path="res://scripts/mission/mission_ui.gd" id="13_xvw5w"]
 [ext_resource type="FontFile" uid="uid://d0cxd77jybrcn" path="res://fonts/lilita_one_regular.ttf" id="16_vlub6"]
 [ext_resource type="Texture2D" uid="uid://bng0d1sou7c8a" path="res://sprites/coin.png" id="17_cjamx"]
 
@@ -32,7 +23,7 @@ shadow_color = Color(0, 0, 0, 0.392157)
 
 [node name="Builder" type="Node3D" parent="." node_paths=PackedStringArray("selector", "selector_container", "view_camera", "gridmap", "cash_display")]
 script = ExtResource("1_jybm7")
-structures = Array[ExtResource("2_54v6r")]([ExtResource("2_bwyku"), ExtResource("3_o6o81"), ExtResource("3_6fpyf"), ExtResource("7_kqu4g"), ExtResource("8_1swhv"), ExtResource("4_b632v"), ExtResource("8_4il2q"), ExtResource("5_v5o2m"), ExtResource("6_f4603"), ExtResource("10_84or2"), ExtResource("12_8obn7"), ExtResource("13_ut2cy"), ExtResource("9_ifw7y"), ExtResource("10_vaeah"), ExtResource("13_t5d2v")])
+structures = Array[ExtResource("2_54v6r")]([ExtResource("2_bwyku"), ExtResource("5_v5o2m")])
 selector = NodePath("Selector")
 selector_container = NodePath("Selector/Container")
 view_camera = NodePath("../View/Camera")
@@ -92,3 +83,66 @@ offset_right = 270.0
 offset_bottom = 101.0
 text = "$10,000"
 label_settings = SubResource("LabelSettings_q176i")
+
+[node name="MissionManager" type="Node" parent="." node_paths=PackedStringArray("mission_ui", "builder")]
+script = ExtResource("10_oe3re")
+missions = Array[ExtResource("11_msovb")]([ExtResource("12_ms7i7")])
+mission_ui = NodePath("MissionPanel")
+builder = NodePath("../Builder")
+
+[node name="MissionPanel" type="Panel" parent="MissionManager" node_paths=PackedStringArray("mission_title_label", "mission_description_label", "objectives_container")]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -300.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = 200.0
+grow_horizontal = 0
+script = ExtResource("13_xvw5w")
+mission_title_label = NodePath("MarginContainer/VBoxContainer/MissionTitleLabel")
+mission_description_label = NodePath("MarginContainer/VBoxContainer/MissionDescriptionLabel")
+objectives_container = NodePath("MarginContainer/VBoxContainer/ObjectivesContainer")
+
+[node name="MarginContainer" type="MarginContainer" parent="MissionManager/MissionPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MissionManager/MissionPanel/MarginContainer"]
+layout_mode = 2
+
+[node name="MissionTitleLabel" type="Label" parent="MissionManager/MissionPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Mission Title"
+
+[node name="HSeparator" type="HSeparator" parent="MissionManager/MissionPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="MissionDescriptionLabel" type="Label" parent="MissionManager/MissionPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Mission description goes here..."
+autowrap_mode = 2
+
+[node name="HSeparator2" type="HSeparator" parent="MissionManager/MissionPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="ObjectivesLabel" type="Label" parent="MissionManager/MissionPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Objectives:"
+
+[node name="ObjectivesContainer" type="VBoxContainer" parent="MissionManager/MissionPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="ObjectiveLabel" type="Label" parent="MissionManager"]
+offset_right = 40.0
+offset_bottom = 23.0
+text = "Objective"

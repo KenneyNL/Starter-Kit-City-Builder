@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="MissionData" load_steps=4 format=3 uid="uid://cjr36hqnmyn0x"]
+
+[ext_resource type="Script" path="res://scripts/mission/mission_objective.gd" id="1_dhx01"]
+[ext_resource type="Script" path="res://scripts/mission/mission_data.gd" id="2_mum3p"]
+
+[sub_resource type="Resource" id="Resource_c06be"]
+script = ExtResource("1_dhx01")
+type = 7
+target_count = 1
+current_count = 0
+description = ""
+structure_index = -1
+completed = false
+
+[resource]
+script = ExtResource("2_mum3p")
+id = "2"
+title = "Determine how many workers you need to build more houses"
+description = "Use Point Slope to determine"
+objectives = Array[ExtResource("1_dhx01")]([SubResource("Resource_c06be")])
+rewards = {
+"cash": 0
+}
+next_mission_id = ""

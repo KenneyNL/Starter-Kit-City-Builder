@@ -18,6 +18,10 @@ boot_splash/bg_color=Color(0.92549, 0.92549, 0.960784, 1)
 boot_splash/image="res://splash-screen.png"
 config/icon="res://icon.png"
 
+[dotnet]
+
+project/assembly_name="Starter Kit City Builder"
+
 [editor]
 
 movie_writer/movie_file="D:/Godot/recording.avi"

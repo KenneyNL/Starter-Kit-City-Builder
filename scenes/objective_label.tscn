@@ -1,0 +1,13 @@
+[gd_scene format=3 uid="uid://urvv1j4kuiho"]
+
+[node name="ObjectiveLabel" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+text = "Objective"

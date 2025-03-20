@@ -6,4 +6,5 @@
 [resource]
 script = ExtResource("2_q3i1h")
 model = ExtResource("1_v5apy")
+type = 1
 price = 50

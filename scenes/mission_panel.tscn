@@ -1,0 +1,64 @@
+[gd_scene load_steps=2 format=3 uid="uid://ntpiexggayei"]
+
+[ext_resource type="Script" path="res://scripts/mission/mission_ui.gd" id="1_wl28p"]
+
+[node name="Control" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MissionPanel" type="Panel" parent="." node_paths=PackedStringArray("mission_title_label", "mission_description_label", "objectives_container")]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -300.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = 200.0
+grow_horizontal = 0
+script = ExtResource("1_wl28p")
+mission_title_label = NodePath("MarginContainer/VBoxContainer/MissionTitleLabel")
+mission_description_label = NodePath("MarginContainer/VBoxContainer/MissionDescriptionLabel")
+objectives_container = NodePath("MarginContainer/VBoxContainer/ObjectivesContainer")
+
+[node name="MarginContainer" type="MarginContainer" parent="MissionPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MissionPanel/MarginContainer"]
+layout_mode = 2
+
+[node name="MissionTitleLabel" type="Label" parent="MissionPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Mission Title"
+
+[node name="HSeparator" type="HSeparator" parent="MissionPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="MissionDescriptionLabel" type="Label" parent="MissionPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Mission description goes here..."
+autowrap_mode = 2
+
+[node name="HSeparator2" type="HSeparator" parent="MissionPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="ObjectivesLabel" type="Label" parent="MissionPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Objectives:"
+
+[node name="ObjectivesContainer" type="VBoxContainer" parent="MissionPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
