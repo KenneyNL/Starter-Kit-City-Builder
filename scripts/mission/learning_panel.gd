@@ -54,8 +54,13 @@ Enter A or B below.
 
 Hint: Find the pattern for each company, then calculate how many workers would be needed for 40 houses.
 """
-	
-	# Update question label
+
+
+# Add this line right here
+	$MarginContainer/VBoxContainer/GraphContainer.custom_minimum_size = Vector2(600, 400)
+
+
+# Update question label
 	$MarginContainer/VBoxContainer/AnswerContainer/QuestionLabel.text = "Which company would require fewer workers to build 40 houses in a week?"
 	$MarginContainer/VBoxContainer/AnswerContainer/AnswerField.placeholder_text = "Enter A or B"
 	
@@ -67,8 +72,14 @@ Hint: Find the pattern for each company, then calculate how many workers would b
 	
 	# Make panel visible
 	visible = true
-	
-	# Create the chart
+	size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	size_flags_vertical = Control.SIZE_EXPAND_FILL
+
+	# Give more time for layout to update
+	await get_tree().process_frame
+	await get_tree().process_frame
+	await get_tree().process_frame
+
 	call_deferred("create_chart")
 	
 	# Emit signal to lock building controls
@@ -98,6 +109,8 @@ func create_chart():
 	# Create a container that fits exactly within the panel
 	var container = Control.new()
 	container.set_anchors_preset(Control.PRESET_FULL_RECT)
+	container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	container.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	$MarginContainer/VBoxContainer/GraphContainer.add_child(container)
 	
 	# Wait for container to be added and sized

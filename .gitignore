@@ -16,3 +16,4 @@ mono_crash.*.json
 
 # Kenney ignores
 build/
+/.idea/

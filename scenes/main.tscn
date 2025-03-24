@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3 uid="uid://vgwrcfy1qawf"]
+[gd_scene load_steps=21 format=3 uid="uid://vgwrcfy1qawf"]
 
 [ext_resource type="Script" path="res://scripts/builder.gd" id="1_jybm7"]
 [ext_resource type="Environment" uid="uid://jbptgqvstei3" path="res://scenes/main-environment.tres" id="1_yndf3"]
@@ -10,7 +10,6 @@
 [ext_resource type="Script" path="res://scripts/mission/mission_manager.gd" id="10_oe3re"]
 [ext_resource type="Script" path="res://scripts/mission/mission_data.gd" id="11_msovb"]
 [ext_resource type="Resource" uid="uid://x5h4xutbldq3" path="res://mission/first_mission.tres" id="12_ms7i7"]
-[ext_resource type="Resource" uid="uid://cjr36hqnmyn0x" path="res://mission/second_mission.tres" id="13_xom8j"]
 [ext_resource type="Script" path="res://scripts/mission/mission_ui.gd" id="13_xvw5w"]
 [ext_resource type="Script" path="res://scripts/mission/learning_panel.gd" id="14_q2ymb"]
 [ext_resource type="FontFile" uid="uid://d0cxd77jybrcn" path="res://fonts/lilita_one_regular.ttf" id="16_vlub6"]
@@ -141,7 +140,7 @@ label_settings = SubResource("LabelSettings_q176i")
 
 [node name="MissionManager" type="Node" parent="." node_paths=PackedStringArray("mission_ui", "builder")]
 script = ExtResource("10_oe3re")
-missions = Array[ExtResource("11_msovb")]([ExtResource("12_ms7i7"), ExtResource("13_xom8j")])
+missions = Array[ExtResource("11_msovb")]([ExtResource("12_ms7i7")])
 mission_ui = NodePath("MissionPanel")
 builder = NodePath("../Builder")
 character_scene = ExtResource("18_8lrh8")
