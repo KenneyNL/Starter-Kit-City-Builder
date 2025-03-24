@@ -34,10 +34,10 @@ func _ready():
 		mesh_library.create_item(id)
 		mesh_library.set_item_mesh(id, get_mesh(structure.model))
 		
-		# Apply appropriate scaling for building structures
+		# Apply appropriate scaling for buildings and roads
 		var transform = Transform3D()
-		if structure.type == Structure.StructureType.RESIDENTIAL_BUILDING:
-			# Scale buildings to match road scale
+		if structure.type == Structure.StructureType.RESIDENTIAL_BUILDING or structure.type == Structure.StructureType.ROAD:
+			# Scale buildings and roads to be consistent (3x)
 			transform = transform.scaled(Vector3(3.0, 3.0, 3.0))
 		
 		mesh_library.set_item_mesh_transform(id, transform)
@@ -135,25 +135,45 @@ func action_build(gridmap_position):
 			structure_placed.emit(index, gridmap_position)
 			
 func add_navigation_region(position: Vector3, orientation: int):
-	# Instead of creating a navigation mesh from scratch, let's create a duplicate of
-	# the pre-configured pathing scene that's already working
+	# Remove any existing navigation region at this position first to avoid duplicates
+	remove_navigation_region(position)
 	
-	# Load the working pathing scene
-	var pathing_scene = load("res://scenes/pathing.tscn")
-	var nav_instance = pathing_scene.instantiate()
+	# Create a new navigation region for the road
+	var nav_region = NavigationRegion3D.new()
+	nav_region.name = "NavRegion_" + str(position.x) + "_" + str(position.z)
 	
-	# Set a unique name and position
-	nav_instance.name = "NavRegion_" + str(position.x) + "_" + str(position.z)
-	nav_instance.global_position = Vector3(position.x, 0, position.z)
+	# Create a NavigationMesh
+	var nav_mesh = NavigationMesh.new()
 	
-	# Add it to the scene
-	add_child(nav_instance)
+	# Set properties
+	nav_mesh.agent_radius = 0.25
+	nav_mesh.cell_size = 0.001 # Set to match the expected default value
 	
-	# The NavigationMesh is already properly configured in the scene
-	print("Added navigation region at: ", position, " using pathing scene")
+	# Add vertices to create a simple quad for the road navigation
+	var vertices = PackedVector3Array()
 	
-# We no longer need a separate bake function as we're using a pre-baked scene
-
+	# Create a quad centered at the road position
+	vertices.append(Vector3(position.x - 1.0, 0.1, position.z - 1.0))
+	vertices.append(Vector3(position.x - 1.0, 0.1, position.z + 1.0))
+	vertices.append(Vector3(position.x + 1.0, 0.1, position.z + 1.0))
+	vertices.append(Vector3(position.x + 1.0, 0.1, position.z - 1.0))
+	
+	# Create a polygon from the vertices
+	nav_mesh.vertices = vertices
+	
+	# Create two triangles to form the quad
+	var polygons = []
+	polygons.append(PackedInt32Array([2, 1, 0])) # First triangle
+	polygons.append(PackedInt32Array([0, 3, 2])) # Second triangle
+	nav_mesh.polygons = polygons
+	
+	# Assign the navigation mesh to the region
+	nav_region.navigation_mesh = nav_mesh
+	
+	# Add the region to the scene
+	add_child(nav_region)
+	print("Added navigation region at: ", position)
+	
 # Demolish (remove) a structure
 
 func action_demolish(gridmap_position):
@@ -213,12 +233,12 @@ func update_structure():
 	selector_container.add_child(_model)
 	
 	# Apply appropriate scaling based on structure type
-	if structures[index].type == Structure.StructureType.RESIDENTIAL_BUILDING:
-		# Scale buildings to match road scale (3x)
+	if structures[index].type == Structure.StructureType.RESIDENTIAL_BUILDING or structures[index].type == Structure.StructureType.ROAD:
+		# Scale buildings and roads to match (3x)
 		_model.scale = Vector3(3.0, 3.0, 3.0)
 		_model.position.y += 0.0 # No need for Y adjustment with scaling
 	else:
-		# Standard positioning for roads and other structures
+		# Standard positioning for other structures
 		_model.position.y += 0.25
 	
 func update_cash():

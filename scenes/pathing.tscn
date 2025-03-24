@@ -1,6 +1,5 @@
-[gd_scene load_steps=4 format=3 uid="uid://b3kdhu8jq41iq"]
+[gd_scene load_steps=3 format=3 uid="uid://b3kdhu8jq41iq"]
 
-[ext_resource type="PackedScene" uid="uid://7aqckirt7b41" path="res://scenes/character_pathing.tscn" id="2_bu5p5"]
 [ext_resource type="PackedScene" uid="uid://b4tgtg0j2dgh8" path="res://models/road-straight.glb" id="2_kgyfd"]
 
 [sub_resource type="NavigationMesh" id="NavigationMesh_qdlwc"]
@@ -11,9 +10,6 @@ agent_radius = 0.25
 [node name="NavigationRegion3D" type="NavigationRegion3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.0819869, 0)
 navigation_mesh = SubResource("NavigationMesh_qdlwc")
-
-[node name="NavigationNPC" parent="." instance=ExtResource("2_bu5p5")]
-transform = Transform3D(0.25, 0, 0, 0, 0.25, 0, 0, 0, 0.25, 0, 0, 0)
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(0.030951, -0.708895, 0.704634, -0.0307357, 0.703964, 0.709571, -0.999048, -0.0436194, -3.08005e-08, 2.29147, 2.02866, 0)
