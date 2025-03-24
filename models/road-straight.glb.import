@@ -31,6 +31,18 @@ animation/trimming=false
 animation/remove_immutable_tracks=true
 animation/import_rest_as_RESET=false
 import_script/path=""
-_subresources={}
+_subresources={
+"meshes": {
+"road-straight_road-straight": {
+"generate/lightmap_uv": 0,
+"generate/lods": 0,
+"generate/shadow_meshes": 0,
+"lods/normal_merge_angle": 60.0,
+"lods/normal_split_angle": 25.0,
+"save_to_file/enabled": true,
+"save_to_file/path": "res://mesges/road-mesh.res"
+}
+}
+}
 gltf/naming_version=0
 gltf/embedded_image_handling=1

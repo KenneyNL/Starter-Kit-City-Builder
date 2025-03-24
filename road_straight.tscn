@@ -1,0 +1,5 @@
+[gd_scene load_steps=2 format=3 uid="uid://bkgjy1ybxtv0i"]
+
+[ext_resource type="PackedScene" uid="uid://b4tgtg0j2dgh8" path="res://models/road-straight.glb" id="1_audi8"]
+
+[node name="road-straight" instance=ExtResource("1_audi8")]
