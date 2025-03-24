@@ -1,0 +1,38 @@
+[gd_scene load_steps=7 format=3 uid="uid://c6qxpgne58hon"]
+
+[ext_resource type="PackedScene" uid="uid://b4tgtg0j2dgh8" path="res://models/road-straight.glb" id="1_e1p8p"]
+[ext_resource type="Script" path="res://scripts/pathfinding.gd" id="2_3elxe"]
+[ext_resource type="PackedScene" uid="uid://h2jjkvc4edsp" path="res://people/character-female-d.glb" id="3_8fawu"]
+
+[sub_resource type="NavigationMesh" id="NavigationMesh_h3aaa"]
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_3nstm"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_sokgf"]
+radius = 0.343066
+height = 1.11949
+
+[node name="Pathfinding" type="Node3D"]
+
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
+navigation_mesh = SubResource("NavigationMesh_h3aaa")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="NavigationRegion3D"]
+mesh = SubResource("ArrayMesh_3nstm")
+skeleton = NodePath("../..")
+
+[node name="road-straight" parent="NavigationRegion3D/MeshInstance3D" instance=ExtResource("1_e1p8p")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.280188, 0.345876, 0.507542)
+
+[node name="CharacterBody3D" type="CharacterBody3D" parent="NavigationRegion3D"]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0.18363, 0.0568464)
+script = ExtResource("2_3elxe")
+
+[node name="character-female-d2" parent="NavigationRegion3D/CharacterBody3D" instance=ExtResource("3_8fawu")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0248818, 0.329439, 0.101701)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/CharacterBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.703886, 0)
+shape = SubResource("CapsuleShape3D_sokgf")
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="NavigationRegion3D/CharacterBody3D"]
