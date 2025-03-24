@@ -33,7 +33,14 @@ func _ready():
 		
 		mesh_library.create_item(id)
 		mesh_library.set_item_mesh(id, get_mesh(structure.model))
-		mesh_library.set_item_mesh_transform(id, Transform3D())
+		
+		# Apply appropriate scaling for building structures
+		var transform = Transform3D()
+		if structure.type == Structure.StructureType.RESIDENTIAL_BUILDING:
+			# Scale buildings to match road scale
+			transform = transform.scaled(Vector3(3.0, 3.0, 3.0))
+		
+		mesh_library.set_item_mesh_transform(id, transform)
 		
 	gridmap.mesh_library = mesh_library
 	
@@ -73,15 +80,40 @@ func _process(delta):
 # Retrieve the mesh from a PackedScene, used for dynamically creating a MeshLibrary
 
 func get_mesh(packed_scene):
-	var scene_state:SceneState = packed_scene.get_state()
-	for i in range(scene_state.get_node_count()):
-		if(scene_state.get_node_type(i) == "MeshInstance3D"):
-			for j in scene_state.get_node_property_count(i):
-				var prop_name = scene_state.get_node_property_name(i, j)
-				if prop_name == "mesh":
-					var prop_value = scene_state.get_node_property_value(i, j)
-					
-					return prop_value.duplicate()
+	# Instantiate the scene to access its properties
+	var scene_instance = packed_scene.instantiate()
+	var mesh_instance = null
+	
+	# Find the first MeshInstance3D in the scene
+	for child in scene_instance.get_children():
+		if child is MeshInstance3D:
+			mesh_instance = child
+			break
+	
+	# If no direct child is a MeshInstance3D, search recursively
+	if mesh_instance == null:
+		mesh_instance = find_mesh_instance(scene_instance)
+	
+	var mesh = null
+	if mesh_instance:
+		mesh = mesh_instance.mesh.duplicate()
+	
+	# Clean up
+	scene_instance.queue_free()
+	
+	return mesh
+
+# Helper function to find a MeshInstance3D recursively
+func find_mesh_instance(node):
+	for child in node.get_children():
+		if child is MeshInstance3D:
+			return child
+		
+		var result = find_mesh_instance(child)
+		if result:
+			return result
+	
+	return null
 
 # Build (place) a structure
 
@@ -94,15 +126,63 @@ func action_build(gridmap_position):
 		if previous_tile != index:
 			map.cash -= structures[index].price
 			update_cash()
+			
+			# Check if this is a road structure, add navigation region if it is
+			if structures[index].type == Structure.StructureType.ROAD:
+				add_navigation_region(gridmap_position, gridmap.get_orthogonal_index_from_basis(selector.basis))
+			
 			# Emit the signal that a structure was placed
 			structure_placed.emit(index, gridmap_position)
 			
+func add_navigation_region(position: Vector3, orientation: int):
+	# Instead of creating a navigation mesh from scratch, let's create a duplicate of
+	# the pre-configured pathing scene that's already working
+	
+	# Load the working pathing scene
+	var pathing_scene = load("res://scenes/pathing.tscn")
+	var nav_instance = pathing_scene.instantiate()
+	
+	# Set a unique name and position
+	nav_instance.name = "NavRegion_" + str(position.x) + "_" + str(position.z)
+	nav_instance.global_position = Vector3(position.x, 0, position.z)
+	
+	# Add it to the scene
+	add_child(nav_instance)
+	
+	# The NavigationMesh is already properly configured in the scene
+	print("Added navigation region at: ", position, " using pathing scene")
+	
+# We no longer need a separate bake function as we're using a pre-baked scene
 
 # Demolish (remove) a structure
 
 func action_demolish(gridmap_position):
 	if Input.is_action_just_pressed("demolish"):
+		# Check if this is a road before removing it
+		var current_item = gridmap.get_cell_item(gridmap_position)
+		var is_road = false
+		
+		if current_item >= 0 and current_item < structures.size():
+			is_road = structures[current_item].type == Structure.StructureType.ROAD
+		
+		# Remove the item from the grid
 		gridmap.set_cell_item(gridmap_position, -1)
+		
+		# If it was a road, also remove the navigation region
+		if is_road:
+			remove_navigation_region(gridmap_position)
+			
+func remove_navigation_region(position: Vector3):
+	# Look for navigation region nodes with matching names
+	var region_name = "NavRegion_" + str(position.x) + "_" + str(position.z)
+	
+	# Check if we have a child with this name
+	if has_node(region_name):
+		var nav_region = get_node(region_name)
+		nav_region.queue_free()
+		print("Removed navigation region at: ", position)
+	else:
+		print("No navigation region found at: ", position)
 
 # Rotates the 'cursor' 90 degrees
 
@@ -131,7 +211,15 @@ func update_structure():
 	# Create new structure preview in selector
 	var _model = structures[index].model.instantiate()
 	selector_container.add_child(_model)
-	_model.position.y += 0.25
+	
+	# Apply appropriate scaling based on structure type
+	if structures[index].type == Structure.StructureType.RESIDENTIAL_BUILDING:
+		# Scale buildings to match road scale (3x)
+		_model.scale = Vector3(3.0, 3.0, 3.0)
+		_model.position.y += 0.0 # No need for Y adjustment with scaling
+	else:
+		# Standard positioning for roads and other structures
+		_model.position.y += 0.25
 	
 func update_cash():
 	cash_display.text = "$" + str(map.cash)

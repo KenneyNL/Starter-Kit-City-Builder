@@ -147,6 +147,7 @@ func _on_structure_placed(structure_index: int, position: Vector3):
 				if not character_spawned:
 					print("Attempting to spawn character at: ", position)
 					_spawn_character_on_road(position)
+					character_spawned = true
 					
 			Structure.StructureType.COMMERCIAL_BUILDING:
 				update_objective_progress(mission_id, MissionObjective.ObjectiveType.BUILD_COMMERCIAL)
@@ -185,10 +186,14 @@ func _spawn_character_on_road(building_position: Vector3):
 		print("No character scene provided!")
 		return
 		
-	if character_spawned:
-		print("Character already spawned.")
+	# Check if a character has already been spawned
+	var existing_characters = get_tree().get_nodes_in_group("characters")
+	if existing_characters.size() > 0 or character_spawned:
+		print("Character already spawned, not spawning again.")
+		character_spawned = true
 		return
 		
+	# Mark as spawned to prevent multiple spawns
 	character_spawned = true
 	
 	# Find the nearest road to the building
@@ -198,50 +203,119 @@ func _spawn_character_on_road(building_position: Vector3):
 	if nearest_road_position != Vector3.ZERO:
 		print("Found nearest road at: ", nearest_road_position)
 		
-		# Check if road is horizontal or vertical
-		var is_horizontal_road = true
-		var connected_road = _find_connected_road(nearest_road_position, gridmap)
+		# Make sure there are no existing characters
+		for existing in get_tree().get_nodes_in_group("characters"):
+			existing.queue_free()
+			print("Cleaned up existing character")
 		
-		if connected_road != Vector3.ZERO:
-			# Compare positions to determine if it's an X or Z oriented road
-			var diff = connected_road - nearest_road_position
-			is_horizontal_road = abs(diff.x) > abs(diff.z)
-			print("Connected road diff: ", diff, " - Horizontal road: ", is_horizontal_road)
+		# Use the pre-made character pathing scene
+		var character = load("res://scenes/character_pathing.tscn").instantiate()
 		
-		# Spawn character directly on the road
-		var character = character_scene.instantiate()
-		get_tree().root.add_child(character) # Add to root to ensure visibility
+		# Override with our improved navigation script
+		character.set_script(load("res://scripts/NavigationNPC.gd"))
+		
+		# Add to a group for management
+		character.add_to_group("characters")
+		
+		# Add the complete character to the scene
+		get_tree().root.add_child(character)
 		
 		# Position character just slightly above the road's surface
 		character.global_transform.origin = Vector3(nearest_road_position.x, 0.1, nearest_road_position.z)
 		
-		# Wait for transform to apply
+		# Set an initial target to get the character moving
+		var target_position = _find_patrol_target(nearest_road_position, gridmap, 8.0)
+		print("Initial target set to: ", target_position)
+		
+		# Allow the character to initialize
 		await get_tree().process_frame
 		
-		# Set direction based on road orientation
-		if is_horizontal_road:
-			character.direction = Vector3(1, 0, 0)  # Move along X axis
-			if character.character_model:
-				character.character_model.rotation.y = 0  # Look right
+		# Make sure the navigation agent is properly set up
+		if character.has_node("NavigationAgent3D"):
+			var nav_agent = character.get_node("NavigationAgent3D")
+			nav_agent.path_desired_distance = 0.5
+			nav_agent.target_desired_distance = 0.5
+			
+			# Set target position
+			nav_agent.set_target_position(target_position)
+			print("Navigation target set")
+		
+		# Make the character start moving
+		if character.has_method("set_movement_target"):
+			character.set_movement_target(target_position)
+			print("Movement target set for character")
 		else:
-			character.direction = Vector3(0, 0, 1)  # Move along Z axis
-			if character.character_model:
-				character.character_model.rotation.y = PI/2  # Look down the Z axis
-		
-		# Set up patrol parameters
-		character.walk_speed = 3.0  # Moderate speed
-		character.patrol_distance = 8.0  # Good distance
-		
-		# Reset character properties
-		character.start_position = character.global_position
-		character.target_position = character.start_position + character.direction * character.patrol_distance
-		character.initialized = true
-		
-		# Print debug info
-		print("Character spawned with direction: ", character.direction)
-		print("Character patrol from: ", character.start_position, " to ", character.target_position)
+			print("Character does not have set_movement_target method!")
 	else:
 		print("No road found near building!")
+		
+func _setup_character_for_navigation(character, initial_target):
+	# Access character's script to set up navigation
+	if character.has_node("character-female-d2"):
+		var model = character.get_node("character-female-d2")
+		
+		# Set up animation
+		if model.has_node("AnimationPlayer"):
+			var anim_player = model.get_node("AnimationPlayer")
+			anim_player.play("walk")
+			print("Animation player started")
+		else:
+			print("No animation player found in character model!")
+			
+	# Configure navigation agent parameters
+	if character.has_node("NavigationAgent3D"):
+		var nav_agent = character.get_node("NavigationAgent3D")
+		nav_agent.path_desired_distance = 0.5
+		nav_agent.target_desired_distance = 0.5
+		print("Navigation agent configured")
+		
+		# Force movement to start immediately
+		if character.has_method("set_movement_target"):
+			# Wait a bit to make sure the navigation mesh is ready
+			await get_tree().create_timer(1.0).timeout
+			character.set_movement_target(initial_target)
+			print("Initial target set for character: ", initial_target)
+	
+	# Ensure auto-patrol is enabled if the character supports it
+	if character.get("auto_patrol") != null:
+		character.auto_patrol = true
+		print("Auto patrol enabled for character")
+		
+	# Set a starting movement target if not moving
+	await get_tree().create_timer(2.0).timeout
+	if character.get("is_moving") != null and !character.is_moving:
+		if character.has_method("pick_random_target"):
+			character.pick_random_target()
+			print("Forcing initial movement with pick_random_target()")
+		
+func _find_patrol_target(start_position: Vector3, gridmap: GridMap, max_distance: float) -> Vector3:
+	# With the navigation mesh system, we can simplify this to just return a point
+	# some distance away, and the navigation system will handle finding a path
+	
+	# Find a suitable target for navigation patrol
+	var directions = [Vector3.RIGHT, Vector3.LEFT, Vector3.FORWARD, Vector3.BACK]
+	
+	# Try all four directions to find any road we can navigate to
+	for direction in directions:
+		for distance in range(1, int(max_distance) + 1):
+			var check_pos = start_position + direction * distance
+			var cell_item = gridmap.get_cell_item(check_pos)
+			
+			# If it's a valid road cell that's not the starting position
+			if cell_item >= 0 and cell_item < builder.structures.size():
+				if builder.structures[cell_item].type == Structure.StructureType.ROAD:
+					print("Found target road at ", check_pos)
+					return check_pos
+	
+	# If all else fails, just return a point 5 units away in a random direction
+	var random_direction = Vector3(
+		randf_range(-1.0, 1.0),
+		0.0,
+		randf_range(-1.0, 1.0)
+	).normalized() * 5.0
+	
+	print("No road found, using random target")
+	return start_position + random_direction
 		
 # Function to find a connected road piece to determine orientation
 func _find_connected_road(road_position: Vector3, gridmap: GridMap) -> Vector3:

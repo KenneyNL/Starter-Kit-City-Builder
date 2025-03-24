@@ -16,7 +16,7 @@ navigation_mesh = SubResource("NavigationMesh_qdlwc")
 transform = Transform3D(0.25, 0, 0, 0, 0.25, 0, 0, 0, 0.25, 0, 0, 0)
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 2.44421, 0)
+transform = Transform3D(0.030951, -0.708895, 0.704634, -0.0307357, 0.703964, 0.709571, -0.999048, -0.0436194, -3.08005e-08, 2.29147, 2.02866, 0)
 
 [node name="road-straight" parent="." instance=ExtResource("2_kgyfd")]
 transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, -0.0286824, -0.0649124, 0.0715187)
