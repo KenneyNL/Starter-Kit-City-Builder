@@ -28,6 +28,23 @@ func _ready():
 		learning_panel.panel_opened.connect(_on_learning_panel_opened)
 		learning_panel.panel_closed.connect(_on_learning_panel_closed)
 	
+	# Load third mission if not already in the list
+	var third_mission = load("res://mission/third_mission.tres")
+	if third_mission:
+		var found = false
+		for mission in missions:
+			if mission.id == "3":
+				found = true
+				break
+		
+		if not found:
+			missions.append(third_mission)
+		
+		# Set next_mission_id for second mission to point to third mission
+		for mission in missions:
+			if mission.id == "2":
+				mission.next_mission_id = "3"
+	
 	# Start the first mission if available
 	if missions.size() > 0:
 		start_mission(missions[0])

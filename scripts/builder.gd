@@ -7,6 +7,9 @@ var map:DataMap
 var index:int = 0 # Index of structure being built
 var nav_region: NavigationRegion3D # Single navigation region for all roads
 
+# Construction manager for building residential buildings with workers
+var construction_manager: BuildingConstructionManager
+
 
 @export var selector:Node3D # The 'cursor'
 @export var selector_container:Node3D # Node that holds a preview of the structure
@@ -31,6 +34,17 @@ func _ready():
 	
 	# Setup the navigation region if it doesn't exist
 	setup_navigation_region()
+	
+	# Setup construction manager
+	construction_manager = BuildingConstructionManager.new()
+	add_child(construction_manager)
+	
+	# Connect to the construction completion signal
+	construction_manager.construction_completed.connect(_on_construction_completed)
+	
+	# Give the construction manager references it needs
+	construction_manager.builder = self
+	construction_manager.nav_region = nav_region
 	
 	for structure in structures:
 		
@@ -129,6 +143,14 @@ func action_build(gridmap_position):
 		
 		# For roads, we don't add to the gridmap, but still track it in our data
 		var is_road = structures[index].type == Structure.StructureType.ROAD
+		# For residential buildings, we use the construction manager in mission 3
+		var is_residential = structures[index].type == Structure.StructureType.RESIDENTIAL_BUILDING
+		
+		# Check if we're in mission 3 (when we should use construction workers)
+		var use_worker_construction = false
+		var mission_manager = get_node_or_null("/root/Main/MissionManager")
+		if mission_manager and mission_manager.current_mission and mission_manager.current_mission.id == "3":
+			use_worker_construction = true
 		
 		if is_road:
 			# For roads, we'll need to track in our data without using the GridMap
@@ -147,8 +169,14 @@ func action_build(gridmap_position):
 			
 			# Make sure any existing NPCs are children of the navigation region
 			_move_characters_to_navregion()
+		elif is_residential and use_worker_construction:
+			# For residential buildings in mission 3, use construction workers
+			construction_manager.start_construction(gridmap_position, index)
+			
+			# Don't place the building immediately - it will be placed when construction completes
+			# We leave gridmap empty for now
 		else:
-			# For non-road structures, add to the gridmap as usual
+			# For non-road structures or not in mission 3, add to the gridmap as usual
 			gridmap.set_cell_item(gridmap_position, index, gridmap.get_orthogonal_index_from_basis(selector.basis))
 		
 		if previous_tile != index:
@@ -383,6 +411,22 @@ func _move_characters_to_navregion():
 		# Restore global position
 		character.global_transform.origin = global_pos
 		print("Moved character to NavRegion3D")
+
+# Callback for when construction is completed
+func _on_construction_completed(position: Vector3):
+	# We need to find a residential structure index to add to gridmap
+	var residential_index = -1
+	for i in range(structures.size()):
+		if structures[i].type == Structure.StructureType.RESIDENTIAL_BUILDING:
+			residential_index = i
+			break
+	
+	if residential_index >= 0:
+		# Add the completed residential building to the gridmap
+		gridmap.set_cell_item(position, residential_index, gridmap.get_orthogonal_index_from_basis(Basis()))
+		print("Construction completed: added building to gridmap at ", position)
+	else:
+		print("ERROR: No residential building structure found!")
 
 # Saving/load
 
