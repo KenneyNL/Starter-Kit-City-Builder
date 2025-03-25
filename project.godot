@@ -98,10 +98,6 @@ camera_center={
 ]
 }
 
-[navigation]
-
-3d/default_cell_size=0.001
-
 [rendering]
 
 anti_aliasing/quality/msaa_3d=2

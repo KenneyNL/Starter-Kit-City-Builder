@@ -5,6 +5,8 @@ extends Node3D
 var map:DataMap
 
 var index:int = 0 # Index of structure being built
+var nav_region: NavigationRegion3D # Single navigation region for all roads
+
 
 @export var selector:Node3D # The 'cursor'
 @export var selector_container:Node3D # Node that holds a preview of the structure
@@ -26,6 +28,9 @@ func _ready():
 	# See: https://docs.godotengine.org/en/stable/tutorials/3d/using_gridmaps.html
 	
 	var mesh_library = MeshLibrary.new()
+	
+	# Setup the navigation region if it doesn't exist
+	setup_navigation_region()
 	
 	for structure in structures:
 		
@@ -121,88 +126,102 @@ func action_build(gridmap_position):
 	if Input.is_action_just_pressed("build"):
 		
 		var previous_tile = gridmap.get_cell_item(gridmap_position)
-		gridmap.set_cell_item(gridmap_position, index, gridmap.get_orthogonal_index_from_basis(selector.basis))
+		
+		# For roads, we don't add to the gridmap, but still track it in our data
+		var is_road = structures[index].type == Structure.StructureType.ROAD
+		
+		if is_road:
+			# For roads, we'll need to track in our data without using the GridMap
+			# But for now, we won't add it to the GridMap visually, just add to NavRegion3D
+			
+			# If there's already a road at this position, we need to clear it
+			if previous_tile >= 0 and previous_tile < structures.size() and structures[previous_tile].type == Structure.StructureType.ROAD:
+				# Remove any existing road 
+				_remove_road_from_navregion(gridmap_position)
+			
+			# Create a visible road model as a child of the NavRegion3D
+			_add_road_to_navregion(gridmap_position, index)
+			
+			# Rebake the navigation mesh after adding the road
+			rebake_navigation_mesh()
+			
+			# Make sure any existing NPCs are children of the navigation region
+			_move_characters_to_navregion()
+		else:
+			# For non-road structures, add to the gridmap as usual
+			gridmap.set_cell_item(gridmap_position, index, gridmap.get_orthogonal_index_from_basis(selector.basis))
 		
 		if previous_tile != index:
 			map.cash -= structures[index].price
 			update_cash()
 			
-			# Check if this is a road structure, add navigation region if it is
-			if structures[index].type == Structure.StructureType.ROAD:
-				add_navigation_region(gridmap_position, gridmap.get_orthogonal_index_from_basis(selector.basis))
-			
 			# Emit the signal that a structure was placed
 			structure_placed.emit(index, gridmap_position)
-			
-func add_navigation_region(position: Vector3, orientation: int):
-	# Remove any existing navigation region at this position first to avoid duplicates
-	remove_navigation_region(position)
+
+func setup_navigation_region():
+	# Create a single NavigationRegion3D for the entire map if it doesn't exist
+	if not nav_region:
+		nav_region = NavigationRegion3D.new()
+		nav_region.name = "NavRegion3D"
+		
+		# Create and assign a NavigationMesh resource
+		var nav_mesh = NavigationMesh.new()
+		nav_region.navigation_mesh = nav_mesh
+		
+		# Configure NavigationMesh parameters for our roads
+		nav_mesh.cell_size = 0.25
+		nav_mesh.cell_height = 0.25
+		nav_mesh.agent_height = 1.5
+		nav_mesh.agent_radius = 0.25
+		
+		add_child(nav_region)
+		print("Created global navigation region with navigation mesh")
+
+
+# Rebake navigation mesh to update the navigation data
+func rebake_navigation_mesh():
+	# Make sure we have a navigation region first
+	if not nav_region:
+		setup_navigation_region()
 	
-	# Create a new navigation region for the road
-	var nav_region = NavigationRegion3D.new()
-	nav_region.name = "NavRegion_" + str(position.x) + "_" + str(position.z)
-	
-	# Create a NavigationMesh
-	var nav_mesh = NavigationMesh.new()
-	
-	# Set properties
-	nav_mesh.agent_radius = 0.25
-	nav_mesh.cell_size = 0.001 # Set to match the expected default value
-	
-	# Add vertices to create a simple quad for the road navigation
-	var vertices = PackedVector3Array()
-	
-	# Create a quad centered at the road position
-	vertices.append(Vector3(position.x - 1.0, 0.1, position.z - 1.0))
-	vertices.append(Vector3(position.x - 1.0, 0.1, position.z + 1.0))
-	vertices.append(Vector3(position.x + 1.0, 0.1, position.z + 1.0))
-	vertices.append(Vector3(position.x + 1.0, 0.1, position.z - 1.0))
-	
-	# Create a polygon from the vertices
-	nav_mesh.vertices = vertices
-	
-	# Create two triangles to form the quad
-	var polygons = []
-	polygons.append(PackedInt32Array([2, 1, 0])) # First triangle
-	polygons.append(PackedInt32Array([0, 3, 2])) # Second triangle
-	nav_mesh.polygons = polygons
-	
-	# Assign the navigation mesh to the region
-	nav_region.navigation_mesh = nav_mesh
-	
-	# Add the region to the scene
-	add_child(nav_region)
-	print("Added navigation region at: ", position)
+	# Bake the navigation mesh for the entire map
+	nav_region.bake_navigation_mesh()
+	print("Navigation mesh rebaked")
 	
 # Demolish (remove) a structure
 
 func action_demolish(gridmap_position):
 	if Input.is_action_just_pressed("demolish"):
-		# Check if this is a road before removing it
-		var current_item = gridmap.get_cell_item(gridmap_position)
+		# Check if there's a road at this position
 		var is_road = false
+		var road_name = "Road_" + str(int(gridmap_position.x)) + "_" + str(int(gridmap_position.z))
 		
-		if current_item >= 0 and current_item < structures.size():
-			is_road = structures[current_item].type == Structure.StructureType.ROAD
+		if nav_region and nav_region.has_node(road_name):
+			is_road = true
 		
-		# Remove the item from the grid
-		gridmap.set_cell_item(gridmap_position, -1)
+		# Or check the GridMap for non-road structures
+		var current_item = gridmap.get_cell_item(gridmap_position)
+		var is_building = current_item >= 0
 		
-		# If it was a road, also remove the navigation region
+		# Remove the appropriate item
 		if is_road:
-			remove_navigation_region(gridmap_position)
+			# Remove the road model from the NavRegion3D
+			_remove_road_from_navregion(gridmap_position)
+			# Rebake the navigation mesh after removing the road
+			rebake_navigation_mesh()
+			# Make sure any existing NPCs are children of the navigation region
+			_move_characters_to_navregion()
+		elif is_building:
+			# Remove the building from the gridmap
+			gridmap.set_cell_item(gridmap_position, -1)
 			
+# This function is no longer needed since we're using a single NavRegion3D
+# Keeping it for compatibility, but it doesn't do anything now
 func remove_navigation_region(position: Vector3):
-	# Look for navigation region nodes with matching names
-	var region_name = "NavRegion_" + str(position.x) + "_" + str(position.z)
-	
-	# Check if we have a child with this name
-	if has_node(region_name):
-		var nav_region = get_node(region_name)
-		nav_region.queue_free()
-		print("Removed navigation region at: ", position)
-	else:
-		print("No navigation region found at: ", position)
+	# With our new approach using a single nav region, we just rebake
+	# the entire navigation mesh when roads are added or removed
+	print("Road removed at: ", position)
+	rebake_navigation_mesh()
 
 # Rotates the 'cursor' 90 degrees
 
@@ -243,6 +262,127 @@ func update_structure():
 	
 func update_cash():
 	cash_display.text = "$" + str(map.cash)
+	
+# Function to add a road model as a child of the navigation region
+func _add_road_to_navregion(position: Vector3, structure_index: int):
+	# Make sure we have a navigation region
+	if not nav_region:
+		setup_navigation_region()
+		
+	# Create a unique name for this road based on its position
+	var road_name = "Road_" + str(int(position.x)) + "_" + str(int(position.z))
+	
+	# Check if a road with this name already exists
+	if nav_region.has_node(road_name):
+		print("Road already exists at position: ", position)
+		return
+	
+	# Instantiate the road model - get the actual road-straight.glb model
+	var road_model
+	if structures[structure_index].model.resource_path.contains("road-straight"):
+		# Load the specific road-straight model that works with navmesh
+		road_model = load("res://models/road-straight.glb").instantiate()
+	else:
+		# Fall back to the structure's model for other road types
+		road_model = structures[structure_index].model.instantiate()
+	
+	road_model.name = road_name
+	
+	# Add the road model to the NavRegion3D
+	nav_region.add_child(road_model)
+	
+	# Create the transform directly matching the exact one from pathing.tscn
+	var transform = Transform3D()
+	
+	# Set scale first
+	transform.basis = Basis().scaled(Vector3(3.0, 3.0, 3.0))
+	
+	# Then apply rotation
+	var orientation = gridmap.get_cell_item_orientation(position)
+	var rotation_basis = gridmap.get_basis_with_orthogonal_index(orientation)
+	transform.basis = transform.basis * rotation_basis
+	
+	# Set position
+	transform.origin = position
+	transform.origin.y = -0.065  # From the pathing scene y offset
+	
+	# Apply the complete transform in one go
+	road_model.transform = transform
+	
+	print("Added road model at position ", position, " to NavRegion3D")
+
+# Function to remove a road model from the navigation region
+func _remove_road_from_navregion(position: Vector3):
+	# Make sure we have a navigation region
+	if not nav_region:
+		return
+		
+	# Get the road name based on its position
+	var road_name = "Road_" + str(int(position.x)) + "_" + str(int(position.z))
+	
+	# Check if a road with this name exists
+	if nav_region.has_node(road_name):
+		# Get the road and remove it
+		var road = nav_region.get_node(road_name)
+		road.queue_free()
+		print("Removed road at position ", position, " from NavRegion3D")
+	else:
+		print("No road found at position ", position, " in NavRegion3D")
+		
+# Function to add all existing roads to the navigation region
+func _add_existing_roads_to_navregion():
+	# Make sure we have a navigation region
+	if not nav_region:
+		setup_navigation_region()
+		
+	# Clean up any existing road models in the navigation region
+	for child in nav_region.get_children():
+		if child.name.begins_with("Road_"):
+			child.queue_free()
+	
+	# Find all road cells in the gridmap
+	print("Finding and adding all existing roads to NavRegion3D...")
+	var added_count = 0
+	
+	# We need to convert any existing roads in the GridMap to our new system
+	# Find existing road cells and add them to the NavRegion3D, then clear from GridMap
+	for cell in gridmap.get_used_cells():
+		var structure_index = gridmap.get_cell_item(cell)
+		if structure_index >= 0 and structure_index < structures.size():
+			if structures[structure_index].type == Structure.StructureType.ROAD:
+				# Add this road to the NavRegion3D
+				_add_road_to_navregion(cell, structure_index)
+				# Remove from the GridMap since we're now handling roads differently
+				gridmap.set_cell_item(cell, -1)
+				added_count += 1
+				
+	print("Added ", added_count, " existing roads to NavRegion3D")
+	
+# Function to move all character NPCs to be children of the navigation region
+func _move_characters_to_navregion():
+	# Make sure we have a navigation region
+	if not nav_region:
+		setup_navigation_region()
+		
+	# Find all characters in the scene
+	var characters = get_tree().get_nodes_in_group("characters")
+	for character in characters:
+		# Skip if already a child of nav_region
+		if character.get_parent() == nav_region:
+			continue
+			
+		# Get current global position and parent
+		var original_parent = character.get_parent()
+		var global_pos = character.global_transform.origin
+		
+		# Reparent to the navigation region
+		if original_parent:
+			original_parent.remove_child(character)
+		nav_region.add_child(character)
+		
+		# Restore global position
+		character.global_transform.origin = global_pos
+		print("Moved character to NavRegion3D")
 
 # Saving/load
 
@@ -276,3 +416,12 @@ func action_load():
 			gridmap.set_cell_item(Vector3i(cell.position.x, 0, cell.position.y), cell.structure, cell.orientation)
 			
 		update_cash()
+		
+		# Find and add all roads to the NavRegion3D
+		_add_existing_roads_to_navregion()
+		
+		# After loading the map, rebake the navigation mesh to include all roads
+		rebake_navigation_mesh()
+		
+		# Make sure any existing NPCs are children of the navigation region
+		_move_characters_to_navregion()

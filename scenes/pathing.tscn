@@ -16,3 +16,5 @@ transform = Transform3D(0.030951, -0.708895, 0.704634, -0.0307357, 0.703964, 0.7
 
 [node name="road-straight" parent="." instance=ExtResource("2_kgyfd")]
 transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, -0.0286824, -0.0649124, 0.0715187)
+
+[editable path="road-straight"]

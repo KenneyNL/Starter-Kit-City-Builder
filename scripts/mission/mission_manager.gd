@@ -217,8 +217,16 @@ func _spawn_character_on_road(building_position: Vector3):
 		# Add to a group for management
 		character.add_to_group("characters")
 		
-		# Add the complete character to the scene
-		get_tree().root.add_child(character)
+		# Find the NavRegion3D (should have been created by builder)
+		var nav_region = builder.nav_region
+		if nav_region:
+			# Add character as a child of the NavRegion3D
+			nav_region.add_child(character)
+			print("Added character as child of NavRegion3D")
+		else:
+			# Fallback to root if NavRegion3D doesn't exist
+			get_tree().root.add_child(character)
+			print("WARNING: NavRegion3D not found, adding character to root")
 		
 		# Position character just slightly above the road's surface
 		character.global_transform.origin = Vector3(nearest_road_position.x, 0.1, nearest_road_position.z)
@@ -295,15 +303,17 @@ func _find_patrol_target(start_position: Vector3, gridmap: GridMap, max_distance
 	# Find a suitable target for navigation patrol
 	var directions = [Vector3.RIGHT, Vector3.LEFT, Vector3.FORWARD, Vector3.BACK]
 	
-	# Try all four directions to find any road we can navigate to
-	for direction in directions:
-		for distance in range(1, int(max_distance) + 1):
-			var check_pos = start_position + direction * distance
-			var cell_item = gridmap.get_cell_item(check_pos)
-			
-			# If it's a valid road cell that's not the starting position
-			if cell_item >= 0 and cell_item < builder.structures.size():
-				if builder.structures[cell_item].type == Structure.StructureType.ROAD:
+	# Get the navigation region
+	var nav_region = builder.nav_region
+	if nav_region:
+		# Try all four directions to find any road we can navigate to
+		for direction in directions:
+			for distance in range(1, int(max_distance) + 1):
+				var check_pos = start_position + direction * distance
+				var road_name = "Road_" + str(int(check_pos.x)) + "_" + str(int(check_pos.z))
+				
+				# Check if there's a road at this position in the NavRegion3D
+				if nav_region.has_node(road_name):
 					print("Found target road at ", check_pos)
 					return check_pos
 	
@@ -353,17 +363,35 @@ func _find_nearest_road(position: Vector3, gridmap: GridMap) -> Vector3:
 	print("Searching for road near position: ", position)
 	print("Available structures: ", builder.structures.size())
 	
-	# First pass: find all roads
+	# First pass: find all roads based on their presence in the NavRegion3D
 	var road_positions = []
-	for x in range(-3, 4):
-		for z in range(-3, 4):
-			var check_pos = Vector3(position.x + x, 0, position.z + z)
-			var cell_item = gridmap.get_cell_item(check_pos)
-			
-			# Check if cell has a valid road
-			if cell_item >= 0 and cell_item < builder.structures.size():
-				var structure_type = builder.structures[cell_item].type
-				if structure_type == Structure.StructureType.ROAD:
+	
+	# Get the navigation region
+	var nav_region = builder.nav_region
+	if nav_region:
+		# Look for road nodes in the navigation region
+		for child in nav_region.get_children():
+			if child.name.begins_with("Road_"):
+				# Extract position from the road name (format: "Road_X_Z")
+				var pos_parts = child.name.split("_")
+				if pos_parts.size() >= 3:
+					var road_x = int(pos_parts[1])
+					var road_z = int(pos_parts[2])
+					var road_pos = Vector3(road_x, 0, road_z)
+					
+					# Check if this road is within range
+					if abs(road_pos.x - position.x) <= 3 and abs(road_pos.z - position.z) <= 3:
+						road_positions.append(road_pos)
+	
+	# If we didn't find any roads in NavRegion3D, fall back to the old method
+	if road_positions.size() == 0:
+		for x in range(-3, 4):
+			for z in range(-3, 4):
+				var check_pos = Vector3(position.x + x, 0, position.z + z)
+				var road_name = "Road_" + str(int(check_pos.x)) + "_" + str(int(check_pos.z))
+				
+				# Check if there's a road at this position in the NavRegion3D
+				if nav_region and nav_region.has_node(road_name):
 					road_positions.append(check_pos)
 	
 	print("Found ", road_positions.size(), " road positions")
@@ -372,30 +400,17 @@ func _find_nearest_road(position: Vector3, gridmap: GridMap) -> Vector3:
 	for road_pos in road_positions:
 		var distance = position.distance_to(road_pos)
 		
-		# Prioritize roads that are both close and part of a longer road
-		if distance < min_distance:
-			# Check connected road length
-			var road_length = _get_connected_road_length(road_pos, gridmap)
-			print("Road at ", road_pos, " has length: ", road_length, " and distance: ", distance)
-			
-			# Always choose the closest road initially
-			if nearest_road == Vector3.ZERO:
-				nearest_road = road_pos
-				min_distance = distance
-				best_road_length = road_length
-			# Then prefer longer roads if they're within reasonable distance
-			elif road_length > best_road_length and distance < min_distance + 2.0:
-				nearest_road = road_pos
-				min_distance = distance
-				best_road_length = road_length
-			# Otherwise just take the closest
-			elif distance < min_distance:
-				nearest_road = road_pos
-				min_distance = distance
-				best_road_length = road_length
+		# Always choose the closest road initially
+		if nearest_road == Vector3.ZERO:
+			nearest_road = road_pos
+			min_distance = distance
+		# Otherwise just take the closest
+		elif distance < min_distance:
+			nearest_road = road_pos
+			min_distance = distance
 	
 	if nearest_road != Vector3.ZERO:
-		print("Selected road at: ", nearest_road, " with length: ", best_road_length)
+		print("Selected road at: ", nearest_road)
 	
 	return nearest_road
 	
