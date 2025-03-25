@@ -427,6 +427,14 @@ func _on_construction_completed(position: Vector3):
 		print("Construction completed: added building to gridmap at ", position)
 	else:
 		print("ERROR: No residential building structure found!")
+	
+	# Make sure all characters (including newly spawned residents) are children of NavRegion3D
+	_move_characters_to_navregion()
+	
+	# Make sure the navigation mesh is updated
+	rebake_navigation_mesh()
+	
+	print("Verified all characters are under NavRegion3D after construction")
 
 # Saving/load
 

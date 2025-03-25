@@ -13,6 +13,21 @@ var movement_speed: float = 2.5 # Walking speed
 var stuck_timer: float = 0.0 # Timer to detect if character is stuck
 var stuck_threshold: float = 5.0 # Time before considering character stuck
 
+# Helper method for dynamic creation of NavigationNPC
+func _update_references(model_node: Node3D, anim_player_node: AnimationPlayer) -> void:
+	character_model = model_node
+	animation_player = anim_player_node
+	navigation_agent_3d = get_node_or_null("NavigationAgent3D")
+	
+	print("Updated NavigationNPC references: ", 
+		"model=", character_model != null, 
+		", anim=", animation_player != null, 
+		", nav=", navigation_agent_3d != null)
+	
+	# Ensure the animations are set properly
+	if animation_player:
+		animation_player.play("idle")
+
 func _ready() -> void:
 	# Set navigation parameters
 	navigation_agent_3d.path_desired_distance = 0.5
