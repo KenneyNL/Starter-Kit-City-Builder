@@ -44,12 +44,23 @@ func _ready():
 		final_building_scene = PackedScene.new()
 
 # Call this method to start construction at a position
-func start_construction(position: Vector3, structure_index: int):
+func start_construction(position: Vector3, structure_index: int, rotation_basis = null):
 	if position in construction_sites:
 		print("Construction already in progress at ", position)
 		return
 	
 	print("Starting new construction at ", position)
+	
+	# Get the current selector rotation if available
+	var rotation_index = 0
+	if builder and builder.selector:
+		# Convert the selector's basis to a GridMap orientation index
+		if rotation_basis == null:
+			rotation_basis = builder.selector.basis
+		
+		if builder.gridmap:
+			rotation_index = builder.gridmap.get_orthogonal_index_from_basis(rotation_basis)
+			print("Using rotation index: ", rotation_index)
 	
 	# Create a construction site entry
 	construction_sites[position] = {
@@ -58,7 +69,9 @@ func start_construction(position: Vector3, structure_index: int):
 		"plot": null,
 		"worker": null,
 		"timer": 0.0,
-		"completed": false
+		"completed": false,
+		"rotation_index": rotation_index,  # Store the rotation for later use
+		"rotation_basis": rotation_basis   # Store the rotation basis
 	}
 	
 	# Place plot marker (outline/transparent version of the building)
@@ -71,6 +84,11 @@ func start_construction(position: Vector3, structure_index: int):
 	# Add to the scene and position it
 	builder.add_child(plot)
 	plot.global_transform.origin = position
+	
+	# Apply the rotation from the selector to the plot
+	if rotation_basis:
+		plot.basis = rotation_basis
+	
 	plot.scale = Vector3(3.0, 3.0, 3.0)  # Scale to match other buildings
 	
 	# Store reference
@@ -235,6 +253,14 @@ func _place_final_building(position: Vector3, structure_index: int):
 	# Add to scene at the correct position and scale
 	builder.add_child(building)
 	building.global_transform.origin = position
+	
+	# Apply the saved rotation if available
+	if position in construction_sites:
+		var site = construction_sites[position]
+		if "rotation_basis" in site and site["rotation_basis"]:
+			building.basis = site["rotation_basis"]
+			print("Applied saved rotation to building")
+	
 	building.scale = Vector3(3.0, 3.0, 3.0)  # Scale to match other buildings
 
 # Make a model semi-transparent with outline effect
@@ -339,7 +365,7 @@ func _spawn_resident_from_building(position: Vector3):
 	var timer = get_tree().create_timer(0.1)
 	timer.timeout.connect(func():
 		# Start the character moving after initialization
-		if resident and is_instance_valid(resident):
+		if resident:
 			if resident.has_method("set_movement_target"):
 				var target_position = _find_random_road()
 				if target_position == Vector3.ZERO:

@@ -171,7 +171,9 @@ func action_build(gridmap_position):
 			_move_characters_to_navregion()
 		elif is_residential and use_worker_construction:
 			# For residential buildings in mission 3, use construction workers
-			construction_manager.start_construction(gridmap_position, index)
+			# Pass the current selector basis to preserve rotation
+			var selector_basis = selector.basis
+			construction_manager.start_construction(gridmap_position, index, selector_basis)
 			
 			# Don't place the building immediately - it will be placed when construction completes
 			# We leave gridmap empty for now
@@ -422,9 +424,19 @@ func _on_construction_completed(position: Vector3):
 			break
 	
 	if residential_index >= 0:
-		# Add the completed residential building to the gridmap
-		gridmap.set_cell_item(position, residential_index, gridmap.get_orthogonal_index_from_basis(Basis()))
-		print("Construction completed: added building to gridmap at ", position)
+		# Get the rotation index from the construction manager if available
+		var rotation_index = 0
+		
+		# Try to get the rotation index from the construction manager
+		if construction_manager and construction_manager.construction_sites.has(position):
+			var site = construction_manager.construction_sites[position]
+			if site.has("rotation_index"):
+				rotation_index = site["rotation_index"]
+				print("Using saved rotation index: ", rotation_index)
+		
+		# Add the completed residential building to the gridmap with the correct rotation
+		gridmap.set_cell_item(position, residential_index, rotation_index)
+		print("Construction completed: added building to gridmap at ", position, " with rotation index ", rotation_index)
 	else:
 		print("ERROR: No residential building structure found!")
 	
