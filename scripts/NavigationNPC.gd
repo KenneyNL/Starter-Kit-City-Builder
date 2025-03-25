@@ -107,7 +107,14 @@ func _physics_process(delta:float)->void:
 		
 		# Make character face the direction of movement
 		if direction.length() > 0.01:
-			character_model.look_at(global_position + Vector3(direction.x, 0, direction.z), Vector3.UP)
+			# Look at the destination with a 180-degree rotation to face forward
+			var look_target = global_position + Vector3(direction.x, 0, direction.z)
+			
+			# First make the character model look at the target
+			character_model.look_at(look_target, Vector3.UP)
+			
+			# Then rotate it 180 degrees around the Y axis to fix backward facing
+			character_model.rotate_y(PI)
 		
 		# Play walking animation when moving
 		if not animation_player.current_animation == "walk":
