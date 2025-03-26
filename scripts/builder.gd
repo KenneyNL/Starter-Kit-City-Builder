@@ -55,7 +55,10 @@ func _ready():
 		
 		# Apply appropriate scaling for buildings and roads
 		var transform = Transform3D()
-		if structure.type == Structure.StructureType.RESIDENTIAL_BUILDING or structure.type == Structure.StructureType.ROAD:
+		if structure.model.resource_path.contains("power_plant"):
+			# Scale power plant model to be much smaller (0.5x)
+			transform = transform.scaled(Vector3(0.5, 0.5, 0.5))
+		elif structure.type == Structure.StructureType.RESIDENTIAL_BUILDING or structure.type == Structure.StructureType.ROAD:
 			# Scale buildings and roads to be consistent (3x)
 			transform = transform.scaled(Vector3(3.0, 3.0, 3.0))
 		
@@ -145,6 +148,8 @@ func action_build(gridmap_position):
 		var is_road = structures[index].type == Structure.StructureType.ROAD
 		# For residential buildings, we use the construction manager in mission 3
 		var is_residential = structures[index].type == Structure.StructureType.RESIDENTIAL_BUILDING
+		# For power plants, we handle them specially
+		var is_power_plant = structures[index].model.resource_path.contains("power_plant")
 		
 		# Check if we're in mission 3 (when we should use construction workers)
 		var use_worker_construction = false
@@ -171,6 +176,12 @@ func action_build(gridmap_position):
 			
 			# Make sure any existing NPCs are children of the navigation region
 			_move_characters_to_navregion()
+		elif is_power_plant:
+			# Special handling for power plants - add directly as a child of the builder
+			_add_power_plant(gridmap_position, index)
+			
+			# We still set the cell item for collision detection
+			gridmap.set_cell_item(gridmap_position, index, gridmap.get_orthogonal_index_from_basis(selector.basis))
 		elif is_residential and use_worker_construction:
 			# For residential buildings in mission 3, use construction workers
 			# Pass the current selector basis to preserve rotation
@@ -231,6 +242,13 @@ func action_demolish(gridmap_position):
 		if nav_region and nav_region.has_node(road_name):
 			is_road = true
 		
+		# Check if there's a power plant at this position
+		var is_power_plant = false
+		var power_plant_name = "PowerPlant_" + str(int(gridmap_position.x)) + "_" + str(int(gridmap_position.z))
+		
+		if has_node(power_plant_name):
+			is_power_plant = true
+		
 		# Or check the GridMap for non-road structures
 		var current_item = gridmap.get_cell_item(gridmap_position)
 		var is_building = current_item >= 0
@@ -243,6 +261,11 @@ func action_demolish(gridmap_position):
 			rebake_navigation_mesh()
 			# Make sure any existing NPCs are children of the navigation region
 			_move_characters_to_navregion()
+		elif is_power_plant:
+			# Remove the power plant model
+			_remove_power_plant(gridmap_position)
+			# Also remove from gridmap
+			gridmap.set_cell_item(gridmap_position, -1)
 		elif is_building:
 			# Remove the building from the gridmap
 			gridmap.set_cell_item(gridmap_position, -1)
@@ -284,7 +307,11 @@ func update_structure():
 	selector_container.add_child(_model)
 	
 	# Apply appropriate scaling based on structure type
-	if (structures[index].type == Structure.StructureType.RESIDENTIAL_BUILDING
+	if structures[index].model.resource_path.contains("power_plant"):
+		# Scale power plant model to be much smaller (0.5x)
+		_model.scale = Vector3(0.5, 0.5, 0.5)
+		_model.position.y += 0.0 # No need for Y adjustment with scaling
+	elif (structures[index].type == Structure.StructureType.RESIDENTIAL_BUILDING
 	   or structures[index].type == Structure.StructureType.ROAD
 	   or structures[index].type == Structure.StructureType.TERRAIN
 	   or structures[index].model.resource_path.contains("grass")):
@@ -347,6 +374,54 @@ func _add_road_to_navregion(position: Vector3, structure_index: int):
 	road_model.transform = transform
 	
 	print("Added road model at position ", position, " to NavRegion3D")
+
+# Function to add a power plant as a direct child of the builder
+func _add_power_plant(position: Vector3, structure_index: int):
+	# Create a unique name for this power plant based on its position
+	var power_plant_name = "PowerPlant_" + str(int(position.x)) + "_" + str(int(position.z))
+	
+	# Check if a power plant with this name already exists
+	if has_node(power_plant_name):
+		print("Power plant already exists at position: ", position)
+		return
+	
+	# Instantiate the power plant model
+	var power_plant_model = structures[structure_index].model.instantiate()
+	power_plant_model.name = power_plant_name
+	
+	# Add the power plant model directly to the builder (this node)
+	add_child(power_plant_model)
+	
+	# Create the transform
+	var transform = Transform3D()
+	
+	# Set scale (using the smaller 0.5x scale)
+	transform.basis = Basis().scaled(Vector3(0.5, 0.5, 0.5))
+	
+	# Apply rotation from the selector to preserve the rotation the player chose
+	transform.basis = transform.basis * selector.basis
+	
+	# Set position
+	transform.origin = position
+	
+	# Apply the complete transform in one go
+	power_plant_model.transform = transform
+	
+	print("Added power plant at position ", position, " as direct child of builder")
+
+# Function to remove a power plant
+func _remove_power_plant(position: Vector3):
+	# Get the power plant name based on its position
+	var power_plant_name = "PowerPlant_" + str(int(position.x)) + "_" + str(int(position.z))
+	
+	# Check if a power plant with this name exists
+	if has_node(power_plant_name):
+		# Get the power plant and remove it
+		var power_plant = get_node(power_plant_name)
+		power_plant.queue_free()
+		print("Removed power plant at position ", position)
+	else:
+		print("No power plant found at position ", position)
 
 # Function to remove a road model from the navigation region
 func _remove_road_from_navregion(position: Vector3):

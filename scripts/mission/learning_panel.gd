@@ -33,8 +33,51 @@ func show_learning_panel(mission_data: MissionData):
 	mission = mission_data
 	title_label.text = mission.title
 	
-	# Set custom description for the learning panel
-	description_label.text = """
+	# Set custom description based on mission ID
+	if mission.id == "4":
+		description_label.text = """
+POWERING YOUR CITY WITH MATH
+
+Your city has grown to 40 houses and now needs electricity! We'll use radicals and exponents to determine the power needs.
+
+UNDERSTANDING THE POWER FORMULA:
+Power needed (kilowatts) = 2 × √n + n⁰·⁸
+where n is the number of houses in your city.
+
+CALCULATING THE POWER DEMAND:
+Step 1: Calculate the square root part.
+2 × √40 = 2 × 6.32 = 12.64 kilowatts
+
+Step 2: Calculate the exponent part.
+To find 40⁰·⁸:
+40⁰·⁸ = (2⁵·³²)⁰·⁸ = 2⁵·³²ˣ⁰·⁸ = 2⁴·²⁶ ≈ 19.14 kilowatts
+
+Step 3: Find the total power needed.
+Total power needed = 12.64 + 19.14 = 31.78 kilowatts
+
+POWER PLANT INFORMATION:
+• Each power plant generates 40 kilowatts of electricity
+• A power plant can distribute electricity within a radius of:
+  Radius = 5 × √P = 5 × √40 = 5 × 6.32 ≈ 31.6 grid units
+
+How many power plants will you need to supply your city with electricity?
+Enter your answer below.
+"""
+		
+		# Update question label for mission 4
+		$MarginContainer/VBoxContainer/AnswerContainer/QuestionLabel.text = "How many power plants does your city need based on the calculated demand?"
+		$MarginContainer/VBoxContainer/AnswerContainer/AnswerField.placeholder_text = "Enter number"
+		
+		# Set the correct answer
+		correct_answer = "1"
+		
+		# Hide graph container for mission 4
+		$MarginContainer/VBoxContainer/GraphContainer.visible = false
+		$MarginContainer/VBoxContainer/GraphContainer.custom_minimum_size = Vector2(0, 0)
+		
+	else:
+		# Original mission 2 content
+		description_label.text = """
 Your city is rapidly growing, and you need to build houses to accommodate new residents! Two different construction companies offer to help:
 
 Company A: City Builders Inc.
@@ -55,15 +98,17 @@ Enter A or B below.
 Hint: Find the pattern for each company, then calculate how many workers would be needed for 40 houses.
 """
 
+		# Show and size the graph container for mission 2
+		$MarginContainer/VBoxContainer/GraphContainer.visible = true
+		$MarginContainer/VBoxContainer/GraphContainer.custom_minimum_size = Vector2(600, 400)
 
-# Add this line right here
-	$MarginContainer/VBoxContainer/GraphContainer.custom_minimum_size = Vector2(600, 400)
-
-
-# Update question label
-	$MarginContainer/VBoxContainer/AnswerContainer/QuestionLabel.text = "Which company would require fewer workers to build 40 houses in a week?"
-	$MarginContainer/VBoxContainer/AnswerContainer/AnswerField.placeholder_text = "Enter A or B"
-	
+		# Update question label for mission 2
+		$MarginContainer/VBoxContainer/AnswerContainer/QuestionLabel.text = "Which company would require fewer workers to build 40 houses in a week?"
+		$MarginContainer/VBoxContainer/AnswerContainer/AnswerField.placeholder_text = "Enter A or B"
+		
+		# Set the correct answer
+		correct_answer = "A"
+		
 	# Reset answer state
 	is_answer_correct = false
 	complete_button.disabled = true
@@ -80,7 +125,9 @@ Hint: Find the pattern for each company, then calculate how many workers would b
 	await get_tree().process_frame
 	await get_tree().process_frame
 
-	call_deferred("create_chart")
+	# Only create chart for mission 2
+	if mission.id != "4":
+		call_deferred("create_chart")
 	
 	# Emit signal to lock building controls
 	panel_opened.emit()
@@ -358,11 +405,20 @@ func _on_check_button_pressed():
 	
 	if user_answer == correct_answer:
 		is_answer_correct = true
-		feedback_label.text = "Correct! Company A (City Builders Inc.) would require fewer workers to build 40 houses. Both companies build at the same rate (3 houses per worker per week), but Company A has a slight advantage due to their organizational structure. For 40 houses, Company A needs 13.33 workers (rounded to 13) while Company B needs 13.33 workers (rounded to 14)."
+		
+		if mission.id == "4":
+			feedback_label.text = "Correct! With a power demand of 31.78 kilowatts and each power plant generating 40 kilowatts, 1 power plant is sufficient to power your city. You can now place a power plant within 31.6 grid units of your houses to ensure everyone has electricity!"
+		else:
+			feedback_label.text = "Correct! Company A (City Builders Inc.) would require fewer workers to build 40 houses. Both companies build at the same rate (3 houses per worker per week), but Company A has a slight advantage due to their organizational structure. For 40 houses, Company A needs 13.33 workers (rounded to 13) while Company B needs 13.33 workers (rounded to 14)."
+		
 		feedback_label.add_theme_color_override("font_color", Color(0, 0.7, 0.2))
 		complete_button.disabled = false
 	else:
-		feedback_label.text = "Not quite right. Look carefully at the lines for both companies. Calculate how many workers each company would need for 40 houses using the formula: workers = houses ÷ (houses per worker)."
+		if mission.id == "4":
+			feedback_label.text = "Not quite right. Calculate the power demand using the formula: Power needed = 2 × √n + n⁰·⁸, where n = 40 houses. Then compare this to the output of one power plant (40 kilowatts)."
+		else:
+			feedback_label.text = "Not quite right. Look carefully at the lines for both companies. Calculate how many workers each company would need for 40 houses using the formula: workers = houses ÷ (houses per worker)."
+		
 		feedback_label.add_theme_color_override("font_color", Color(0.9, 0.2, 0.2))
 
 func _on_complete_button_pressed():

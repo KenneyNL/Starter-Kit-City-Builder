@@ -16,6 +16,13 @@ var active_missions: Dictionary = {}  # mission_id: MissionData
 var learning_panel: LearningPanel
 var character_spawned: bool = false
 
+# Mission skip variables
+var skip_key_presses: int = 0
+var last_skip_press_time: float = 0
+var skip_key_timeout: float = 1.0  # Reset counter if time between presses exceeds this value
+var skip_key_required: int = 5  # Number of key presses needed to skip
+const SKIP_KEY = KEY_TAB  # The key to press for skipping missions
+
 func _ready():
 	if builder:
 		# Connect to builder signals
@@ -44,6 +51,23 @@ func _ready():
 		for mission in missions:
 			if mission.id == "2":
 				mission.next_mission_id = "3"
+	
+	# Load fourth mission if not already in the list
+	var fourth_mission = load("res://mission/fourth_mission.tres")
+	if fourth_mission:
+		var found = false
+		for mission in missions:
+			if mission.id == "4":
+				found = true
+				break
+		
+		if not found:
+			missions.append(fourth_mission)
+		
+		# Set next_mission_id for third mission to point to fourth mission
+		for mission in missions:
+			if mission.id == "3":
+				mission.next_mission_id = "4"
 	
 	# Start the first mission if available
 	if missions.size() > 0:
@@ -89,6 +113,24 @@ func start_mission(mission: MissionData):
 			if grass:
 				print("Adding grass structure for mission 3")
 				builder.structures.append(grass)
+	
+	# Special handling for mission 4: add power plant
+	elif mission.id == "4" and builder:
+		# Check if we need to add the power plant
+		var has_power_plant = false
+		
+		# Look through existing structures to see if we already have it
+		for structure in builder.structures:
+			if structure.model.resource_path.contains("power_plant"):
+				has_power_plant = true
+				break
+		
+		# Add the power plant if missing
+		if not has_power_plant:
+			var power_plant = load("res://structures/power-plant.tres")
+			if power_plant:
+				print("Adding power plant structure for mission 4")
+				builder.structures.append(power_plant)
 		
 		# Update the mesh library to include the new structures
 		if builder.gridmap and builder.gridmap.mesh_library:
@@ -104,7 +146,10 @@ func start_mission(mission: MissionData):
 					
 					# Apply appropriate scaling for all road types, buildings, and terrain
 					var transform = Transform3D()
-					if (structure.type == Structure.StructureType.RESIDENTIAL_BUILDING
+					if structure.model.resource_path.contains("power_plant"):
+						# Scale power plant model to be much smaller (0.5x)
+						transform = transform.scaled(Vector3(0.5, 0.5, 0.5))
+					elif (structure.type == Structure.StructureType.RESIDENTIAL_BUILDING
 					   or structure.type == Structure.StructureType.ROAD
 					   or structure.type == Structure.StructureType.TERRAIN
 					   or structure.model.resource_path.contains("grass")):
@@ -259,6 +304,56 @@ func _on_learning_panel_closed():
 	# Re-enable building controls
 	if builder:
 		builder.disabled = false
+		
+# Method to process keyboard input for mission skipping
+func _input(event):
+	if event is InputEventKey and event.pressed and not event.is_echo():
+		if event.keycode == SKIP_KEY:  # Use the configured skip key
+			var current_time = Time.get_ticks_msec() / 1000.0
+			
+			# Reset counter if too much time has passed since last press
+			if current_time - last_skip_press_time > skip_key_timeout:
+				skip_key_presses = 0
+			
+			# Update time and increment counter
+			last_skip_press_time = current_time
+			skip_key_presses += 1
+			
+			# Show progress toward skipping
+			if mission_ui and mission_ui.has_method("show_temporary_message"):
+				if skip_key_presses < skip_key_required:
+					mission_ui.show_temporary_message("Mission skip: " + str(skip_key_presses) + "/" + str(skip_key_required) + " presses", 0.75, Color(1.0, 0.7, 0.2))
+				else:
+					mission_ui.show_temporary_message("Mission skipped!", 2.0, Color(0.2, 0.8, 0.2))
+			
+			# Print feedback to console
+			if skip_key_presses < skip_key_required:
+				print("Mission skip: " + str(skip_key_presses) + "/" + str(skip_key_required) + " key presses")
+			
+			# Check if we've reached the required number of presses
+			if skip_key_presses >= skip_key_required:
+				skip_key_presses = 0
+				_skip_current_mission()
+				
+# Method to skip the current mission
+func _skip_current_mission():
+	if not current_mission:
+		print("No mission to skip")
+		return
+		
+	var mission_id = current_mission.id
+	print("Skipping mission " + mission_id)
+	
+	# Auto-complete all objectives in the current mission
+	for objective in current_mission.objectives:
+		objective.progress(objective.target_count - objective.current_count)
+	
+	# If there's a learning panel open, close it
+	if learning_panel and learning_panel.visible:
+		learning_panel.hide_learning_panel()
+	
+	# Complete the mission
+	complete_mission(mission_id)
 		
 func _spawn_character_on_road(building_position: Vector3):
 	if !character_scene:
