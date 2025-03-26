@@ -53,6 +53,49 @@ func start_mission(mission: MissionData):
 	current_mission = mission
 	active_missions[mission.id] = mission
 	
+	# Special handling for mission 3: add additional structures
+	if mission.id == "3" and builder:
+		# Check if we need to add the road-corner
+		var has_road_corner = false
+		
+		# Look through existing structures to see if we already have it
+		for structure in builder.structures:
+			if structure.model.resource_path.contains("road-corner"):
+				has_road_corner = true
+				break
+		
+		# Add the road-corner if missing
+		if not has_road_corner:
+			var road_corner = load("res://structures/road-corner.tres")
+			if road_corner:
+				print("Adding road-corner structure for mission 3")
+				builder.structures.append(road_corner)
+		
+		# Update the mesh library to include the new structures
+		if builder.gridmap and builder.gridmap.mesh_library:
+			var mesh_library = builder.gridmap.mesh_library
+			
+			# Update mesh library for any new structures
+			for i in range(builder.structures.size()):
+				var structure = builder.structures[i]
+				if i >= mesh_library.get_item_list().size():
+					var id = mesh_library.get_last_unused_item_id()
+					mesh_library.create_item(id)
+					mesh_library.set_item_mesh(id, builder.get_mesh(structure.model))
+					
+					# Apply appropriate scaling for all road types
+					var transform = Transform3D()
+					if structure.type == Structure.StructureType.RESIDENTIAL_BUILDING or structure.type == Structure.StructureType.ROAD:
+						# Scale buildings and roads to be consistent (3x)
+						transform = transform.scaled(Vector3(3.0, 3.0, 3.0))
+					
+					mesh_library.set_item_mesh_transform(id, transform)
+			
+			print("Updated mesh library for mission 3 with new structures")
+			
+			# Make sure the builder's structure selector is updated
+			builder.update_structure()
+	
 	# Check if mission has a learning objective
 	var has_learning_objective = false
 	for objective in mission.objectives:

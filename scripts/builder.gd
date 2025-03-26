@@ -309,11 +309,15 @@ func _add_road_to_navregion(position: Vector3, structure_index: int):
 		print("Road already exists at position: ", position)
 		return
 	
-	# Instantiate the road model - get the actual road-straight.glb model
+	# Instantiate the road model - get the actual model based on road type
 	var road_model
-	if structures[structure_index].model.resource_path.contains("road-straight"):
-		# Load the specific road-straight model that works with navmesh
+	var model_path = structures[structure_index].model.resource_path
+	if model_path.contains("road-straight"):
+		# Use the specific road-straight model that works with navmesh
 		road_model = load("res://models/road-straight.glb").instantiate()
+	elif model_path.contains("road-corner"):
+		# Use the specific road-corner model
+		road_model = load("res://models/road-corner.glb").instantiate()
 	else:
 		# Fall back to the structure's model for other road types
 		road_model = structures[structure_index].model.instantiate()
@@ -329,10 +333,8 @@ func _add_road_to_navregion(position: Vector3, structure_index: int):
 	# Set scale first
 	transform.basis = Basis().scaled(Vector3(3.0, 3.0, 3.0))
 	
-	# Then apply rotation
-	var orientation = gridmap.get_cell_item_orientation(position)
-	var rotation_basis = gridmap.get_basis_with_orthogonal_index(orientation)
-	transform.basis = transform.basis * rotation_basis
+	# Then apply rotation from the selector to preserve the rotation the player chose
+	transform.basis = transform.basis * selector.basis
 	
 	# Set position
 	transform.origin = position
