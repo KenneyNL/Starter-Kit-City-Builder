@@ -98,7 +98,7 @@ transform = Transform3D(0.707107, -0.40558, 0.579228, 0, 0.819152, 0.573576, -0.
 script = ExtResource("8_yovpv")
 
 [node name="Camera" type="Camera3D" parent="View"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 30)
+transform = Transform3D(1, 0, 0, 0, 1, 7.15256e-07, 0, 0, 1, 0, 27.98, 49.5918)
 environment = ExtResource("1_yndf3")
 fov = 20.0
 
