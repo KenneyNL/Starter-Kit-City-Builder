@@ -236,8 +236,19 @@ func _complete_construction(position: Vector3):
 	# Place the final building
 	_place_final_building(position, site["structure_index"])
 	
-	# Spawn a resident from the new building
-	_spawn_resident_from_building(position)
+	# Check if we should spawn a resident
+	var mission_manager = builder.get_node_or_null("/root/Main/MissionManager")
+	var should_spawn_resident = true
+	
+	# Don't spawn a resident for the first building in mission 1
+	# (let the mission manager handle that case to avoid double spawning)
+	if mission_manager and mission_manager.current_mission and mission_manager.current_mission.id == "1" and !mission_manager.character_spawned:
+		should_spawn_resident = false
+		print("Skip spawning resident for first building in mission 1")
+	
+	# Spawn a resident from the new building (except for first building in mission 1)
+	if should_spawn_resident:
+		_spawn_resident_from_building(position)
 	
 	# Emit completion signal
 	construction_completed.emit(position)

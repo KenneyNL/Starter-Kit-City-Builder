@@ -30,6 +30,10 @@ This package includes a basic template for a 3D city builder in Godot 4.3 (stabl
 
 ### License
 
+
+ATTRIBUTE
+"Power Plant" (https://skfb.ly/6vZoR) by Romain PERRONE is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
+
 MIT License
 
 Copyright (c) 2024 Kenney

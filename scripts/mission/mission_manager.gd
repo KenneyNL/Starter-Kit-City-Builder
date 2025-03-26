@@ -160,11 +160,8 @@ func _on_structure_placed(structure_index: int, position: Vector3):
 			Structure.StructureType.RESIDENTIAL_BUILDING:
 				update_objective_progress(mission_id, MissionObjective.ObjectiveType.BUILD_RESIDENTIAL)
 				
-				# Check if this is our first residential building in mission 1
-				if not character_spawned:
-					print("Attempting to spawn character at: ", position)
-					_spawn_character_on_road(position)
-					character_spawned = true
+				# We don't spawn characters here anymore - this is handled by the builder.gd
+				# for both direct placement and worker construction
 					
 			Structure.StructureType.COMMERCIAL_BUILDING:
 				update_objective_progress(mission_id, MissionObjective.ObjectiveType.BUILD_COMMERCIAL)

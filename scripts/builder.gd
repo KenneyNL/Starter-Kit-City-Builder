@@ -149,8 +149,10 @@ func action_build(gridmap_position):
 		# Check if we're in mission 3 (when we should use construction workers)
 		var use_worker_construction = false
 		var mission_manager = get_node_or_null("/root/Main/MissionManager")
-		if mission_manager and mission_manager.current_mission and mission_manager.current_mission.id == "3":
-			use_worker_construction = true
+		if mission_manager and mission_manager.current_mission:
+			var mission_id = mission_manager.current_mission.id
+			if mission_id == "3" or (mission_id == "1" and is_residential):
+				use_worker_construction = true
 		
 		if is_road:
 			# For roads, we'll need to track in our data without using the GridMap
@@ -437,6 +439,22 @@ func _on_construction_completed(position: Vector3):
 		# Add the completed residential building to the gridmap with the correct rotation
 		gridmap.set_cell_item(position, residential_index, rotation_index)
 		print("Construction completed: added building to gridmap at ", position, " with rotation index ", rotation_index)
+		
+		# Check if we need to spawn a character for mission 1
+		var mission_manager = get_node_or_null("/root/Main/MissionManager")
+		if mission_manager:
+			# First, emit the structure_placed signal to update mission objectives
+			structure_placed.emit(residential_index, position)
+			print("Emitted structure_placed signal to update mission objectives")
+			
+			# Now check if we need to manually handle mission 1 character spawning
+			if mission_manager.current_mission and mission_manager.current_mission.id == "1" and not mission_manager.character_spawned:
+				print("This is the first residential building in mission 1, spawning character")
+				mission_manager.character_spawned = true
+				mission_manager._spawn_character_on_road(position)
+		else:
+			# Just emit the signal if mission manager not found
+			structure_placed.emit(residential_index, position)
 	else:
 		print("ERROR: No residential building structure found!")
 	

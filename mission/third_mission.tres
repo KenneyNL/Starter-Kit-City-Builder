@@ -5,7 +5,7 @@
 
 [sub_resource type="Resource" id="Resource_c06be"]
 script = ExtResource("1_dhx01")
-type = 5
+type = 3
 target_count = 40
 current_count = 0
 description = "Build 40 residential buildings with construction workers"
