@@ -55,14 +55,19 @@ func start_mission(mission: MissionData):
 	
 	# Special handling for mission 3: add additional structures
 	if mission.id == "3" and builder:
-		# Check if we need to add the road-corner
+		# Check if we need to add the road-corner and decoration structures
 		var has_road_corner = false
+		var has_grass_trees_tall = false
+		var has_grass = false
 		
-		# Look through existing structures to see if we already have it
+		# Look through existing structures to see if we already have them
 		for structure in builder.structures:
 			if structure.model.resource_path.contains("road-corner"):
 				has_road_corner = true
-				break
+			elif structure.model.resource_path.contains("grass-trees-tall"):
+				has_grass_trees_tall = true
+			elif structure.model.resource_path.contains("grass") and not structure.model.resource_path.contains("trees"):
+				has_grass = true
 		
 		# Add the road-corner if missing
 		if not has_road_corner:
@@ -70,6 +75,20 @@ func start_mission(mission: MissionData):
 			if road_corner:
 				print("Adding road-corner structure for mission 3")
 				builder.structures.append(road_corner)
+		
+		# Add the grass-trees-tall if missing
+		if not has_grass_trees_tall:
+			var grass_trees_tall = load("res://structures/grass-trees-tall.tres")
+			if grass_trees_tall:
+				print("Adding grass-trees-tall structure for mission 3")
+				builder.structures.append(grass_trees_tall)
+		
+		# Add the grass if missing
+		if not has_grass:
+			var grass = load("res://structures/grass.tres")
+			if grass:
+				print("Adding grass structure for mission 3")
+				builder.structures.append(grass)
 		
 		# Update the mesh library to include the new structures
 		if builder.gridmap and builder.gridmap.mesh_library:
@@ -83,10 +102,13 @@ func start_mission(mission: MissionData):
 					mesh_library.create_item(id)
 					mesh_library.set_item_mesh(id, builder.get_mesh(structure.model))
 					
-					# Apply appropriate scaling for all road types
+					# Apply appropriate scaling for all road types, buildings, and terrain
 					var transform = Transform3D()
-					if structure.type == Structure.StructureType.RESIDENTIAL_BUILDING or structure.type == Structure.StructureType.ROAD:
-						# Scale buildings and roads to be consistent (3x)
+					if (structure.type == Structure.StructureType.RESIDENTIAL_BUILDING
+					   or structure.type == Structure.StructureType.ROAD
+					   or structure.type == Structure.StructureType.TERRAIN
+					   or structure.model.resource_path.contains("grass")):
+						# Scale buildings, roads, and decorative terrain to be consistent (3x)
 						transform = transform.scaled(Vector3(3.0, 3.0, 3.0))
 					
 					mesh_library.set_item_mesh_transform(id, transform)

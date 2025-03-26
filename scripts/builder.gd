@@ -284,8 +284,11 @@ func update_structure():
 	selector_container.add_child(_model)
 	
 	# Apply appropriate scaling based on structure type
-	if structures[index].type == Structure.StructureType.RESIDENTIAL_BUILDING or structures[index].type == Structure.StructureType.ROAD:
-		# Scale buildings and roads to match (3x)
+	if (structures[index].type == Structure.StructureType.RESIDENTIAL_BUILDING
+	   or structures[index].type == Structure.StructureType.ROAD
+	   or structures[index].type == Structure.StructureType.TERRAIN
+	   or structures[index].model.resource_path.contains("grass")):
+		# Scale buildings, roads, and decorative terrain to match (3x)
 		_model.scale = Vector3(3.0, 3.0, 3.0)
 		_model.position.y += 0.0 # No need for Y adjustment with scaling
 	else:
