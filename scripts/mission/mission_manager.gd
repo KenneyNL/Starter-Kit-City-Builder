@@ -28,12 +28,34 @@ func _ready():
 		# Connect to builder signals
 		builder.connect("structure_placed", _on_structure_placed)
 	
-	# Get reference to learning panel
-	learning_panel = get_node("LearningPanel")
+	# Find and remove existing learning panel to avoid conflicts
+	var old_panel = get_node_or_null("LearningPanel")
+	if old_panel:
+		old_panel.queue_free()
+		print("Removed old learning panel from mission manager")
+		
+	# Load the learning panel scene fresh each time
+	var learning_panel_scene = load("res://scenes/learning_panel.tscn")
+	if learning_panel_scene:
+		learning_panel = learning_panel_scene.instantiate()
+		learning_panel.name = "LearningPanelFromScene"
+		add_child(learning_panel)
+		print("Loaded fresh learning panel from scene file")
+	else:
+		print("ERROR: Could not load learning_panel.tscn scene")
+		
+	# Fall back to existing panels if needed
+	if not learning_panel:
+		learning_panel = get_node_or_null("/root/Main/LearningPanel")
+		if learning_panel:
+			print("Using fallback learning panel from main scene")
+	
 	if learning_panel:
 		learning_panel.completed.connect(_on_learning_completed)
 		learning_panel.panel_opened.connect(_on_learning_panel_opened)
 		learning_panel.panel_closed.connect(_on_learning_panel_closed)
+	else:
+		print("WARNING: Learning panel not found!")
 	
 	# Load third mission if not already in the list
 	var third_mission = load("res://mission/third_mission.tres")
@@ -77,8 +99,8 @@ func start_mission(mission: MissionData):
 	current_mission = mission
 	active_missions[mission.id] = mission
 	
-	# Special handling for mission 3: add additional structures
-	if mission.id == "3" and builder:
+	# Add decorative structures and curved roads
+	if (mission.id == "2" or mission.id == "3") and builder:
 		# Check if we need to add the road-corner and decoration structures
 		var has_road_corner = false
 		var has_grass_trees_tall = false
@@ -171,8 +193,39 @@ func start_mission(mission: MissionData):
 			break
 	
 	# Show learning panel if mission has a learning objective
-	if has_learning_objective and learning_panel:
-		learning_panel.show_learning_panel(mission)
+	if has_learning_objective:
+		print("Found learning objective. Using learning panel: ", learning_panel != null)
+		
+		# Explicitly load the learning panel scene
+		var panel_scene = load("res://scenes/learning_panel.tscn")
+		if panel_scene:
+			# Remove old panel if it exists
+			if learning_panel and learning_panel.get_parent():
+				learning_panel.get_parent().remove_child(learning_panel)
+			
+			# Instance new panel
+			learning_panel = panel_scene.instantiate()
+			print("Instantiated new learning panel scene")
+			
+			# Add to scene and connect signals
+			add_child(learning_panel)
+			if not learning_panel.is_connected("completed", Callable(self, "_on_learning_completed")):
+				learning_panel.completed.connect(_on_learning_completed)
+			if not learning_panel.is_connected("panel_opened", Callable(self, "_on_learning_panel_opened")):
+				learning_panel.panel_opened.connect(_on_learning_panel_opened)
+			if not learning_panel.is_connected("panel_closed", Callable(self, "_on_learning_panel_closed")):
+				learning_panel.panel_closed.connect(_on_learning_panel_closed)
+			
+			print("Added new learning panel to scene tree")
+		else:
+			print("ERROR: Failed to load learning_panel.tscn")
+			
+		# Pass the mission data to show the panel
+		if learning_panel:
+			print("Calling show_learning_panel for mission: ", mission.id)
+			learning_panel.show_learning_panel(mission)
+		else:
+			print("ERROR: No learning panel available to show")
 	
 	# Emit signal and update UI
 	mission_started.emit(mission)

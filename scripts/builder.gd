@@ -150,6 +150,8 @@ func action_build(gridmap_position):
 		var is_residential = structures[index].type == Structure.StructureType.RESIDENTIAL_BUILDING
 		# For power plants, we handle them specially
 		var is_power_plant = structures[index].model.resource_path.contains("power_plant")
+			# For grass and trees (terrain), we need special handling
+		var is_terrain = structures[index].type == Structure.StructureType.TERRAIN
 		
 		# Check if we're in mission 3 (when we should use construction workers)
 		var use_worker_construction = false
@@ -179,6 +181,12 @@ func action_build(gridmap_position):
 		elif is_power_plant:
 			# Special handling for power plants - add directly as a child of the builder
 			_add_power_plant(gridmap_position, index)
+			
+			# We still set the cell item for collision detection
+			gridmap.set_cell_item(gridmap_position, index, gridmap.get_orthogonal_index_from_basis(selector.basis))
+		elif is_terrain:
+			# Special handling for terrain (grass and trees)
+			_add_terrain(gridmap_position, index)
 			
 			# We still set the cell item for collision detection
 			gridmap.set_cell_item(gridmap_position, index, gridmap.get_orthogonal_index_from_basis(selector.basis))
@@ -248,6 +256,13 @@ func action_demolish(gridmap_position):
 		
 		if has_node(power_plant_name):
 			is_power_plant = true
+			
+		# Check if there's terrain at this position
+		var is_terrain = false
+		var terrain_name = "Terrain_" + str(int(gridmap_position.x)) + "_" + str(int(gridmap_position.z))
+		
+		if has_node(terrain_name):
+			is_terrain = true
 		
 		# Or check the GridMap for non-road structures
 		var current_item = gridmap.get_cell_item(gridmap_position)
@@ -264,6 +279,11 @@ func action_demolish(gridmap_position):
 		elif is_power_plant:
 			# Remove the power plant model
 			_remove_power_plant(gridmap_position)
+			# Also remove from gridmap
+			gridmap.set_cell_item(gridmap_position, -1)
+		elif is_terrain:
+			# Remove the terrain model
+			_remove_terrain(gridmap_position)
 			# Also remove from gridmap
 			gridmap.set_cell_item(gridmap_position, -1)
 		elif is_building:
@@ -422,6 +442,20 @@ func _remove_power_plant(position: Vector3):
 		print("Removed power plant at position ", position)
 	else:
 		print("No power plant found at position ", position)
+		
+# Function to remove terrain (grass or trees)
+func _remove_terrain(position: Vector3):
+	# Get the terrain name based on its position
+	var terrain_name = "Terrain_" + str(int(position.x)) + "_" + str(int(position.z))
+	
+	# Check if terrain with this name exists
+	if has_node(terrain_name):
+		# Get the terrain and remove it
+		var terrain = get_node(terrain_name)
+		terrain.queue_free()
+		print("Removed terrain at position ", position)
+	else:
+		print("No terrain found at position ", position)
 
 # Function to remove a road model from the navigation region
 func _remove_road_from_navregion(position: Vector3):
@@ -495,6 +529,40 @@ func _move_characters_to_navregion():
 		# Restore global position
 		character.global_transform.origin = global_pos
 		print("Moved character to NavRegion3D")
+
+# Function to add terrain (grass or trees) as a direct child
+func _add_terrain(position: Vector3, structure_index: int):
+	# Create a unique name for this terrain element based on its position
+	var terrain_name = "Terrain_" + str(int(position.x)) + "_" + str(int(position.z))
+	
+	# Check if terrain with this name already exists
+	if has_node(terrain_name):
+		print("Terrain already exists at position: ", position)
+		return
+	
+	# Instantiate the terrain model
+	var terrain_model = structures[structure_index].model.instantiate()
+	terrain_model.name = terrain_name
+	
+	# Add the terrain model directly to the builder (this node)
+	add_child(terrain_model)
+	
+	# Create the transform
+	var transform = Transform3D()
+	
+	# Set scale (using 3.0 scale as per other terrain elements)
+	transform.basis = Basis().scaled(Vector3(3.0, 3.0, 3.0))
+	
+	# Apply rotation from the selector to preserve the rotation the player chose
+	transform.basis = transform.basis * selector.basis
+	
+	# Set position
+	transform.origin = position
+	
+	# Apply the complete transform in one go
+	terrain_model.transform = transform
+	
+	print("Added terrain at position ", position, " as direct child of builder")
 
 # Callback for when construction is completed
 func _on_construction_completed(position: Vector3):
