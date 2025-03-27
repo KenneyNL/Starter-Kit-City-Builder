@@ -22,3 +22,4 @@ rewards = {
 "cash": 0
 }
 next_mission_id = ""
+graph_path = ""
