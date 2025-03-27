@@ -1,5 +1,4 @@
 extends Control
-class_name LearningPanel
 
 signal completed
 signal panel_opened
@@ -29,12 +28,12 @@ func _ready():
 	z_index = 100
 	
 	# Initialize node references using direct paths
-	mission_title_label = get_node_or_null("CenterContainer/LearningPanelContainer/MarginContainer/VBoxContainer/TitleContainer/MissionTitleLabel")
-	intro_text = get_node_or_null("CenterContainer/LearningPanelContainer/MarginContainer/VBoxContainer/MainContent/IntroText")
-	description_text = get_node_or_null("CenterContainer/LearningPanelContainer/MarginContainer/VBoxContainer/MainContent/DescriptionText")
-	graph_image = get_node_or_null("CenterContainer/LearningPanelContainer/MarginContainer/VBoxContainer/MainContent/GraphContentGrid/GraphCenterContainer/GraphImage")
-	user_input = get_node_or_null("CenterContainer/LearningPanelContainer/MarginContainer/VBoxContainer/MainContent/GraphContentGrid/UserInputContainer/UserInput")
-	submit_button = get_node_or_null("CenterContainer/LearningPanelContainer/MarginContainer/VBoxContainer/SubmitButtonContainer/SubmitButton")
+	mission_title_label = get_node_or_null("PanelContainer/MarginContainer/VBoxContainer/TitleContainer/MissionTitleLabel")
+	intro_text = get_node_or_null("PanelContainer/MarginContainer/VBoxContainer/MainContent/IntroText")
+	description_text = get_node_or_null("PanelContainer/MarginContainer/VBoxContainer/MainContent/DescriptionText")
+	graph_image = get_node_or_null("PanelContainer/MarginContainer/VBoxContainer/MainContent/GraphContainer/GraphCenterContainer/GraphImage")
+	user_input = get_node_or_null("PanelContainer/MarginContainer/VBoxContainer/MainContent/UserInputContainer/UserInput")
+	submit_button = get_node_or_null("PanelContainer/MarginContainer/VBoxContainer/SubmitButtonContainer/SubmitButton")
 	
 	print("Initialized learning panel with path: ", get_path())
 	
@@ -70,8 +69,11 @@ func show_learning_panel(mission_data: MissionData):
 	
 	# Check if UI nodes exist before setting properties
 	if mission_title_label:
-		mission_title_label.text = mission.title
-		print("Set mission title to: ", mission.title)
+		if mission.id == "2":
+			mission_title_label.text = "COMPARE CONSTRUCTION COMPANIES"
+		else:
+			mission_title_label.text = mission.title
+		print("Set mission title to: ", mission_title_label.text)
 	else:
 		print("Cannot set mission title: mission_title_label is null")
 		
@@ -93,15 +95,16 @@ func show_learning_panel(mission_data: MissionData):
 			description_text.text = "You need to solve exponential and radical expressions to determine how many power plants to build and where to place them for optimal energy distribution."
 		
 		# Get or create feedback label
-		var feedback_label = get_node_or_null("CenterContainer/LearningPanelContainer/MarginContainer/VBoxContainer/MainContent/GraphContentGrid/UserInputContainer/FeedbackLabel")
-		var user_input_container = get_node_or_null("CenterContainer/LearningPanelContainer/MarginContainer/VBoxContainer/MainContent/GraphContentGrid/UserInputContainer")
+		var feedback_label = get_node_or_null("PanelContainer/MarginContainer/VBoxContainer/MainContent/UserInputContainer/FeedbackLabel")
+		var user_input_container = get_node_or_null("PanelContainer/MarginContainer/VBoxContainer/MainContent/UserInputContainer")
 		
 		if not feedback_label and user_input_container:
 			feedback_label = Label.new()
 			feedback_label.name = "FeedbackLabel"
 			feedback_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			feedback_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-			feedback_label.custom_minimum_size = Vector2(400, 60)
+			feedback_label.custom_minimum_size = Vector2(800, 120)
+			feedback_label.add_theme_font_size_override("font_size", 32)
 			feedback_label.visible = false
 			user_input_container.add_child(feedback_label)
 		
@@ -118,20 +121,20 @@ func show_learning_panel(mission_data: MissionData):
 			graph_image.visible = false
 		
 		# Add power math text instead of graph
-		var graph_center_container = get_node_or_null("CenterContainer/LearningPanelContainer/MarginContainer/VBoxContainer/MainContent/GraphContentGrid/GraphCenterContainer")
-		var power_math_label = get_node_or_null("CenterContainer/LearningPanelContainer/MarginContainer/VBoxContainer/MainContent/GraphContentGrid/GraphCenterContainer/PowerMathLabel")
+		var graph_center_container = get_node_or_null("PanelContainer/MarginContainer/VBoxContainer/MainContent/GraphContainer/GraphCenterContainer")
+		var power_math_label = get_node_or_null("PanelContainer/MarginContainer/VBoxContainer/MainContent/GraphContainer/GraphCenterContainer/PowerMathLabel")
 		
 		if not power_math_label and graph_center_container:
 			power_math_label = RichTextLabel.new()
 			power_math_label.name = "PowerMathLabel"
-			power_math_label.custom_minimum_size = Vector2(600, 300)
+			power_math_label.custom_minimum_size = Vector2(1200, 600)
 			power_math_label.bbcode_enabled = true
 			power_math_label.fit_content = true
 			graph_center_container.add_child(power_math_label)
 			
-			power_math_label.text = """[center][color=#60c2a8][font_size=24]POWERING YOUR CITY WITH MATH[/font_size][/color]
+			power_math_label.text = """[center][color=#60c2a8][font_size=42]POWERING YOUR CITY WITH MATH[/font_size][/color]
 
-[font_size=18]Your city has grown to 40 houses and now needs electricity!
+[font_size=32]Your city has grown to 40 houses and now needs electricity!
 We'll use radicals and exponents to determine the power needs.
 
 [color=#60c2a8]UNDERSTANDING THE POWER FORMULA:[/color]
@@ -160,20 +163,21 @@ Total power needed = 12.64 + 19.14 = 31.78 kilowatts
 	else:
 		# Mission 2: Construction Companies
 		if intro_text:
-			intro_text.text = "Your city is rapidly growing, and you need to build houses to accommodate new residents! Two different construction companies offer to help:"
+			intro_text.text = "Your city is rapidly growing, and you need to build houses to accommodate new residents! Two different construction companies offer to help."
 		if description_text:
-			description_text.text = "Study their data, find the unit rates, write equations, and determine which company would require fewer workers to build 40 houses in a week."
+			description_text.text = "Study the company data below, find the unit rates (houses per worker), and determine which company would require fewer workers to build 40 houses in a week."
 		
 		# Get or create feedback label
-		var feedback_label = get_node_or_null("CenterContainer/LearningPanelContainer/MarginContainer/VBoxContainer/MainContent/GraphContentGrid/UserInputContainer/FeedbackLabel")
-		var user_input_container = get_node_or_null("CenterContainer/LearningPanelContainer/MarginContainer/VBoxContainer/MainContent/GraphContentGrid/UserInputContainer")
+		var feedback_label = get_node_or_null("PanelContainer/MarginContainer/VBoxContainer/MainContent/UserInputContainer/FeedbackLabel")
+		var user_input_container = get_node_or_null("PanelContainer/MarginContainer/VBoxContainer/MainContent/UserInputContainer")
 		
 		if not feedback_label and user_input_container:
 			feedback_label = Label.new()
 			feedback_label.name = "FeedbackLabel"
 			feedback_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			feedback_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-			feedback_label.custom_minimum_size = Vector2(400, 60)
+			feedback_label.custom_minimum_size = Vector2(800, 120)
+			feedback_label.add_theme_font_size_override("font_size", 32)
 			feedback_label.visible = false
 			user_input_container.add_child(feedback_label)
 		
@@ -189,36 +193,9 @@ Total power needed = 12.64 + 19.14 = 31.78 kilowatts
 		correct_answer = "A"
 		
 		# Hide any power math content that might be visible
-		var power_math_label = get_node_or_null("CenterContainer/LearningPanelContainer/MarginContainer/VBoxContainer/MainContent/GraphContentGrid/GraphCenterContainer/PowerMathLabel")
+		var power_math_label = get_node_or_null("PanelContainer/MarginContainer/VBoxContainer/MainContent/GraphContainer/GraphCenterContainer/PowerMathLabel")
 		if power_math_label:
 			power_math_label.visible = false
-		
-		# Add construction data text below the graph
-		var graph_content_grid = get_node_or_null("CenterContainer/LearningPanelContainer/MarginContainer/VBoxContainer/MainContent/GraphContentGrid")
-		var company_data_label = get_node_or_null("CenterContainer/LearningPanelContainer/MarginContainer/VBoxContainer/MainContent/GraphContentGrid/CompanyDataLabel")
-		
-		if not company_data_label and graph_content_grid:
-			company_data_label = RichTextLabel.new()
-			company_data_label.name = "CompanyDataLabel"
-			company_data_label.custom_minimum_size = Vector2(800, 180)
-			company_data_label.bbcode_enabled = true
-			company_data_label.fit_content = true
-			graph_content_grid.add_child(company_data_label)
-		
-		if company_data_label:
-			company_data_label.text = """[center][font_size=18][b][color=#60c2a8]Company A: City Builders Inc.[/color][/b]
-• 2 workers build 8 houses per week
-• 4 workers build 16 houses per week
-• 6 workers build 24 houses per week
-• 10 workers build 40 houses per week
-
-[b][color=#e06666]Company B: Urban Growth Solutions[/color][/b]
-• 3 workers build 9 houses per week
-• 6 workers build 18 houses per week
-• 9 workers build 27 houses per week
-• 12 workers build 36 houses per week[/font_size][/center]
-""" 
-			company_data_label.visible = true
 	
 	# Reset answer state
 	is_answer_correct = false
@@ -226,7 +203,7 @@ Total power needed = 12.64 + 19.14 = 31.78 kilowatts
 		user_input.text = ""
 	
 	# Get feedback label to reset
-	var feedback_label = get_node_or_null("CenterContainer/LearningPanelContainer/MarginContainer/VBoxContainer/MainContent/GraphContentGrid/UserInputContainer/FeedbackLabel")
+	var feedback_label = get_node_or_null("PanelContainer/MarginContainer/VBoxContainer/MainContent/UserInputContainer/FeedbackLabel")
 	if feedback_label:
 		feedback_label.visible = false
 	
@@ -267,15 +244,16 @@ func _check_answer():
 	var user_answer = user_input.text.strip_edges().to_upper()  # Convert to uppercase for case-insensitive comparison
 	
 	# Get or create feedback label
-	var feedback_label = get_node_or_null("CenterContainer/LearningPanelContainer/MarginContainer/VBoxContainer/MainContent/GraphContentGrid/UserInputContainer/FeedbackLabel")
-	var user_input_container = get_node_or_null("CenterContainer/LearningPanelContainer/MarginContainer/VBoxContainer/MainContent/GraphContentGrid/UserInputContainer")
+	var feedback_label = get_node_or_null("PanelContainer/MarginContainer/VBoxContainer/MainContent/UserInputContainer/FeedbackLabel")
+	var user_input_container = get_node_or_null("PanelContainer/MarginContainer/VBoxContainer/MainContent/UserInputContainer")
 	
 	if not feedback_label and user_input_container:
 		feedback_label = Label.new()
 		feedback_label.name = "FeedbackLabel"
 		feedback_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		feedback_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		feedback_label.custom_minimum_size = Vector2(400, 60)
+		feedback_label.custom_minimum_size = Vector2(800, 120)
+		feedback_label.add_theme_font_size_override("font_size", 32)
 		user_input_container.add_child(feedback_label)
 	
 	# Skip if feedback label couldn't be created
@@ -292,7 +270,7 @@ func _check_answer():
 		if mission.id == "4":
 			feedback_label.text = "Correct! With a power demand of 31.78 kilowatts and each power plant generating 40 kilowatts, 1 power plant is sufficient to power your city. You can now place a power plant within 31.6 grid units of your houses to ensure everyone has electricity!"
 		else:
-			feedback_label.text = "Correct! Company A (City Builders Inc.) would require fewer workers to build 40 houses. Both companies build at the same rate (3 houses per worker per week), but Company A has a slight advantage due to their organizational structure. For 40 houses, Company A needs 13.33 workers (rounded to 13) while Company B needs 13.33 workers (rounded to 14)."
+			feedback_label.text = "Correct! Company A (City Builders Inc.) would require fewer workers to build 40 houses. Company A builds at a rate of 4 houses per worker per week, while Company B builds at a rate of 3 houses per worker per week. For 40 houses, Company A needs 10 workers while Company B needs about 13.33 workers."
 		
 		feedback_label.add_theme_color_override("font_color", Color(0, 0.7, 0.2))
 		
@@ -310,7 +288,7 @@ func _check_answer():
 		if mission.id == "4":
 			feedback_label.text = "Not quite right. Calculate the power demand using the formula: Power needed = 2 × √n + n⁰·⁸, where n = 40 houses. Then compare this to the output of one power plant (40 kilowatts)."
 		else:
-			feedback_label.text = "Not quite right. Look carefully at the lines for both companies. Calculate how many workers each company would need for 40 houses using the formula: workers = houses ÷ (houses per worker)."
+			feedback_label.text = "Not quite right. Look carefully at the data for both companies. Compare their rates: Company A builds 4 houses per worker per week, while Company B builds 3 houses per worker per week. Calculate how many workers each would need for 40 houses."
 		
 		feedback_label.add_theme_color_override("font_color", Color(0.9, 0.2, 0.2))
 

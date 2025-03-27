@@ -13,7 +13,7 @@ signal objective_progress(objective: MissionObjective, new_count: int)
 
 var current_mission: MissionData
 var active_missions: Dictionary = {}  # mission_id: MissionData
-var learning_panel: LearningPanel
+ 
 var character_spawned: bool = false
 
 # Mission skip variables
@@ -22,6 +22,9 @@ var last_skip_press_time: float = 0
 var skip_key_timeout: float = 1.0  # Reset counter if time between presses exceeds this value
 var skip_key_required: int = 5  # Number of key presses needed to skip
 const SKIP_KEY = KEY_TAB  # The key to press for skipping missions
+
+# Reference for the learning panel without type hint
+var learning_panel
 
 func _ready():
 	if builder:

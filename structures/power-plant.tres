@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="Structure" load_steps=3 format=3 uid="uid://c4qbn3d85prxx"]
+
+[ext_resource type="PackedScene" uid="uid://cw1h8x13qsj68" path="res://models/power_plant.glb" id="1_r8n8k"]
+[ext_resource type="Script" path="res://scripts/structure.gd" id="3_oloyn"]
+
+[resource]
+script = ExtResource("3_oloyn")
+model = ExtResource("1_r8n8k")
+type = 4
+price = 100
