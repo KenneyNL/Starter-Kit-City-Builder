@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3 uid="uid://vgwrcfy1qawf"]
+[gd_scene load_steps=24 format=3 uid="uid://vgwrcfy1qawf"]
 
 [ext_resource type="Script" path="res://scripts/builder.gd" id="1_jybm7"]
 [ext_resource type="Environment" uid="uid://jbptgqvstei3" path="res://scenes/main-environment.tres" id="1_yndf3"]
@@ -14,8 +14,9 @@
 [ext_resource type="Script" path="res://scripts/mission/mission_ui.gd" id="13_xvw5w"]
 [ext_resource type="Resource" uid="uid://dykbopx8n3c3v" path="res://mission/third_mission.tres" id="14_bnke0"]
 [ext_resource type="Script" path="res://scripts/mission/learning_panel.gd" id="14_q2ymb"]
-[ext_resource type="Resource" uid="uid://cbfqbvs3yql5q" path="res://mission/fourth_mission.tres" id="15_plrw2"]
-[ext_resource type="FontFile" uid="uid://d0cxd77jybrcn" path="res://fonts/lilita_one_regular.ttf" id="16_vlub6"]
+[ext_resource type="Resource" uid="uid://bho4qh41asyk1" path="res://mission/fourth_mission.tres" id="15_plrw2"]
+[ext_resource type="Resource" uid="uid://p3xwn2mp6bm6" path="res://mission/fifth_mission.tres" id="16_5fmk3"]
+[ext_resource type="FontFile" uid="uid://d0cxd77jybrcn" path="res://fonts/lilita_one_regular.ttf" id="17_vlub6"]
 [ext_resource type="PackedScene" uid="uid://b4gkfwf4i3ydl" path="res://scenes/character.tscn" id="18_8lrh8"]
 [ext_resource type="PackedScene" uid="uid://cgk66f6rg03mj" path="res://scenes/hud.tscn" id="18_hud"]
 
@@ -116,7 +117,7 @@ shadow_opacity = 0.75
 
 [node name="MissionManager" type="Node" parent="." node_paths=PackedStringArray("mission_ui", "builder")]
 script = ExtResource("10_oe3re")
-missions = Array[ExtResource("11_msovb")]([ExtResource("12_ms7i7"), ExtResource("13_s13s0"), ExtResource("14_bnke0"), ExtResource("15_plrw2")])
+missions = Array[ExtResource("11_msovb")]([ExtResource("12_ms7i7"), ExtResource("13_s13s0"), ExtResource("14_bnke0"), ExtResource("15_plrw2"), ExtResource("16_5fmk3")])
 mission_ui = NodePath("MissionPanel")
 builder = NodePath("../Builder")
 character_scene = ExtResource("18_8lrh8")
@@ -150,7 +151,7 @@ theme_override_constants/separation = 15
 
 [node name="MissionTitleLabel" type="Label" parent="MissionManager/MissionPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("16_vlub6")
+theme_override_fonts/font = ExtResource("17_vlub6")
 theme_override_font_sizes/font_size = 24
 text = "Mission Title"
 horizontal_alignment = 1
@@ -210,7 +211,7 @@ theme_override_constants/separation = 20
 
 [node name="TitleLabel" type="Label" parent="MissionManager/LearningPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("16_vlub6")
+theme_override_fonts/font = ExtResource("17_vlub6")
 theme_override_font_sizes/font_size = 32
 text = "Learning Module"
 horizontal_alignment = 1
@@ -297,5 +298,9 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 18
 disabled = true
 text = "Complete"
+
+[node name="ObjectiveLabel" type="Label" parent="MissionManager"]
+offset_right = 40.0
+offset_bottom = 23.0
 
 [connection signal="pressed" from="MissionManager/LearningPanel/MarginContainer/VBoxContainer/HBoxContainer/CompleteButton" to="MissionManager/LearningPanel" method="_on_complete_button_pressed"]

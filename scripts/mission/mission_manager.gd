@@ -25,6 +25,7 @@ const SKIP_KEY = KEY_TAB  # The key to press for skipping missions
 
 # Reference for the learning panel without type hint
 var learning_panel
+var fullscreen_learning_panel
 
 func _ready():
 	if builder:
@@ -46,17 +47,35 @@ func _ready():
 		print("Loaded fresh learning panel from scene file")
 	else:
 		print("ERROR: Could not load learning_panel.tscn scene")
+	
+	# Load the fullscreen learning panel scene
+	var fullscreen_panel_scene = load("res://scenes/fullscreen_learning_panel.tscn")
+	if fullscreen_panel_scene:
+		fullscreen_learning_panel = fullscreen_panel_scene.instantiate()
+		fullscreen_learning_panel.name = "FullscreenLearningPanel"
+		add_child(fullscreen_learning_panel)
+		print("Loaded fullscreen learning panel from scene file")
+	else:
+		print("ERROR: Could not load fullscreen_learning_panel.tscn scene")
 		
 	# Fall back to existing panels if needed
 	if not learning_panel:
 		learning_panel = get_node_or_null("/root/Main/LearningPanel")
 	
+	# Connect signals for both panel types
 	if learning_panel:
 		learning_panel.completed.connect(_on_learning_completed)
 		learning_panel.panel_opened.connect(_on_learning_panel_opened)
 		learning_panel.panel_closed.connect(_on_learning_panel_closed)
 	else:
-		print("WARNING: Learning panel not found!")
+		print("WARNING: Regular learning panel not found!")
+	
+	if fullscreen_learning_panel:
+		fullscreen_learning_panel.completed.connect(_on_learning_completed)
+		fullscreen_learning_panel.panel_opened.connect(_on_learning_panel_opened)
+		fullscreen_learning_panel.panel_closed.connect(_on_learning_panel_closed)
+	else:
+		print("WARNING: Fullscreen learning panel not found!")
 	
 	# Load third mission if not already in the list
 	var third_mission = load("res://mission/third_mission.tres")
@@ -205,38 +224,23 @@ func start_mission(mission: MissionData):
 	
 	# Show learning panel if mission has a learning objective
 	if has_learning_objective:
-		print("Found learning objective. Using learning panel: ", learning_panel != null)
+		print("Found learning objective. Using learning panel for mission: ", mission.id)
 		
-		# Explicitly load the learning panel scene
-		var panel_scene = load("res://scenes/learning_panel.tscn")
-		if panel_scene:
-			# Remove old panel if it exists
-			if learning_panel and learning_panel.get_parent():
-				learning_panel.get_parent().remove_child(learning_panel)
-			
-			# Instance new panel
-			learning_panel = panel_scene.instantiate()
-			print("Instantiated new learning panel scene")
-			
-			# Add to scene and connect signals
-			add_child(learning_panel)
-			if learning_panel.has_signal("completed") and not learning_panel.is_connected("completed", Callable(self, "_on_learning_completed")):
-				learning_panel.completed.connect(_on_learning_completed)
-			if learning_panel.has_signal("panel_opened") and not learning_panel.is_connected("panel_opened", Callable(self, "_on_learning_panel_opened")):
-				learning_panel.panel_opened.connect(_on_learning_panel_opened)
-			if learning_panel.has_signal("panel_closed") and not learning_panel.is_connected("panel_closed", Callable(self, "_on_learning_panel_closed")):
-				learning_panel.panel_closed.connect(_on_learning_panel_closed)
-			
-			print("Added new learning panel to scene tree")
+		# Determine which panel to use based on whether full_screen_path is provided
+		if not mission.full_screen_path.is_empty():
+			# Use fullscreen panel for fullscreen missions
+			if fullscreen_learning_panel:
+				print("Using fullscreen learning panel for mission with fullscreen path")
+				fullscreen_learning_panel.show_fullscreen_panel(mission)
+			else:
+				print("ERROR: Fullscreen learning panel not available but mission requires it")
 		else:
-			print("ERROR: Failed to load learning_panel.tscn")
-			
-		# Pass the mission data to show the panel
-		if learning_panel and learning_panel.has_method("show_learning_panel"):
-			print("Calling show_learning_panel for mission: ", mission.id)
-			learning_panel.show_learning_panel(mission)
-		else:
-			print("ERROR: No learning panel available to show")
+			# Use regular panel for traditional missions
+			if learning_panel:
+				print("Using regular learning panel")
+				learning_panel.show_learning_panel(mission)
+			else:
+				print("ERROR: Regular learning panel not available")
 	
 	# Emit signal and update UI
 	mission_started.emit(mission)
@@ -262,10 +266,141 @@ func complete_mission(mission_id: String):
 			if next_mission.id == mission.next_mission_id:
 				start_mission(next_mission)
 				break
+	else:
+		# This was the last mission - show completion modal
+		_show_completion_modal()
 	
 	# Emit signal for mission completion
 	mission_completed.emit(mission)
 	update_mission_ui()
+
+# Shows a modal when all missions are complete
+func _show_completion_modal():
+	print("Showing completion modal - all missions finished")
+	
+	# Create the modal overlay
+	var modal = ColorRect.new()
+	modal.name = "CompletionModal"
+	modal.color = Color(0.1, 0.1, 0.2, 0.9)  # Dark transparent background
+	modal.anchor_right = 1.0
+	modal.anchor_bottom = 1.0
+	
+	# Create a panel container for the modal content
+	var panel = PanelContainer.new()
+	panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	panel.custom_minimum_size = Vector2(800, 500)
+	
+	var panel_style = StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.15, 0.15, 0.25, 1.0)
+	panel_style.border_width_left = 5
+	panel_style.border_width_top = 5
+	panel_style.border_width_right = 5
+	panel_style.border_width_bottom = 5
+	panel_style.border_color = Color(0.376, 0.760, 0.658, 1.0)  # Teal border
+	panel_style.corner_radius_top_left = 20
+	panel_style.corner_radius_top_right = 20
+	panel_style.corner_radius_bottom_right = 20
+	panel_style.corner_radius_bottom_left = 20
+	panel_style.shadow_color = Color(0, 0, 0, 0.7)
+	panel_style.shadow_size = 10
+	
+	panel.add_theme_stylebox_override("panel", panel_style)
+	
+	# Create a margin container for padding
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 30)
+	margin.add_theme_constant_override("margin_right", 30)
+	margin.add_theme_constant_override("margin_top", 30)
+	margin.add_theme_constant_override("margin_bottom", 30)
+	
+	# Create a vertical container for the content
+	var v_box = VBoxContainer.new()
+	v_box.custom_minimum_size = Vector2(700, 0)
+	v_box.add_theme_constant_override("separation", 30)
+	
+	# Add a title label
+	var title_label = Label.new()
+	title_label.text = "CONGRATULATIONS!"
+	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title_label.add_theme_font_size_override("font_size", 48)
+	title_label.add_theme_color_override("font_color", Color(0.376, 0.760, 0.658, 1.0))  # Teal text
+	
+	# Add a description label
+	var desc_label = Label.new()
+	desc_label.text = "You've completed all the missions in STEM City!\n\nYou can continue building and expanding your city or try different activities."
+	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	desc_label.add_theme_font_size_override("font_size", 32)
+	desc_label.add_theme_color_override("font_color", Color(1, 1, 1, 1.0))
+	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	
+	# Create a continue button
+	var continue_button = Button.new()
+	continue_button.name = "ContinueButton"
+	continue_button.text = "CONTINUE BUILDING"
+	continue_button.custom_minimum_size = Vector2(400, 80)
+	
+	# Style the continue button
+	var button_style = StyleBoxFlat.new()
+	button_style.bg_color = Color(0.376, 0.760, 0.658, 0.25)  # Teal with transparency
+	button_style.border_width_left = 3
+	button_style.border_width_top = 3
+	button_style.border_width_right = 3
+	button_style.border_width_bottom = 3
+	button_style.border_color = Color(0.376, 0.760, 0.658, 1.0)  # Teal border
+	button_style.corner_radius_top_left = 15
+	button_style.corner_radius_top_right = 15
+	button_style.corner_radius_bottom_right = 15
+	button_style.corner_radius_bottom_left = 15
+	
+	continue_button.add_theme_stylebox_override("normal", button_style)
+	continue_button.add_theme_stylebox_override("hover", button_style)
+	continue_button.add_theme_stylebox_override("pressed", button_style)
+	continue_button.add_theme_font_size_override("font_size", 32)
+	continue_button.add_theme_color_override("font_color", Color(0.376, 0.760, 0.658, 1.0))  # Teal text
+	continue_button.add_theme_color_override("font_hover_color", Color(1, 1, 1, 1.0))  # White text on hover
+	
+	# Center the continue button
+	var button_container = CenterContainer.new()
+	button_container.add_child(continue_button)
+	
+	# Add elements to the vertical container
+	v_box.add_child(title_label)
+	v_box.add_child(desc_label)
+	v_box.add_child(button_container)
+	
+	# Assemble the hierarchy
+	margin.add_child(v_box)
+	panel.add_child(margin)
+	
+	# Center the panel in the modal
+	var center_container = CenterContainer.new()
+	center_container.anchor_right = 1.0
+	center_container.anchor_bottom = 1.0
+	center_container.add_child(panel)
+	
+	modal.add_child(center_container)
+	
+	# Add the modal to the scene
+	var canvas_layer = get_node("/root/Main/CanvasLayer")
+	if canvas_layer:
+		canvas_layer.add_child(modal)
+		print("Added completion modal to CanvasLayer")
+	else:
+		add_child(modal)
+		print("Added completion modal to MissionManager")
+	
+	# Connect button signal - use a specific method for clarity and debugging
+	continue_button.pressed.connect(_on_completion_continue_button_pressed.bind(modal))
+
+# Handler for the mission completion continue button
+func _on_completion_continue_button_pressed(modal_to_close):
+	print("Completion continue button was pressed - closing modal")
+	if is_instance_valid(modal_to_close) and modal_to_close is Node and modal_to_close.is_inside_tree():
+		modal_to_close.queue_free()
+		print("Modal should now be closed")
+	else:
+		push_error("Invalid modal reference or modal already removed")
 
 func check_mission_progress(mission_id: String) -> bool:
 	if not active_missions.has(mission_id):
@@ -415,6 +550,10 @@ func _skip_current_mission():
 	# If there's a learning panel open, close it
 	if learning_panel and learning_panel.visible:
 		learning_panel.hide_learning_panel()
+	
+	# If there's a fullscreen learning panel open, close it
+	if fullscreen_learning_panel and fullscreen_learning_panel.visible:
+		fullscreen_learning_panel.hide_fullscreen_panel()
 	
 	# Complete the mission
 	complete_mission(mission_id)

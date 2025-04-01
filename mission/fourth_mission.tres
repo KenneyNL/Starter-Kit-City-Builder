@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="MissionData" load_steps=4 format=3 uid="uid://cbfqbvs3yql5q"]
+[gd_resource type="Resource" script_class="MissionData" load_steps=4 format=3 uid="uid://bho4qh41asyk1"]
 
 [ext_resource type="Script" path="res://scripts/mission/mission_objective.gd" id="1_dhx01"]
 [ext_resource type="Script" path="res://scripts/mission/mission_data.gd" id="2_mum3p"]
@@ -21,7 +21,7 @@ objectives = Array[ExtResource("1_dhx01")]([SubResource("Resource_c06be")])
 rewards = {
 "cash": 0
 }
-next_mission_id = ""
+next_mission_id = "5"
 graph_path = ""
 full_screen_path = "res://images/city_expansion.png"
 intro_text = "Your city now has 40 houses and requires reliable electricity. You'll need to build the right number of power plants to meet your city's needs."

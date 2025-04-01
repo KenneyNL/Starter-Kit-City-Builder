@@ -1,6 +1,8 @@
-[gd_scene load_steps=4 format=3 uid="uid://ceae06aaigfhh"]
+[gd_scene load_steps=5 format=3 uid="uid://ceae06aaigfhh"]
 
 [ext_resource type="Script" path="res://scripts/mission/learning_panel.gd" id="1_wn8yp"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxFlat_empty"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mnk7u"]
 bg_color = Color(0.376471, 0.760784, 0.658824, 0.25098)
@@ -52,15 +54,26 @@ theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 5
 
-[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer"]
+[node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/MarginContainer"]
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_empty")
+follow_focus = true
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 theme_override_constants/separation = 10
 
-[node name="TitleContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
+[node name="TitleContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer/ScrollContainer/VBoxContainer"]
 layout_mode = 2
 alignment = 1
 
-[node name="GemLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/TitleContainer"]
+[node name="GemLabel" type="Label" parent="PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/TitleContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.376471, 0.760784, 0.658824, 1)
 theme_override_font_sizes/font_size = 48
@@ -68,7 +81,7 @@ text = "♦"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="MissionTitleLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/TitleContainer"]
+[node name="MissionTitleLabel" type="Label" parent="PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/TitleContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.376471, 0.760784, 0.658824, 1)
 theme_override_font_sizes/font_size = 48
@@ -76,12 +89,12 @@ text = "COMPARE CONSTRUCTION COMPANIES"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="MainContent" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
+[node name="MainContent" type="VBoxContainer" parent="PanelContainer/MarginContainer/ScrollContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 5
 
-[node name="IntroText" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/MainContent"]
+[node name="IntroText" type="Label" parent="PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.839216, 0.839216, 0.839216, 1)
 theme_override_font_sizes/font_size = 32
@@ -89,7 +102,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 2
 
-[node name="DescriptionText" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/MainContent"]
+[node name="DescriptionText" type="Label" parent="PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.839216, 0.839216, 0.839216, 1)
 theme_override_font_sizes/font_size = 32
@@ -97,23 +110,23 @@ horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 2
 
-[node name="GraphContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/MainContent"]
+[node name="GraphContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="GraphCenterContainer" type="CenterContainer" parent="PanelContainer/MarginContainer/VBoxContainer/MainContent/GraphContainer"]
+[node name="GraphCenterContainer" type="CenterContainer" parent="PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent/GraphContainer"]
 layout_mode = 2
 
-[node name="GraphImage" type="TextureRect" parent="PanelContainer/MarginContainer/VBoxContainer/MainContent/GraphContainer/GraphCenterContainer"]
+[node name="GraphImage" type="TextureRect" parent="PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent/GraphContainer/GraphCenterContainer"]
 custom_minimum_size = Vector2(1000, 500)
 layout_mode = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="CompanyDataContainer" type="CenterContainer" parent="PanelContainer/MarginContainer/VBoxContainer/MainContent/GraphContainer"]
+[node name="CompanyDataContainer" type="CenterContainer" parent="PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent/GraphContainer"]
 layout_mode = 2
 
-[node name="CompanyDataLabel" type="RichTextLabel" parent="PanelContainer/MarginContainer/VBoxContainer/MainContent/GraphContainer/CompanyDataContainer"]
+[node name="CompanyDataLabel" type="RichTextLabel" parent="PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent/GraphContainer/CompanyDataContainer"]
 custom_minimum_size = Vector2(1000, 150)
 layout_mode = 2
 size_flags_horizontal = 4
@@ -133,19 +146,19 @@ text = "[center][b][color=#60c2a8]Company A: City Builders Inc.[/color][/b]
 • 12 workers build 36 houses per week[/center]"
 fit_content = true
 
-[node name="UserInputContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer/MainContent"]
+[node name="UserInputContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent"]
 layout_mode = 2
 theme_override_constants/separation = 5
 alignment = 1
 
-[node name="InputLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/MainContent/UserInputContainer"]
+[node name="InputLabel" type="Label" parent="PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent/UserInputContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.376471, 0.760784, 0.658824, 1)
 theme_override_font_sizes/font_size = 32
 text = "Enter your answer:"
 horizontal_alignment = 1
 
-[node name="UserInput" type="LineEdit" parent="PanelContainer/MarginContainer/VBoxContainer/MainContent/UserInputContainer"]
+[node name="UserInput" type="LineEdit" parent="PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent/UserInputContainer"]
 custom_minimum_size = Vector2(600, 80)
 layout_mode = 2
 size_flags_horizontal = 4
@@ -153,7 +166,7 @@ theme_override_font_sizes/font_size = 40
 placeholder_text = "Type your answer here..."
 alignment = 1
 
-[node name="FeedbackLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/MainContent/UserInputContainer"]
+[node name="FeedbackLabel" type="Label" parent="PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent/UserInputContainer"]
 visible = false
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
@@ -162,11 +175,11 @@ horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 2
 
-[node name="SubmitButtonContainer" type="CenterContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
+[node name="SubmitButtonContainer" type="CenterContainer" parent="PanelContainer/MarginContainer/ScrollContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 8
 
-[node name="SubmitButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/SubmitButtonContainer"]
+[node name="SubmitButton" type="Button" parent="PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/SubmitButtonContainer"]
 custom_minimum_size = Vector2(600, 90)
 layout_mode = 2
 focus_mode = 0
@@ -178,5 +191,5 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_mnk7u")
 theme_override_styles/normal = SubResource("StyleBoxFlat_v23xn")
 text = "SUBMIT"
 
-[connection signal="text_submitted" from="PanelContainer/MarginContainer/VBoxContainer/MainContent/UserInputContainer/UserInput" to="." method="_on_user_input_text_submitted"]
-[connection signal="pressed" from="PanelContainer/MarginContainer/VBoxContainer/SubmitButtonContainer/SubmitButton" to="." method="_on_submit_button_pressed"]
+[connection signal="text_submitted" from="PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent/UserInputContainer/UserInput" to="." method="_on_user_input_text_submitted"]
+[connection signal="pressed" from="PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/SubmitButtonContainer/SubmitButton" to="." method="_on_submit_button_pressed"]
