@@ -1,0 +1,171 @@
+extends Node
+
+# Signals
+signal population_updated(new_population)
+signal electricity_updated(usage, production)
+
+# Variables
+var total_population: int = 0
+var total_kW_usage: float = 0.0
+var total_kW_production: float = 0.0
+
+# References
+var builder
+var population_label: Label
+var electricity_label: Label
+var electricity_indicator: ColorRect
+var population_tooltip: Control
+var electricity_tooltip: Control
+
+func _ready():
+	# Connect to signals from the builder
+	builder = get_node_or_null("/root/Main/Builder")
+	if builder:
+		builder.structure_placed.connect(_on_structure_placed)
+		builder.structure_removed.connect(_on_structure_removed)
+		
+	# Initialize UI elements
+	population_label = $HBoxContainer/PopulationItem/PopulationLabel
+	electricity_label	 = $HBoxContainer/ElectricityItem/ElectricityValues/ElectricityLabel
+	electricity_indicator = $HBoxContainer/ElectricityItem/ElectricityValues/ElectricityIndicator
+	population_tooltip = $PopulationTooltip
+	electricity_tooltip = $ElectricityTooltip
+	
+	# Ensure electricity indicator starts with red color
+	if electricity_indicator:
+		electricity_indicator.color = Color(1, 0, 0)  # Start with red
+	
+	# Hide the electricity label for now (keeping implementation for later)
+	if electricity_label:
+		electricity_label.visible = false
+	
+	# Set tooltips
+	if population_tooltip:
+		population_tooltip.get_node("Label").text = "Total city population"
+	
+	if electricity_tooltip:
+		electricity_tooltip.get_node("Label").text = "Electricity supply vs demand"
+	
+	# Hide tooltips initially
+	if population_tooltip:
+		population_tooltip.visible = false
+	
+	if electricity_tooltip:
+		electricity_tooltip.visible = false
+	
+	# Update HUD
+	update_hud()
+
+# Called when a structure is placed
+func _on_structure_placed(structure_index, position):
+	if !builder or structure_index < 0 or structure_index >= builder.structures.size():
+		return
+	
+	var structure = builder.structures[structure_index]
+	
+	# Debug info
+	print("Structure placed: " + str(structure.type) + " with population: " + str(structure.population_count))
+	
+	# Only update population for non-residential buildings or if we're NOT in the construction mission
+	var is_residential = structure.type == Structure.StructureType.RESIDENTIAL_BUILDING
+	var mission_manager = get_node_or_null("/root/Main/MissionManager")
+	var using_construction = false
+	if mission_manager and mission_manager.current_mission:
+		var mission_id = mission_manager.current_mission.id
+		using_construction = (mission_id == "3" or mission_id == "1")
+	
+	# Only increment population for residential buildings when not using construction workers
+	if (!is_residential or !using_construction):
+		total_population += structure.population_count
+	
+	# Always update electricity usage/production
+	total_kW_usage += structure.kW_usage
+	total_kW_production += structure.kW_production
+	print("Energy updated - Usage: " + str(total_kW_usage) + " kW, Production: " + str(total_kW_production) + " kW")
+	
+	# Update HUD
+	update_hud()
+	
+	# Emit signals
+	population_updated.emit(total_population)
+	electricity_updated.emit(total_kW_usage, total_kW_production)
+	
+# Called when a structure is removed
+func _on_structure_removed(structure_index, position):
+	if !builder or structure_index < 0 or structure_index >= builder.structures.size():
+		return
+	
+	var structure = builder.structures[structure_index]
+	
+	# Update population
+	total_population = max(0, total_population - structure.population_count)
+	
+	# Update electricity
+	total_kW_usage = max(0, total_kW_usage - structure.kW_usage)
+	total_kW_production = max(0, total_kW_production - structure.kW_production)
+	print("Energy updated after removal - Usage: " + str(total_kW_usage) + " kW, Production: " + str(total_kW_production) + " kW")
+	
+	# Update HUD
+	update_hud()
+	
+	# Emit signals
+	population_updated.emit(total_population)
+	electricity_updated.emit(total_kW_usage, total_kW_production)
+
+# Updates the HUD elements
+func update_hud():
+	# Update population label
+	if population_label:
+		population_label.text = str(total_population)
+	
+	# Update electricity label and indicator
+	if electricity_label:
+		# Default to red for the electricity indicator
+		var indicator_color = Color(1, 0, 0)  # Red
+		
+		if total_kW_usage > 0:
+			# If we have usage, check if production meets or exceeds it
+			
+			# Only set to green if we meet or exceed demand
+			if total_kW_production >= total_kW_usage:
+				indicator_color = Color(0, 1, 0)  # Green
+			else:
+				# Not enough power - keep it red
+				indicator_color = Color(1, 0, 0)  # Red
+				
+			# Update electricity label text (hidden for now but kept for future use)
+			electricity_label.text = str(total_kW_usage) + "/" + str(total_kW_production) + " kW"
+		else:
+			# If no usage but we have production, show green
+			if total_kW_production > 0:
+				indicator_color = Color(0, 1, 0)  # Green
+				electricity_label.text = "0/" + str(total_kW_production) + " kW"
+			else:
+				# No usage and no production - show neutral color (gray)
+				indicator_color = Color(0.7, 0.7, 0.7)  # Gray
+				electricity_label.text = "0/0 kW"
+		
+		# Hide the text label for now, but keep implementation for later
+		electricity_label.visible = false
+		
+		# Update the color of the indicator rectangle
+		if electricity_indicator:
+			electricity_indicator.color = indicator_color
+			print("Electricity indicator updated - Color: " + str(indicator_color))
+
+# Tooltip handling
+func _on_population_icon_mouse_entered():
+	if population_tooltip:
+		population_tooltip.visible = true
+
+func _on_population_icon_mouse_exited():
+	if population_tooltip:
+		population_tooltip.visible = false
+
+func _on_electricity_icon_mouse_entered():
+	if electricity_tooltip:
+		electricity_tooltip.visible = true
+
+func _on_electricity_icon_mouse_exited():
+	if electricity_tooltip:
+		electricity_tooltip.visible = false
