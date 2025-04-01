@@ -70,9 +70,9 @@ func _ready():
 	update_cash()
 
 func _process(delta):
-	# Skip all building functionality if disabled
-	if disabled:
-		# Hide selector when disabled
+	# Skip all building functionality if disabled or game is paused
+	if disabled or get_tree().paused:
+		# Hide selector when disabled or paused
 		if selector.visible:
 			selector.visible = false
 		return
@@ -98,6 +98,43 @@ func _process(delta):
 	
 	action_build(gridmap_position)
 	action_demolish(gridmap_position)
+
+# Function to check if the mouse is over any UI elements
+func is_mouse_over_ui() -> bool:
+	# Get the viewport
+	var viewport = get_viewport()
+	if not viewport:
+		return false
+		
+	# Get mouse position
+	var mouse_pos = viewport.get_mouse_position()
+	
+	# Check if mouse is over any UI elements
+	# Find the HUD node
+	var hud = get_node_or_null("/root/Main/CanvasLayer/HUD")
+	if hud and hud.get_global_rect().has_point(mouse_pos):
+		print("Mouse over HUD")
+		return true
+		
+	# Also check if mouse is over mission panel
+	var mission_panel = get_node_or_null("/root/Main/MissionManager/MissionPanel")
+	if mission_panel and mission_panel.visible and mission_panel.get_global_rect().has_point(mouse_pos):
+		print("Mouse over mission panel")
+		return true
+		
+	# Check learning panel too
+	var learning_panel = get_node_or_null("/root/Main/MissionManager/LearningPanel") 
+	if learning_panel and learning_panel.visible and learning_panel.get_global_rect().has_point(mouse_pos):
+		print("Mouse over learning panel")
+		return true
+		
+	# Check controls panel
+	var controls_panel = get_node_or_null("/root/Main/CanvasLayer/ControlsPanel")
+	if controls_panel and controls_panel.visible and controls_panel.get_global_rect().has_point(mouse_pos):
+		print("Mouse over controls panel")
+		return true
+		
+	return false
 
 # Retrieve the mesh from a PackedScene, used for dynamically creating a MeshLibrary
 
@@ -141,6 +178,9 @@ func find_mesh_instance(node):
 
 func action_build(gridmap_position):
 	if Input.is_action_just_pressed("build"):
+		# Check if the mouse is over any UI elements before building
+		if is_mouse_over_ui():
+			return
 		
 		var previous_tile = gridmap.get_cell_item(gridmap_position)
 		
@@ -244,6 +284,10 @@ signal structure_removed(structure_index, position)
 
 func action_demolish(gridmap_position):
 	if Input.is_action_just_pressed("demolish"):
+		# Check if the mouse is over any UI elements
+		if is_mouse_over_ui():
+			return
+			
 		# Check if there's a road at this position
 		var is_road = false
 		var road_name = "Road_" + str(int(gridmap_position.x)) + "_" + str(int(gridmap_position.z))

@@ -16,6 +16,7 @@ var electricity_label: Label
 var electricity_indicator: ColorRect
 var population_tooltip: Control
 var electricity_tooltip: Control
+var controls_panel: PanelContainer
 
 func _ready():
 	# Connect to signals from the builder
@@ -169,3 +170,11 @@ func _on_electricity_icon_mouse_entered():
 func _on_electricity_icon_mouse_exited():
 	if electricity_tooltip:
 		electricity_tooltip.visible = false
+		
+# Called when the help button is pressed
+func _on_help_button_pressed():
+	# Consume the event to prevent click-through to the world
+	get_viewport().set_input_as_handled()
+	
+	if controls_panel:
+		controls_panel.show_panel()

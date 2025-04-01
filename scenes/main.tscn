@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3 uid="uid://vgwrcfy1qawf"]
+[gd_scene load_steps=26 format=3 uid="uid://vgwrcfy1qawf"]
 
 [ext_resource type="Script" path="res://scripts/builder.gd" id="1_jybm7"]
 [ext_resource type="Environment" uid="uid://jbptgqvstei3" path="res://scenes/main-environment.tres" id="1_yndf3"]
@@ -19,6 +19,8 @@
 [ext_resource type="FontFile" uid="uid://d0cxd77jybrcn" path="res://fonts/lilita_one_regular.ttf" id="17_vlub6"]
 [ext_resource type="PackedScene" uid="uid://b4gkfwf4i3ydl" path="res://scenes/character.tscn" id="18_8lrh8"]
 [ext_resource type="PackedScene" uid="uid://cgk66f6rg03mj" path="res://scenes/hud.tscn" id="18_hud"]
+[ext_resource type="PackedScene" uid="uid://bqjnp7uypupog" path="res://scenes/controls_panel.tscn" id="19_controls"]
+[ext_resource type="Script" path="res://scripts/game_manager.gd" id="20_game_manager"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mission"]
 bg_color = Color(0.145098, 0.172549, 0.231373, 0.941176)
@@ -73,6 +75,7 @@ corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
 [node name="Main" type="Node3D"]
+script = ExtResource("20_game_manager")
 
 [node name="Builder" type="Node3D" parent="." node_paths=PackedStringArray("selector", "selector_container", "view_camera", "gridmap", "cash_display")]
 script = ExtResource("1_jybm7")
@@ -114,6 +117,8 @@ shadow_opacity = 0.75
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
 [node name="HUD" parent="CanvasLayer" instance=ExtResource("18_hud")]
+
+[node name="ControlsPanel" parent="CanvasLayer" instance=ExtResource("19_controls")]
 
 [node name="MissionManager" type="Node" parent="." node_paths=PackedStringArray("mission_ui", "builder")]
 script = ExtResource("10_oe3re")
