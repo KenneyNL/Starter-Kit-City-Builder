@@ -101,39 +101,66 @@ func _process(delta):
 
 # Function to check if the mouse is over any UI elements
 func is_mouse_over_ui() -> bool:
-	# Get the viewport
-	var viewport = get_viewport()
-	if not viewport:
-		return false
-		
 	# Get mouse position
-	var mouse_pos = viewport.get_mouse_position()
+	var mouse_pos = get_viewport().get_mouse_position()
 	
-	# Check if mouse is over any UI elements
-	# Find the HUD node
+	# Add diagnostic output
+	print("Mouse position: ", mouse_pos)
+	
+	# Let's try an extremely simple approach - just check coordinates
+	# most HUDs are at top of screen
+	if mouse_pos.y < 100:
+		# Mouse is likely in the HUD area at top of screen
+		print("Mouse in top area (likely HUD)")
+		return true
+	
+	# Get HUD dimensions for debug
 	var hud = get_node_or_null("/root/Main/CanvasLayer/HUD")
-	if hud and hud.get_global_rect().has_point(mouse_pos):
-		print("Mouse over HUD")
-		return true
+	if hud:
+		var hud_rect = hud.get_global_rect()
+		print("HUD rect: ", hud_rect)
 		
-	# Also check if mouse is over mission panel
+		# Get HBoxContainer dimensions - this is the actual content area
+		var hbox = hud.get_node_or_null("HBoxContainer")
+		if hbox:
+			var hbox_rect = hbox.get_global_rect()
+			print("HUD HBoxContainer rect: ", hbox_rect)
+			
+			# Simple approach - just check if within actual HUD content area
+			if hbox_rect.has_point(mouse_pos):
+				print("Mouse over HUD content area")
+				return true
+		
+		# Skip the complex recursion for now since it's not working
+		
+	# Check mission panel
 	var mission_panel = get_node_or_null("/root/Main/MissionManager/MissionPanel")
-	if mission_panel and mission_panel.visible and mission_panel.get_global_rect().has_point(mouse_pos):
-		print("Mouse over mission panel")
-		return true
-		
+	if mission_panel and mission_panel.visible:
+		var panel_rect = mission_panel.get_global_rect()
+		print("Mission panel rect: ", panel_rect)
+		if panel_rect.has_point(mouse_pos):
+			print("Mouse over mission panel")
+			return true
+	
 	# Check learning panel too
-	var learning_panel = get_node_or_null("/root/Main/MissionManager/LearningPanel") 
-	if learning_panel and learning_panel.visible and learning_panel.get_global_rect().has_point(mouse_pos):
-		print("Mouse over learning panel")
-		return true
-		
+	var learning_panel = get_node_or_null("/root/Main/MissionManager/LearningPanel")
+	if learning_panel and learning_panel.visible:
+		var panel_rect = learning_panel.get_global_rect()
+		print("Learning panel rect: ", panel_rect)
+		if panel_rect.has_point(mouse_pos):
+			print("Mouse over learning panel") 
+			return true
+	
 	# Check controls panel
 	var controls_panel = get_node_or_null("/root/Main/CanvasLayer/ControlsPanel")
-	if controls_panel and controls_panel.visible and controls_panel.get_global_rect().has_point(mouse_pos):
-		print("Mouse over controls panel")
-		return true
-		
+	if controls_panel and controls_panel.visible:
+		var panel_rect = controls_panel.get_global_rect()
+		print("Controls panel rect: ", panel_rect)
+		if panel_rect.has_point(mouse_pos):
+			print("Mouse over controls panel")
+			return true
+	
+	print("Mouse not over any UI element")
 	return false
 
 # Retrieve the mesh from a PackedScene, used for dynamically creating a MeshLibrary
