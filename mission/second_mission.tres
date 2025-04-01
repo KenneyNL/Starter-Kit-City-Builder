@@ -16,10 +16,33 @@ completed = false
 script = ExtResource("2_mum3p")
 id = "2"
 title = "Compare Construction Companies"
-description = "Your city is rapidly growing and you need to build houses for new residents. Two different construction companies offer to help, each with a different rate of building houses. Study their data, find the unit rates, write equations, and determine which company would require fewer workers to build 40 houses in a week."
+description = "Study the company data below, find the unit rates (houses per worker), and determine which company would require fewer workers to build 40 houses in a week."
 objectives = Array[ExtResource("1_dhx01")]([SubResource("Resource_c06be")])
 rewards = {
 "cash": 0
 }
 next_mission_id = ""
 graph_path = "res://images/mission_2.png"
+full_screen_path = ""
+intro_text = "Your city is rapidly growing, and you need to build houses to accommodate new residents! Two different construction companies offer to help."
+question_text = "Which company requires fewer workers to build 40 houses in a week? (A or B)"
+correct_answer = "A"
+feedback_text = "Correct! Company A (City Builders Inc.) would require fewer workers to build 40 houses. Company A builds at a rate of 4 houses per worker per week, while Company B builds at a rate of 3 houses per worker per week. For 40 houses, Company A needs 10 workers while Company B needs about 13.33 workers."
+incorrect_feedback = "Not quite right. Look carefully at the data for both companies. Compare their rates: Company A builds 4 houses per worker per week, while Company B builds 3 houses per worker per week. Calculate how many workers each would need for 40 houses."
+company_data = "[b][color=#60c2a8]Company A: City Builders Inc.[/color][/b]
+• 2 workers build 6 houses per week
+• 4 workers build 12 houses per week
+• 6 workers build 18 houses per week
+• 10 workers build 30 houses per week
+
+[b][color=#e06666]Company B: Urban Growth Solutions[/color][/b]
+• 3 workers build 9 houses per week
+• 6 workers build 18 houses per week
+• 9 workers build 27 houses per week
+• 12 workers build 36 houses per week
+
+If you need 40 houses in a week, which company would require fewer workers?
+Enter A or B below.
+
+Hint: Find the pattern for each company, then calculate how many workers would be needed for 40 houses."
+power_math_content = ""

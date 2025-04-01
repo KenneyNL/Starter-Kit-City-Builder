@@ -50,8 +50,6 @@ func _ready():
 	# Fall back to existing panels if needed
 	if not learning_panel:
 		learning_panel = get_node_or_null("/root/Main/LearningPanel")
-		if learning_panel:
-			print("Using fallback learning panel from main scene")
 	
 	if learning_panel:
 		learning_panel.completed.connect(_on_learning_completed)
@@ -99,11 +97,18 @@ func _ready():
 		start_mission(missions[0])
 
 func start_mission(mission: MissionData):
+	# Check that the mission data is valid
+	if mission == null:
+		push_error("Null mission data provided to start_mission")
+		return
+		
 	current_mission = mission
 	active_missions[mission.id] = mission
 	
 	# Add decorative structures and curved roads
-	if (mission.id == "2" or mission.id == "3") and builder:
+	# Use more robust checking - fallback to ID for backward compatibility
+	var is_construction_or_expansion = (mission.id == "2" or mission.id == "3")
+	if is_construction_or_expansion and builder:
 		# Check if we need to add the road-corner and decoration structures
 		var has_road_corner = false
 		var has_grass_trees_tall = false
@@ -139,8 +144,9 @@ func start_mission(mission: MissionData):
 				print("Adding grass structure for mission 3")
 				builder.structures.append(grass)
 	
-	# Special handling for mission 4: add power plant
-	elif mission.id == "4" and builder:
+	# Special handling for power plant mission: add power plant
+	# Use more robust checking for power missions - check power_math_content as well
+	elif (mission.id == "4" or mission.power_math_content != "") and builder:
 		# Check if we need to add the power plant
 		var has_power_plant = false
 		
@@ -190,10 +196,12 @@ func start_mission(mission: MissionData):
 	
 	# Check if mission has a learning objective
 	var has_learning_objective = false
-	for objective in mission.objectives:
-		if objective.type == MissionObjective.ObjectiveType.LEARNING:
-			has_learning_objective = true
-			break
+	# Make sure mission has valid objectives data
+	if mission != null and mission.objectives != null:
+		for objective in mission.objectives:
+			if objective != null and objective.type == MissionObjective.ObjectiveType.LEARNING:
+				has_learning_objective = true
+				break
 	
 	# Show learning panel if mission has a learning objective
 	if has_learning_objective:
@@ -212,11 +220,11 @@ func start_mission(mission: MissionData):
 			
 			# Add to scene and connect signals
 			add_child(learning_panel)
-			if not learning_panel.is_connected("completed", Callable(self, "_on_learning_completed")):
+			if learning_panel.has_signal("completed") and not learning_panel.is_connected("completed", Callable(self, "_on_learning_completed")):
 				learning_panel.completed.connect(_on_learning_completed)
-			if not learning_panel.is_connected("panel_opened", Callable(self, "_on_learning_panel_opened")):
+			if learning_panel.has_signal("panel_opened") and not learning_panel.is_connected("panel_opened", Callable(self, "_on_learning_panel_opened")):
 				learning_panel.panel_opened.connect(_on_learning_panel_opened)
-			if not learning_panel.is_connected("panel_closed", Callable(self, "_on_learning_panel_closed")):
+			if learning_panel.has_signal("panel_closed") and not learning_panel.is_connected("panel_closed", Callable(self, "_on_learning_panel_closed")):
 				learning_panel.panel_closed.connect(_on_learning_panel_closed)
 			
 			print("Added new learning panel to scene tree")
@@ -224,7 +232,7 @@ func start_mission(mission: MissionData):
 			print("ERROR: Failed to load learning_panel.tscn")
 			
 		# Pass the mission data to show the panel
-		if learning_panel:
+		if learning_panel and learning_panel.has_method("show_learning_panel"):
 			print("Calling show_learning_panel for mission: ", mission.id)
 			learning_panel.show_learning_panel(mission)
 		else:
@@ -348,7 +356,7 @@ func update_mission_ui():
 		
 func _on_learning_completed():
 	# Check current mission for progress
-	if current_mission:
+	if current_mission != null and current_mission.id != "":
 		check_mission_progress(current_mission.id)
 		
 func _on_learning_panel_opened():

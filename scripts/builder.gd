@@ -15,7 +15,7 @@ var construction_manager: BuildingConstructionManager
 @export var selector_container:Node3D # Node that holds a preview of the structure
 @export var view_camera:Camera3D # Used for raycasting mouse
 @export var gridmap:GridMap
-@export var cash_display:Label
+@export var cash_display:Label # Reference to cash label in HUD
 
 var plane:Plane # Used for raycasting mouse
 var disabled: bool = false # Used to disable building functionality
@@ -226,7 +226,6 @@ func setup_navigation_region():
 		nav_mesh.agent_radius = 0.25
 		
 		add_child(nav_region)
-		print("Created global navigation region with navigation mesh")
 
 
 # Rebake navigation mesh to update the navigation data
@@ -240,6 +239,8 @@ func rebake_navigation_mesh():
 	print("Navigation mesh rebaked")
 	
 # Demolish (remove) a structure
+
+signal structure_removed(structure_index, position)
 
 func action_demolish(gridmap_position):
 	if Input.is_action_just_pressed("demolish"):
@@ -268,8 +269,17 @@ func action_demolish(gridmap_position):
 		var current_item = gridmap.get_cell_item(gridmap_position)
 		var is_building = current_item >= 0
 		
+		# Store structure index before removal for signaling
+		var structure_index = -1
+		
 		# Remove the appropriate item
 		if is_road:
+			# Find the road structure index
+			for i in range(structures.size()):
+				if structures[i].type == Structure.StructureType.ROAD:
+					structure_index = i
+					break
+					
 			# Remove the road model from the NavRegion3D
 			_remove_road_from_navregion(gridmap_position)
 			# Rebake the navigation mesh after removing the road
@@ -277,25 +287,43 @@ func action_demolish(gridmap_position):
 			# Make sure any existing NPCs are children of the navigation region
 			_move_characters_to_navregion()
 		elif is_power_plant:
+			# Find the power plant structure index
+			for i in range(structures.size()):
+				if structures[i].type == Structure.StructureType.POWER_PLANT:
+					structure_index = i
+					break
+					
 			# Remove the power plant model
 			_remove_power_plant(gridmap_position)
 			# Also remove from gridmap
 			gridmap.set_cell_item(gridmap_position, -1)
 		elif is_terrain:
+			# Find the terrain structure index
+			for i in range(structures.size()):
+				if structures[i].type == Structure.StructureType.TERRAIN:
+					structure_index = i
+					break
+					
 			# Remove the terrain model
 			_remove_terrain(gridmap_position)
 			# Also remove from gridmap
 			gridmap.set_cell_item(gridmap_position, -1)
 		elif is_building:
+			# Get the structure index from the gridmap
+			structure_index = current_item
 			# Remove the building from the gridmap
 			gridmap.set_cell_item(gridmap_position, -1)
+		
+		# Emit signal that structure was removed
+		if structure_index >= 0:
+			structure_removed.emit(structure_index, gridmap_position)
 			
 # This function is no longer needed since we're using a single NavRegion3D
 # Keeping it for compatibility, but it doesn't do anything now
 func remove_navigation_region(position: Vector3):
 	# With our new approach using a single nav region, we just rebake
 	# the entire navigation mesh when roads are added or removed
-	print("Road removed at: ", position)
+
 	rebake_navigation_mesh()
 
 # Rotates the 'cursor' 90 degrees
@@ -356,7 +384,7 @@ func _add_road_to_navregion(position: Vector3, structure_index: int):
 	
 	# Check if a road with this name already exists
 	if nav_region.has_node(road_name):
-		print("Road already exists at position: ", position)
+
 		return
 	
 	# Instantiate the road model - get the actual model based on road type
@@ -393,7 +421,7 @@ func _add_road_to_navregion(position: Vector3, structure_index: int):
 	# Apply the complete transform in one go
 	road_model.transform = transform
 	
-	print("Added road model at position ", position, " to NavRegion3D")
+
 
 # Function to add a power plant as a direct child of the builder
 func _add_power_plant(position: Vector3, structure_index: int):
@@ -402,7 +430,7 @@ func _add_power_plant(position: Vector3, structure_index: int):
 	
 	# Check if a power plant with this name already exists
 	if has_node(power_plant_name):
-		print("Power plant already exists at position: ", position)
+	
 		return
 	
 	# Instantiate the power plant model
@@ -427,7 +455,6 @@ func _add_power_plant(position: Vector3, structure_index: int):
 	# Apply the complete transform in one go
 	power_plant_model.transform = transform
 	
-	print("Added power plant at position ", position, " as direct child of builder")
 
 # Function to remove a power plant
 func _remove_power_plant(position: Vector3):
@@ -439,7 +466,7 @@ func _remove_power_plant(position: Vector3):
 		# Get the power plant and remove it
 		var power_plant = get_node(power_plant_name)
 		power_plant.queue_free()
-		print("Removed power plant at position ", position)
+		
 	else:
 		print("No power plant found at position ", position)
 		
@@ -528,7 +555,7 @@ func _move_characters_to_navregion():
 		
 		# Restore global position
 		character.global_transform.origin = global_pos
-		print("Moved character to NavRegion3D")
+	
 
 # Function to add terrain (grass or trees) as a direct child
 func _add_terrain(position: Vector3, structure_index: int):
@@ -537,7 +564,7 @@ func _add_terrain(position: Vector3, structure_index: int):
 	
 	# Check if terrain with this name already exists
 	if has_node(terrain_name):
-		print("Terrain already exists at position: ", position)
+
 		return
 	
 	# Instantiate the terrain model
@@ -582,7 +609,7 @@ func _on_construction_completed(position: Vector3):
 			var site = construction_manager.construction_sites[position]
 			if site.has("rotation_index"):
 				rotation_index = site["rotation_index"]
-				print("Using saved rotation index: ", rotation_index)
+			
 		
 		# Add the completed residential building to the gridmap with the correct rotation
 		gridmap.set_cell_item(position, residential_index, rotation_index)
@@ -591,18 +618,20 @@ func _on_construction_completed(position: Vector3):
 		# Check if we need to spawn a character for mission 1
 		var mission_manager = get_node_or_null("/root/Main/MissionManager")
 		if mission_manager:
-			# First, emit the structure_placed signal to update mission objectives
-			structure_placed.emit(residential_index, position)
-			print("Emitted structure_placed signal to update mission objectives")
+			# We DON'T re-emit the structure_placed signal here, because we already
+			# emitted it when construction started in action_build()
+			# This prevents double-counting buildings in the HUD
 			
 			# Now check if we need to manually handle mission 1 character spawning
 			if mission_manager.current_mission and mission_manager.current_mission.id == "1" and not mission_manager.character_spawned:
 				print("This is the first residential building in mission 1, spawning character")
 				mission_manager.character_spawned = true
 				mission_manager._spawn_character_on_road(position)
+			
+			# NOTE: We removed the structure_placed signal emission here to fix the population double-counting
 		else:
-			# Just emit the signal if mission manager not found
-			structure_placed.emit(residential_index, position)
+			# We don't emit the signal anymore to prevent double-counting
+			pass
 	else:
 		print("ERROR: No residential building structure found!")
 	
@@ -612,7 +641,7 @@ func _on_construction_completed(position: Vector3):
 	# Make sure the navigation mesh is updated
 	rebake_navigation_mesh()
 	
-	print("Verified all characters are under NavRegion3D after construction")
+	
 
 # Saving/load
 

@@ -8,3 +8,6 @@ script = ExtResource("2_q3i1h")
 model = ExtResource("1_v5apy")
 type = 1
 price = 50
+population_count = 1
+kW_usage = 1.0
+kW_production = 0.0

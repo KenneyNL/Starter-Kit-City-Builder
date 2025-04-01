@@ -22,3 +22,12 @@ rewards = {
 "cash": 0
 }
 next_mission_id = ""
+graph_path = ""
+full_screen_path = ""
+intro_text = "Your city is expanding rapidly! Now that you've learned which construction company is more efficient, it's time to put them to work."
+question_text = ""
+correct_answer = ""
+feedback_text = ""
+incorrect_feedback = ""
+company_data = ""
+power_math_content = ""

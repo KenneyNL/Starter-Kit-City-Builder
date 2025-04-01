@@ -56,7 +56,6 @@ func set_movement_target(target: Vector3) -> void:
 	if animation_player and animation_player.current_animation != "walk":
 		animation_player.play("walk")
 		
-	print("Set movement target to: ", target)
 
 func _physics_process(delta:float)->void:
 	# Check if character is stuck
@@ -82,7 +81,7 @@ func _physics_process(delta:float)->void:
 			if wait_timer >= waiting_time:
 				wait_timer = 0.0
 				pick_random_target()
-				print("Auto patrol timer triggered new target")
+			
 	
 	# Handle navigation logic
 	if navigation_agent_3d.is_navigation_finished():
@@ -95,7 +94,7 @@ func _physics_process(delta:float)->void:
 			# Reset wait timer for next automatic movement
 			wait_timer = 0.0
 			waiting_time = randf_range(2.0, 5.0)
-			print("Character reached destination, waiting for ", waiting_time, " seconds")
+#			print("Character reached destination, waiting for ", waiting_time, " seconds")
 		return
 	
 	# If we're still moving, proceed with navigation

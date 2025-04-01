@@ -249,6 +249,56 @@ func _complete_construction(position: Vector3):
 	# Spawn a resident from the new building (except for first building in mission 1)
 	if should_spawn_resident:
 		_spawn_resident_from_building(position)
+		
+	# Update population in the HUD when construction is complete
+	# Try different possible paths to find the HUD
+	var hud = get_node_or_null("/root/Main/CanvasLayer/HUD")
+	
+	# If not found, try to find it by group (we added the HUD to "hud" group)
+	if not hud:
+		print("Trying to find HUD by group...")
+		var hud_nodes = get_tree().get_nodes_in_group("hud")
+		if hud_nodes.size() > 0:
+			hud = hud_nodes[0]
+			print("Found HUD via group: " + hud.name)
+	
+	# If not found, try other common paths
+	if not hud:
+		print("Trying alternative paths for HUD...")
+		var scene_root = get_tree().get_root()
+		for child in scene_root.get_children():
+			if child.name == "Main":
+				if child.has_node("CanvasLayer/HUD"):
+					hud = child.get_node("CanvasLayer/HUD")
+					print("Found HUD at Main/CanvasLayer/HUD")
+					break
+	
+	# Last resort - try to find using builder's cash_display
+	if not hud and builder and builder.cash_display:
+		print("Trying to find HUD via cash_display...")
+		var parent = builder.cash_display.get_parent()
+		while parent and parent.get_parent():
+			if "HUD" in parent.name:
+				hud = parent
+				print("Found HUD via cash_display parent: " + parent.name)
+				break
+			parent = parent.get_parent()
+	
+	print("HUD node found: " + str(hud != null))
+	
+	if hud and site["structure_index"] >= 0 and site["structure_index"] < builder.structures.size():
+		var structure = builder.structures[site["structure_index"]]
+		print("Structure type: " + str(structure.type) + ", Is residential: " + str(structure.type == Structure.StructureType.RESIDENTIAL_BUILDING))
+		print("Population count: " + str(structure.population_count))
+		
+		if structure.type == Structure.StructureType.RESIDENTIAL_BUILDING and structure.population_count > 0:
+			print("Adding population to HUD")
+			hud.total_population += structure.population_count
+			hud.update_hud()
+			hud.population_updated.emit(hud.total_population)
+			print("Added " + str(structure.population_count) + " population after construction completed")
+		else:
+			print("Building completed but has no population: " + str(structure.type))
 	
 	# Emit completion signal
 	construction_completed.emit(position)

@@ -85,7 +85,6 @@ func load_functions(functions: Array[Function]) -> void:
 
 func _draw() -> void:
 	if (x.size() == 0) or (y.size() == 0) or (x.size() == 1 and x[0].is_empty()) or (y.size() == 1 and y[0].is_empty()):
-		printerr("Cannot plot an empty function!")
 		return
 	
 	var is_x_fixed: bool = x_domain.get("fixed", false)

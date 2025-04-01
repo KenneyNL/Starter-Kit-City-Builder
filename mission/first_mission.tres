@@ -31,3 +31,12 @@ rewards = {
 "cash": 500
 }
 next_mission_id = "2"
+graph_path = ""
+full_screen_path = ""
+intro_text = "Welcome to Stem City! Let's learn how to build a city from the ground up."
+question_text = ""
+correct_answer = ""
+feedback_text = ""
+incorrect_feedback = ""
+company_data = ""
+power_math_content = ""

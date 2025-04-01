@@ -31,6 +31,10 @@ project/assembly_name="Starter Kit City Builder"
 
 movie_writer/movie_file="D:/Godot/recording.avi"
 
+[editor_plugins]
+
+enabled=PackedStringArray()
+
 [global_classes]
 
 LearningPanel="*res://scripts/mission/learning_panel.gd"
@@ -106,3 +110,7 @@ camera_center={
 [rendering]
 
 anti_aliasing/quality/msaa_3d=2
+debug/shapes/navigation/enable_edge_lines=false
+debug/shapes/navigation/enable_edge_lines.web=false
+debug/shapes/navigation/enable_geometry_face_random_color=false
+debug/shapes/navigation/enable_edge_connections=false
