@@ -458,6 +458,23 @@ func _on_structure_placed(structure_index: int, position: Vector3):
 		
 	var structure = builder.structures[structure_index]
 	
+	# Special handling for power plant (Mission 5)
+	if structure.model.resource_path.contains("power_plant"):
+		print("Power plant detected! Looking for mission 5...")
+		for mission_id in active_missions:
+			if active_missions[mission_id].id == "5":
+				print("Mission 5 found, completing objectives...")
+				var mission = active_missions[mission_id]
+				for objective in mission.objectives:
+					if not objective.completed:
+						objective.progress(objective.target_count)
+						objective_progress.emit(objective, objective.current_count)
+						objective_completed.emit(objective)
+				
+				# Force mission completion check
+				check_mission_progress(mission_id)
+				print("Mission 5 progress checked")
+	
 	for mission_id in active_missions:
 		# Update generic structure objective
 		update_objective_progress(mission_id, MissionObjective.ObjectiveType.BUILD_STRUCTURE)
