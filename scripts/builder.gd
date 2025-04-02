@@ -10,6 +10,8 @@ var nav_region: NavigationRegion3D # Single navigation region for all roads
 # Construction manager for building residential buildings with workers
 var construction_manager: BuildingConstructionManager
 
+# Create construction manager in _ready function
+
 # Structure selection sound effect is now handled in game_manager.gd
 
 @export var selector:Node3D # The 'cursor'
@@ -38,6 +40,7 @@ func _ready():
 	
 	# Setup construction manager
 	construction_manager = BuildingConstructionManager.new()
+	construction_manager.name = "BuildingConstructionManager"  # Set a proper node name
 	add_child(construction_manager)
 	
 	# Connect to the construction completion signal
@@ -46,6 +49,8 @@ func _ready():
 	# Give the construction manager references it needs
 	construction_manager.builder = self
 	construction_manager.nav_region = nav_region
+	
+	print("BUILDER: Created BuildingConstructionManager:", construction_manager)
 	
 	# Sound effects now handled in game_manager.gd
 	

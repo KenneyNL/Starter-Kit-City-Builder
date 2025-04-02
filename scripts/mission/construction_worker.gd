@@ -10,6 +10,10 @@ var is_moving: bool = false
 var is_construction_active: bool = false
 var construction_finished: bool = false
 
+# Signals
+signal construction_started
+signal construction_ended
+
 # Initialize the worker
 func initialize(worker_model: Node3D, anim_player: AnimationPlayer, navigation_agent: NavigationAgent3D, target_pos: Vector3):
 	model = worker_model
@@ -95,27 +99,22 @@ func set_movement_target(target: Vector3):
 func start_construction():
 	is_construction_active = true
 	
-	# Construction sound code removed
-	
-	# Print all available animations for debugging
-	if animation_player:
-		print("Available animations for worker: ")
-		var anim_list = animation_player.get_animation_list()
-		for anim_name in anim_list:
-			print("- " + anim_name)
+	# Emit signal to play construction sound
+	print("WORKER: About to emit construction_started signal")
+	construction_started.emit()
+	print("WORKER: Emitted construction_started signal")
+		
 	
 	# Try to force the animation to loop using different approaches
 	if animation_player:
 		# First try with the actual animation name "pick-up"
 		if animation_player.has_animation("pick-up"):
-			print("Found animation: pick-up")
 			
 			# Try to get the animation resource
 			var animation = animation_player.get_animation("pick-up")
 			if animation:
 				# Set the loop mode if possible
 				animation.loop_mode = 1  # LOOP_LINEAR
-				print("Set loop mode for pick-up animation")
 			
 			# Set speed scale to make it look more natural
 			animation_player.speed_scale = 1.0
@@ -163,7 +162,9 @@ func finish_construction():
 	is_construction_active = false
 	construction_finished = true
 	
-	# Construction sound code removed
+	# Emit signal to stop construction sound
+	construction_ended.emit()
+	print("Emitted construction_ended signal")
 	
 	# Find a road to walk back to
 	var road_position = _find_random_road()

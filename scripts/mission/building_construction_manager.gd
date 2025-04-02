@@ -2,6 +2,8 @@ extends Node
 class_name BuildingConstructionManager
 
 signal construction_completed(position)
+signal worker_construction_started
+signal worker_construction_ended
 
 const CONSTRUCTION_TIME = 10.0 # seconds to build a building
 
@@ -183,6 +185,10 @@ func _create_worker(spawn_position: Vector3, target_position: Vector3):
 	else:
 		builder.add_child(worker_node)
 	
+	# Connect signals for construction sounds
+	worker_node.construction_started.connect(_on_worker_construction_started)
+	worker_node.construction_ended.connect(_on_worker_construction_ended)
+	
 	# Position the worker
 	worker_node.global_transform.origin = Vector3(spawn_position.x, 0.1, spawn_position.z)
 	
@@ -208,6 +214,18 @@ func _create_worker(spawn_position: Vector3, target_position: Vector3):
 	worker_node.initialize(model, anim_player, navigation_agent, target_position)
 	
 	return worker_node
+
+# Signal handlers for worker construction sounds
+func _on_worker_construction_started():
+	print("CONSTRUCTION MANAGER: Received construction_started signal from worker")
+	print("CONSTRUCTION MANAGER: About to emit worker_construction_started signal")
+	worker_construction_started.emit()
+	print("CONSTRUCTION MANAGER: Forwarded signal as worker_construction_started")
+
+# Signal handler for worker construction ended
+func _on_worker_construction_ended():
+	worker_construction_ended.emit()
+	print("Construction manager: forwarding construction_ended signal")
 
 # Complete construction at a position
 func _complete_construction(position: Vector3):
