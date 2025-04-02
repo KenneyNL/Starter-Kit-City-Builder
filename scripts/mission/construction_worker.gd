@@ -95,6 +95,8 @@ func set_movement_target(target: Vector3):
 func start_construction():
 	is_construction_active = true
 	
+	# Construction sound code removed
+	
 	# Print all available animations for debugging
 	if animation_player:
 		print("Available animations for worker: ")
@@ -160,6 +162,8 @@ func _check_animation_status():
 func finish_construction():
 	is_construction_active = false
 	construction_finished = true
+	
+	# Construction sound code removed
 	
 	# Find a road to walk back to
 	var road_position = _find_random_road()

@@ -40,6 +40,10 @@ func setup_background_music():
 	
 	var music = load("res://sounds/jazz_new_orleans.mp3") 
 	if music:
+		# Set looping on the AudioStreamMP3 itself
+		if music is AudioStreamMP3:
+			music.loop = true
+		
 		music_player.stream = music
 		music_player.volume_db = -12  # 25% volume (approx)
 		music_player.play()
@@ -67,3 +71,4 @@ func _on_structure_placed(structure_index, position):
 			building_sfx.stop()
 		building_sfx.play()
 		print("Playing building placement SFX")
+		
