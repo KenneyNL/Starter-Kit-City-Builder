@@ -10,6 +10,7 @@ var nav_region: NavigationRegion3D # Single navigation region for all roads
 # Construction manager for building residential buildings with workers
 var construction_manager: BuildingConstructionManager
 
+# Structure selection sound effect is now handled in game_manager.gd
 
 @export var selector:Node3D # The 'cursor'
 @export var selector_container:Node3D # Node that holds a preview of the structure
@@ -45,6 +46,8 @@ func _ready():
 	# Give the construction manager references it needs
 	construction_manager.builder = self
 	construction_manager.nav_region = nav_region
+	
+	# Sound effects now handled in game_manager.gd
 	
 	for structure in structures:
 		
@@ -228,6 +231,8 @@ func action_build(gridmap_position):
 			if mission_id == "3" or (mission_id == "1" and is_residential):
 				use_worker_construction = true
 		
+		# Sound effects are handled via game_manager.gd through the structure_placed signal
+		
 		if is_road:
 			# For roads, we'll need to track in our data without using the GridMap
 			# But for now, we won't add it to the GridMap visually, just add to NavRegion3D
@@ -293,6 +298,8 @@ func setup_navigation_region():
 		nav_mesh.agent_radius = 0.25
 		
 		add_child(nav_region)
+		
+# Sound effects are now handled in game_manager.gd
 
 
 # Rebake navigation mesh to update the navigation data
@@ -440,6 +447,8 @@ func update_structure():
 	else:
 		# Standard positioning for other structures
 		_model.position.y += 0.25
+		
+	# Sound effects are now handled in game_manager.gd
 	
 func update_cash():
 	cash_display.text = "$" + str(map.cash)
