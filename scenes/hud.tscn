@@ -1,0 +1,191 @@
+[gd_scene load_steps=9 format=3 uid="uid://cgk66f6rg03mj"]
+
+[ext_resource type="Script" path="res://scripts/hud_manager.gd" id="1_6vdxc"]
+[ext_resource type="Texture2D" uid="uid://hendpftbt4iw" path="res://sprites/population_icon.png" id="2_28oy1"]
+[ext_resource type="Texture2D" uid="uid://jk3mremfu7lm" path="res://sprites/electricity_icon.png" id="3_2u5bk"]
+[ext_resource type="FontFile" uid="uid://d0cxd77jybrcn" path="res://fonts/lilita_one_regular.ttf" id="4_qfmf5"]
+[ext_resource type="Texture2D" uid="uid://bng0d1sou7c8a" path="res://sprites/coin.png" id="5_vd1bj"]
+[ext_resource type="Texture2D" uid="uid://cgpwknjrqnuae" path="res://sprites/help_icon.png" id="6_i1y88"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_q176i"]
+font = ExtResource("4_qfmf5")
+font_size = 24
+shadow_color = Color(0, 0, 0, 0.392157)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7b8hq"]
+bg_color = Color(0.0784314, 0.0784314, 0.0784314, 0.588235)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.388235, 0.388235, 0.388235, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="HUD" type="Control" groups=["hud"]]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+script = ExtResource("1_6vdxc")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 20.0
+offset_top = 24.0
+offset_right = -20.0
+offset_bottom = 84.0
+grow_horizontal = 2
+scale = Vector2(0.8, 0.8)
+mouse_filter = 0
+theme_override_constants/separation = 40
+
+[node name="CashItem" type="HBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 8
+
+[node name="CashIcon" type="TextureRect" parent="HBoxContainer/CashItem"]
+layout_mode = 2
+texture = ExtResource("5_vd1bj")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="CashLabel" type="Label" parent="HBoxContainer/CashItem"]
+layout_mode = 2
+text = "$10,000"
+label_settings = SubResource("LabelSettings_q176i")
+
+[node name="Separator1" type="VSeparator" parent="HBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="PopulationItem" type="HBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 8
+
+[node name="PopulationIcon" type="TextureRect" parent="HBoxContainer/PopulationItem"]
+layout_mode = 2
+texture = ExtResource("2_28oy1")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="PopulationLabel" type="Label" parent="HBoxContainer/PopulationItem"]
+layout_mode = 2
+text = "0"
+label_settings = SubResource("LabelSettings_q176i")
+
+[node name="Separator2" type="VSeparator" parent="HBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ElectricityItem" type="HBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 8
+
+[node name="ElectricityIcon" type="TextureRect" parent="HBoxContainer/ElectricityItem"]
+layout_mode = 2
+texture = ExtResource("3_2u5bk")
+expand_mode = 3
+stretch_mode = 5
+
+[node name="ElectricityValues" type="VBoxContainer" parent="HBoxContainer/ElectricityItem"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 2
+
+[node name="ElectricityLabel" type="Label" parent="HBoxContainer/ElectricityItem/ElectricityValues"]
+visible = false
+layout_mode = 2
+text = "0/0 kW"
+label_settings = SubResource("LabelSettings_q176i")
+
+[node name="ElectricityIndicator" type="ColorRect" parent="HBoxContainer/ElectricityItem/ElectricityValues"]
+custom_minimum_size = Vector2(120, 8)
+layout_mode = 2
+size_flags_horizontal = 4
+color = Color(1, 0, 0, 1)
+
+[node name="Separator3" type="VSeparator" parent="HBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HelpItem" type="HBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 8
+
+[node name="HelpButton" type="TextureButton" parent="HBoxContainer/HelpItem"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 0
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource("6_i1y88")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="PopulationTooltip" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 0
+offset_left = 120.0
+offset_top = 70.0
+offset_right = 420.0
+offset_bottom = 150.0
+
+[node name="Panel" type="Panel" parent="PopulationTooltip"]
+layout_mode = 0
+offset_right = 300.0
+offset_bottom = 80.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_7b8hq")
+
+[node name="Label" type="Label" parent="PopulationTooltip"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 290.0
+offset_bottom = 70.0
+theme_override_font_sizes/font_size = 24
+text = "Total city population"
+autowrap_mode = 3
+
+[node name="ElectricityTooltip" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 0
+offset_left = 250.0
+offset_top = 70.0
+offset_right = 550.0
+offset_bottom = 150.0
+
+[node name="Panel" type="Panel" parent="ElectricityTooltip"]
+layout_mode = 0
+offset_right = 300.0
+offset_bottom = 80.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_7b8hq")
+
+[node name="Label" type="Label" parent="ElectricityTooltip"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 290.0
+offset_bottom = 70.0
+theme_override_font_sizes/font_size = 24
+text = "Electricity supply vs demand"
+autowrap_mode = 3
+
+[connection signal="mouse_entered" from="HBoxContainer/PopulationItem/PopulationIcon" to="." method="_on_population_icon_mouse_entered"]
+[connection signal="mouse_exited" from="HBoxContainer/PopulationItem/PopulationIcon" to="." method="_on_population_icon_mouse_exited"]
+[connection signal="mouse_entered" from="HBoxContainer/ElectricityItem/ElectricityIcon" to="." method="_on_electricity_icon_mouse_entered"]
+[connection signal="mouse_exited" from="HBoxContainer/ElectricityItem/ElectricityIcon" to="." method="_on_electricity_icon_mouse_exited"]
+[connection signal="pressed" from="HBoxContainer/HelpItem/HelpButton" to="." method="_on_help_button_pressed"]

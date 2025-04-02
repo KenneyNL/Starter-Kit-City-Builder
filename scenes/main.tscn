@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3 uid="uid://vgwrcfy1qawf"]
+[gd_scene load_steps=26 format=3 uid="uid://vgwrcfy1qawf"]
 
 [ext_resource type="Script" path="res://scripts/builder.gd" id="1_jybm7"]
 [ext_resource type="Environment" uid="uid://jbptgqvstei3" path="res://scenes/main-environment.tres" id="1_yndf3"]
@@ -10,16 +10,17 @@
 [ext_resource type="Script" path="res://scripts/mission/mission_manager.gd" id="10_oe3re"]
 [ext_resource type="Script" path="res://scripts/mission/mission_data.gd" id="11_msovb"]
 [ext_resource type="Resource" uid="uid://x5h4xutbldq3" path="res://mission/first_mission.tres" id="12_ms7i7"]
+[ext_resource type="Resource" uid="uid://cjr36hqnmyn0x" path="res://mission/second_mission.tres" id="13_s13s0"]
 [ext_resource type="Script" path="res://scripts/mission/mission_ui.gd" id="13_xvw5w"]
+[ext_resource type="Resource" uid="uid://dykbopx8n3c3v" path="res://mission/third_mission.tres" id="14_bnke0"]
 [ext_resource type="Script" path="res://scripts/mission/learning_panel.gd" id="14_q2ymb"]
-[ext_resource type="FontFile" uid="uid://d0cxd77jybrcn" path="res://fonts/lilita_one_regular.ttf" id="16_vlub6"]
-[ext_resource type="Texture2D" uid="uid://bng0d1sou7c8a" path="res://sprites/coin.png" id="17_cjamx"]
+[ext_resource type="Resource" uid="uid://bho4qh41asyk1" path="res://mission/fourth_mission.tres" id="15_plrw2"]
+[ext_resource type="Resource" uid="uid://p3xwn2mp6bm6" path="res://mission/fifth_mission.tres" id="16_5fmk3"]
+[ext_resource type="FontFile" uid="uid://d0cxd77jybrcn" path="res://fonts/lilita_one_regular.ttf" id="17_vlub6"]
 [ext_resource type="PackedScene" uid="uid://b4gkfwf4i3ydl" path="res://scenes/character.tscn" id="18_8lrh8"]
-
-[sub_resource type="LabelSettings" id="LabelSettings_q176i"]
-font = ExtResource("16_vlub6")
-font_size = 24
-shadow_color = Color(0, 0, 0, 0.392157)
+[ext_resource type="PackedScene" uid="uid://cgk66f6rg03mj" path="res://scenes/hud.tscn" id="18_hud"]
+[ext_resource type="PackedScene" uid="uid://bqjnp7uypupog" path="res://scenes/controls_panel.tscn" id="19_controls"]
+[ext_resource type="Script" path="res://scripts/game_manager.gd" id="20_game_manager"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mission"]
 bg_color = Color(0.145098, 0.172549, 0.231373, 0.941176)
@@ -74,6 +75,7 @@ corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
 [node name="Main" type="Node3D"]
+script = ExtResource("20_game_manager")
 
 [node name="Builder" type="Node3D" parent="." node_paths=PackedStringArray("selector", "selector_container", "view_camera", "gridmap", "cash_display")]
 script = ExtResource("1_jybm7")
@@ -82,7 +84,7 @@ selector = NodePath("Selector")
 selector_container = NodePath("Selector/Container")
 view_camera = NodePath("../View/Camera")
 gridmap = NodePath("../GridMap")
-cash_display = NodePath("../CanvasLayer/Control/Cash")
+cash_display = NodePath("../CanvasLayer/HUD/HBoxContainer/CashItem/CashLabel")
 
 [node name="Selector" type="Node3D" parent="Builder"]
 
@@ -97,7 +99,7 @@ transform = Transform3D(0.707107, -0.40558, 0.579228, 0, 0.819152, 0.573576, -0.
 script = ExtResource("8_yovpv")
 
 [node name="Camera" type="Camera3D" parent="View"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 30)
+transform = Transform3D(1, 0, 0, 0, 1, 7.15256e-07, 0, 0, 1, 0, 27.98, 49.5918)
 environment = ExtResource("1_yndf3")
 fov = 20.0
 
@@ -114,33 +116,13 @@ shadow_opacity = 0.75
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
-[node name="Control" type="Control" parent="CanvasLayer"]
-layout_mode = 3
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
+[node name="HUD" parent="CanvasLayer" instance=ExtResource("18_hud")]
 
-[node name="CashIcon" type="TextureRect" parent="CanvasLayer/Control"]
-layout_mode = 0
-offset_left = 20.0
-offset_top = 24.0
-offset_right = 148.0
-offset_bottom = 152.0
-scale = Vector2(0.3, 0.3)
-texture = ExtResource("17_cjamx")
-
-[node name="Cash" type="Label" parent="CanvasLayer/Control"]
-layout_mode = 0
-offset_left = 69.0
-offset_top = 27.0
-offset_right = 270.0
-offset_bottom = 101.0
-text = "$10,000"
-label_settings = SubResource("LabelSettings_q176i")
+[node name="ControlsPanel" parent="CanvasLayer" instance=ExtResource("19_controls")]
 
 [node name="MissionManager" type="Node" parent="." node_paths=PackedStringArray("mission_ui", "builder")]
 script = ExtResource("10_oe3re")
-missions = Array[ExtResource("11_msovb")]([ExtResource("12_ms7i7")])
+missions = Array[ExtResource("11_msovb")]([ExtResource("12_ms7i7"), ExtResource("13_s13s0"), ExtResource("14_bnke0"), ExtResource("15_plrw2"), ExtResource("16_5fmk3")])
 mission_ui = NodePath("MissionPanel")
 builder = NodePath("../Builder")
 character_scene = ExtResource("18_8lrh8")
@@ -174,7 +156,7 @@ theme_override_constants/separation = 15
 
 [node name="MissionTitleLabel" type="Label" parent="MissionManager/MissionPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("16_vlub6")
+theme_override_fonts/font = ExtResource("17_vlub6")
 theme_override_font_sizes/font_size = 24
 text = "Mission Title"
 horizontal_alignment = 1
@@ -203,11 +185,6 @@ text = "Objectives:"
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 10
-
-[node name="ObjectiveLabel" type="Label" parent="MissionManager"]
-offset_right = 40.0
-offset_bottom = 23.0
-text = "Objective"
 
 [node name="LearningPanel" type="PanelContainer" parent="MissionManager"]
 visible = false
@@ -239,7 +216,7 @@ theme_override_constants/separation = 20
 
 [node name="TitleLabel" type="Label" parent="MissionManager/LearningPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("16_vlub6")
+theme_override_fonts/font = ExtResource("17_vlub6")
 theme_override_font_sizes/font_size = 32
 text = "Learning Module"
 horizontal_alignment = 1
@@ -326,5 +303,9 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 18
 disabled = true
 text = "Complete"
+
+[node name="ObjectiveLabel" type="Label" parent="MissionManager"]
+offset_right = 40.0
+offset_bottom = 23.0
 
 [connection signal="pressed" from="MissionManager/LearningPanel/MarginContainer/VBoxContainer/HBoxContainer/CompleteButton" to="MissionManager/LearningPanel" method="_on_complete_button_pressed"]

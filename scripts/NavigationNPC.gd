@@ -56,7 +56,6 @@ func set_movement_target(target: Vector3) -> void:
 	if animation_player and animation_player.current_animation != "walk":
 		animation_player.play("walk")
 		
-	print("Set movement target to: ", target)
 
 func _physics_process(delta:float)->void:
 	# Check if character is stuck
@@ -82,7 +81,7 @@ func _physics_process(delta:float)->void:
 			if wait_timer >= waiting_time:
 				wait_timer = 0.0
 				pick_random_target()
-				print("Auto patrol timer triggered new target")
+			
 	
 	# Handle navigation logic
 	if navigation_agent_3d.is_navigation_finished():
@@ -95,7 +94,7 @@ func _physics_process(delta:float)->void:
 			# Reset wait timer for next automatic movement
 			wait_timer = 0.0
 			waiting_time = randf_range(2.0, 5.0)
-			print("Character reached destination, waiting for ", waiting_time, " seconds")
+#			print("Character reached destination, waiting for ", waiting_time, " seconds")
 		return
 	
 	# If we're still moving, proceed with navigation
@@ -107,7 +106,14 @@ func _physics_process(delta:float)->void:
 		
 		# Make character face the direction of movement
 		if direction.length() > 0.01:
-			character_model.look_at(global_position + Vector3(direction.x, 0, direction.z), Vector3.UP)
+			# Look at the destination with a 180-degree rotation to face forward
+			var look_target = global_position + Vector3(direction.x, 0, direction.z)
+			
+			# First make the character model look at the target
+			character_model.look_at(look_target, Vector3.UP)
+			
+			# Then rotate it 180 degrees around the Y axis to fix backward facing
+			character_model.rotate_y(PI)
 		
 		# Play walking animation when moving
 		if not animation_player.current_animation == "walk":

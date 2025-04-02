@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c5syc0144022q"
-path="res://.godot/imported/easy_charts.svg-5963eccbc8d55a9c4bb3a7a394bde2c4.ctex"
+uid="uid://cqywdwnbu6ms8"
+path="res://.godot/imported/Stemuli_Icon_FC_.png-f8bad48ecb7b1e37ab3e1a97fc7e5b5f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://easy_charts.svg"
-dest_files=["res://.godot/imported/easy_charts.svg-5963eccbc8d55a9c4bb3a7a394bde2c4.ctex"]
+source_file="res://Stemuli_Icon_FC_.png"
+dest_files=["res://.godot/imported/Stemuli_Icon_FC_.png-f8bad48ecb7b1e37ab3e1a97fc7e5b5f.ctex"]
 
 [params]
 
@@ -32,6 +32,3 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
-svg/scale=1.0
-editor/scale_with_editor_scale=false
-editor/convert_colors_with_editor_theme=false

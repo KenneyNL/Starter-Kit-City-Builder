@@ -1,0 +1,123 @@
+[gd_scene load_steps=4 format=3 uid="uid://cq1w6ovisjgsg"]
+
+[ext_resource type="Script" path="res://scripts/mission/fullscreen_learning_panel.gd" id="1_kq0jb"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxFlat_empty"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mnk7u"]
+bg_color = Color(0.376471, 0.760784, 0.658824, 0.25098)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.376471, 0.760784, 0.658824, 1)
+corner_radius_top_left = 15
+corner_radius_top_right = 15
+corner_radius_bottom_right = 15
+corner_radius_bottom_left = 15
+
+[node name="FullscreenLearningPanel" type="ColorRect"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.098, 0.078, 0.172, 0.95)
+script = ExtResource("1_kq0jb")
+
+[node name="PanelContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="ContentScrollContainer" type="ScrollContainer" parent="PanelContainer/MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_empty")
+follow_focus = true
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 2
+
+[node name="ContentContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/ContentScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="RichTextContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/ContentScrollContainer/ContentContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="MissionContent" type="RichTextLabel" parent="PanelContainer/MarginContainer/ContentScrollContainer/ContentContainer/RichTextContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_colors/default_color = Color(1, 1, 1, 1)
+theme_override_colors/font_selected_color = Color(1, 1, 1, 1)
+theme_override_constants/shadow_offset_y = 1
+theme_override_constants/shadow_offset_x = 1
+theme_override_constants/shadow_outline_size = 1
+theme_override_font_sizes/bold_italics_font_size = 40
+theme_override_font_sizes/italics_font_size = 32
+theme_override_font_sizes/mono_font_size = 32
+theme_override_font_sizes/normal_font_size = 32
+theme_override_font_sizes/bold_font_size = 40
+bbcode_enabled = true
+text = "[center][color=#60c2a8][font_size=60]POWERING YOUR CITY WITH MATH[/font_size][/color][/center]
+
+Your city has grown to 40 houses and now needs electricity! As the city planner, you need to determine how many power plants to build.
+
+[center][color=#60c2a8][font_size=40]THE POWER DEMAND FORMULA:[/font_size][/color] Power needed (kilowatts) = 2 × √n + n⁰·⁶ Where n is the number of houses in your city.[/center]
+
+[color=#60c2a8][font_size=40]HINTS FOR SOLVING:[/font_size][/color]
+
+• To calculate √40, you can use a calculator or approximate it as about 6.32.
+
+• To calculate 40⁰·⁶, remember that x⁰·⁶ = (x⁰·¹)⁶ = (∛√x)² where x = 40.
+
+• 40 can be rewritten as 4 × 10, which makes taking roots easier.
+
+• So, 40⁰·⁶ = (4 × 10)⁰·⁶ = 4⁰·⁶ × 10⁰·⁶ ≈ 2.3 × 3.98 ≈ 10.14.
+"
+fit_content = true
+scroll_active = false
+autowrap_mode = 2
+
+[node name="SpacerBottom" type="Control" parent="PanelContainer/MarginContainer/ContentScrollContainer/ContentContainer"]
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+
+[node name="FloatingAnswerButton" type="Button" parent="."]
+custom_minimum_size = Vector2(500, 120)
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -250.0
+offset_top = -150.0
+offset_right = 250.0
+offset_bottom = -30.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 36
+theme_override_styles/hover = SubResource("StyleBoxFlat_mnk7u")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_mnk7u")
+theme_override_styles/normal = SubResource("StyleBoxFlat_mnk7u")
+text = "ANSWER THE QUESTION"

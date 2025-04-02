@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="MissionData" load_steps=4 format=3 uid="uid://dykbopx8n3c3v"]
+
+[ext_resource type="Script" path="res://scripts/mission/mission_objective.gd" id="1_dhx01"]
+[ext_resource type="Script" path="res://scripts/mission/mission_data.gd" id="2_mum3p"]
+
+[sub_resource type="Resource" id="Resource_c06be"]
+script = ExtResource("1_dhx01")
+type = 3
+target_count = 40
+current_count = 0
+description = "Build 40 residential buildings with construction workers"
+structure_index = -1
+completed = false
+
+[resource]
+script = ExtResource("2_mum3p")
+id = "3"
+title = "City Expansion Project"
+description = "Your city needs to grow! Build 40 residential buildings using your team of construction workers. Watch as they construct each building from the ground up!"
+objectives = Array[ExtResource("1_dhx01")]([SubResource("Resource_c06be")])
+rewards = {
+"cash": 0
+}
+next_mission_id = ""
+graph_path = ""
+full_screen_path = ""
+intro_text = "Your city is expanding rapidly! Now that you've learned which construction company is more efficient, it's time to put them to work."
+question_text = ""
+correct_answer = ""
+feedback_text = ""
+incorrect_feedback = ""
+company_data = ""
+power_math_content = ""

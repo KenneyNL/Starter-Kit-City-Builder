@@ -1,16 +1,12 @@
-extends PanelContainer
-class_name LearningPanel
+extends Control
 
 signal completed
 signal panel_opened
 signal panel_closed
 
-@onready var title_label = $MarginContainer/VBoxContainer/TitleLabel
-@onready var description_label = $MarginContainer/VBoxContainer/DescriptionPanel/MarginContainer/DescriptionLabel
-@onready var answer_field = $MarginContainer/VBoxContainer/AnswerContainer/AnswerField
-@onready var feedback_label = $MarginContainer/VBoxContainer/AnswerContainer/FeedbackLabel
-@onready var check_button = $MarginContainer/VBoxContainer/AnswerContainer/CheckButton 
-@onready var complete_button = $MarginContainer/VBoxContainer/HBoxContainer/CompleteButton
+# Only store user_input and submit_button variables for signal connections
+var user_input
+var submit_button
 
 var mission: MissionData
 var correct_answer: String = "A"
@@ -20,352 +16,486 @@ func _ready():
 	# Hide panel initially
 	visible = false
 	
-	# Connect check button
-	check_button.connect("pressed", _on_check_button_pressed)
+	# Wait for the scene to be ready
+	await get_tree().process_frame
 	
-	# Disable complete button initially
-	complete_button.disabled = true
+	# Make sure we're on the right layer
+	z_index = 100
 	
-	# Hide feedback initially
-	feedback_label.visible = false
+	# Only get references needed for signal connections
+	user_input = get_node_or_null("PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent/UserInputContainer/UserInput")
+	submit_button = get_node_or_null("PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/SubmitButtonContainer/SubmitButton")
+	
+	# Connect button signals if the button exists
+	if submit_button != null:
+		if not submit_button.is_connected("pressed", Callable(self, "_on_submit_button_pressed")):
+			submit_button.pressed.connect(_on_submit_button_pressed)
+	else:
+		push_error("Submit button not found in learning panel")
 	
 func show_learning_panel(mission_data: MissionData):
+	# Check if the mission data is valid
+	if mission_data == null:
+		push_error("Invalid mission data provided to learning panel")
+		return
+	
 	mission = mission_data
-	title_label.text = mission.title
 	
-	# Set custom description for the learning panel
-	description_label.text = """
-Your city is rapidly growing, and you need to build houses to accommodate new residents! Two different construction companies offer to help:
-
-Company A: City Builders Inc.
-• 2 workers build 6 houses per week
-• 4 workers build 12 houses per week
-• 6 workers build 18 houses per week
-• 10 workers build 30 houses per week
-
-Company B: Urban Growth Solutions
-• 3 workers build 9 houses per week
-• 6 workers build 18 houses per week
-• 9 workers build 27 houses per week
-• 12 workers build 36 houses per week
-
-If you need 40 houses in a week, which company would require fewer workers?
-Enter A or B below.
-
-Hint: Find the pattern for each company, then calculate how many workers would be needed for 40 houses.
-"""
-
-
-# Add this line right here
-	$MarginContainer/VBoxContainer/GraphContainer.custom_minimum_size = Vector2(600, 400)
-
-
-# Update question label
-	$MarginContainer/VBoxContainer/AnswerContainer/QuestionLabel.text = "Which company would require fewer workers to build 40 houses in a week?"
-	$MarginContainer/VBoxContainer/AnswerContainer/AnswerField.placeholder_text = "Enter A or B"
+	# First, reset the panel to a clean state
+	_reset_panel()
 	
-	# Reset answer state
-	is_answer_correct = false
-	complete_button.disabled = true
-	feedback_label.visible = false
-	answer_field.text = ""
+	# Use traditional text and graph mode
+	_setup_traditional_mode()
 	
-	# Make panel visible
+	# Set up the correct answer from mission data
+	if not mission.correct_answer.is_empty():
+		correct_answer = mission.correct_answer
+	else:
+		# Default answer based on mission type
+		correct_answer = "1" if not mission.power_math_content.is_empty() else "A"
+	
+	# Set up user input placeholder
+	if user_input:
+		user_input.placeholder_text = mission.question_text if not mission.question_text.is_empty() else "Enter your answer"
+	
+	# Hide the HUD when learning panel is shown
+	var hud = get_node_or_null("/root/Main/CanvasLayer/HUD")
+	if hud:
+		hud.visible = false
+	
+	# Make the panel visible
 	visible = true
-	size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	size_flags_vertical = Control.SIZE_EXPAND_FILL
-
-	# Give more time for layout to update
-	await get_tree().process_frame
-	await get_tree().process_frame
-	await get_tree().process_frame
-
-	call_deferred("create_chart")
+	
+	# Make sure we're on top
+	if get_parent():
+		get_parent().move_child(self, get_parent().get_child_count() - 1)
+	
+	# Make sure we're at the proper z-index
+	z_index = 100
+	
+	# Disable background interaction by creating a fullscreen invisible barrier
+	_disable_background_interaction()
 	
 	# Emit signal to lock building controls
 	panel_opened.emit()
+	
+	print("Panel is now visible = ", visible)
+	
+# Creates an invisible fullscreen barrier to block clicks on the background
+func _disable_background_interaction():
+	# Remove any existing barrier
+	var existing_barrier = get_node_or_null("BackgroundBarrier")
+	if existing_barrier:
+		existing_barrier.queue_free()
+		
+	# Create a new barrier
+	var barrier = ColorRect.new()
+	barrier.name = "BackgroundBarrier"
+	barrier.color = Color(0, 0, 0, 0.01) # Almost transparent
+	barrier.anchor_right = 1.0
+	barrier.anchor_bottom = 1.0
+	barrier.mouse_filter = Control.MOUSE_FILTER_STOP # Block mouse events
+	barrier.z_index = -1 # Behind the panel UI
+	
+	# Add it as the first child of the panel
+	add_child(barrier)
+	move_child(barrier, 0)
+	
+	print("Background interaction disabled")
+
+# Reset the panel to a clean state
+func _reset_panel():
+	# Reset answer state
+	is_answer_correct = false
+	
+	# Clear text inputs
+	if user_input:
+		user_input.text = ""
+	
+	# Hide feedback label
+	var feedback_label = get_node_or_null("PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent/UserInputContainer/FeedbackLabel")
+	if feedback_label:
+		feedback_label.visible = false
+	
+	# Clean up any TopMargin that might have been added
+	var user_input_container = get_node_or_null("PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent/UserInputContainer")
+	if user_input_container:
+		var top_margin = user_input_container.get_node_or_null("TopMargin")
+		if top_margin:
+			top_margin.queue_free()
+			
+		# Reset custom sizing
+		user_input_container.custom_minimum_size.y = 0
+		user_input_container.size_flags_vertical = Control.SIZE_FILL
+	
+	# Reset submit button
+	if submit_button:
+		submit_button.text = "SUBMIT"
+		
+		# Disconnect complete mission signal if connected
+		if submit_button.is_connected("pressed", Callable(self, "_on_complete_mission")):
+			submit_button.pressed.disconnect(_on_complete_mission)
+		
+		# Connect submit button signal
+		if not submit_button.is_connected("pressed", Callable(self, "_on_submit_button_pressed")):
+			submit_button.pressed.connect(_on_submit_button_pressed)
+
+# Sets up the traditional mode with separate title, text, and graph elements
+func _setup_traditional_mode():
+	# Set the mission title
+	var mission_title_label = get_node_or_null("PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/TitleContainer/MissionTitleLabel")
+	if mission_title_label:
+		mission_title_label.text = mission.title.to_upper()
+	else:
+		push_error("MissionTitleLabel node not found")
+	
+	# Set the intro text
+	var intro_text = get_node_or_null("PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent/IntroText")
+	if intro_text:
+		intro_text.text = mission.intro_text if not mission.intro_text.is_empty() else "Welcome to this mission!"
+	else:
+		push_error("IntroText node not found")
+	
+	# Set the description text
+	var description_text = get_node_or_null("PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent/DescriptionText") 
+	if description_text:
+		description_text.text = mission.description
+	else:
+		push_error("DescriptionText node not found")
+		
+	# Set up mission-specific content for construction or power mission
+	_setup_mission_specific_content()
+	
+	print("Setup traditional mode complete")
+
+# Set up mission-specific content based on the mission type
+func _setup_mission_specific_content():
+	# Clear existing content first
+	_clear_existing_content()
+	
+	# Decide which content to show
+	if mission.power_math_content.is_empty():
+		# This is a construction company mission
+		_setup_construction_mission()
+	else:
+		# This is a power math mission
+		_setup_power_math_mission()
+
+# Clear existing content before setting up new content
+func _clear_existing_content():
+	# Find the main containers
+	var graph_center_container = get_node_or_null("PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent/GraphContainer/GraphCenterContainer")
+	var company_data_container = get_node_or_null("PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent/GraphContainer/CompanyDataContainer")
+	
+	# Clear power math content from the graph container
+	if graph_center_container:
+		var power_math_label = graph_center_container.get_node_or_null("PowerMathLabel")
+		if power_math_label:
+			power_math_label.queue_free()
+	
+	# Reset company data container
+	if company_data_container:
+		company_data_container.visible = false
+		var company_data_label = company_data_container.get_node_or_null("CompanyDataLabel")
+		if company_data_label:
+			company_data_label.text = ""
+
+# Set up construction company mission content
+func _setup_construction_mission():
+	print("Setting up construction company mission")
+	
+	# 1. Show the graph image
+	var graph_image = get_node_or_null("PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent/GraphContainer/GraphCenterContainer/GraphImage")
+	if graph_image:
+		if mission.graph_path.is_empty():
+			graph_image.visible = false
+		else:
+			# Load and show the graph
+			var graph_texture = load(mission.graph_path)
+			if graph_texture:
+				# Set the texture
+				graph_image.texture = graph_texture
+				
+				# Configure proper scaling based on the image:
+				# - Get the image size
+				var image_size = graph_texture.get_size()
+				print("Image dimensions: " + str(image_size.x) + "x" + str(image_size.y))
+				
+				# - Determine if we need to adjust scaling based on image dimensions
+				var target_width = 1000  # Match the custom_minimum_size from the scene
+				var target_height = 500
+				
+				# - Adjust the expansion mode based on image size relative to target size
+				if image_size.x < target_width * 0.5 or image_size.y < target_height * 0.5:
+					# Small image - use SCALE expansion mode to make it larger
+					graph_image.expand_mode = 1  # SCALE
+					graph_image.stretch_mode = 5  # KEEP_ASPECT_CENTERED
+					print("Using SCALE expansion for small image")
+				else:
+					# Larger image - use KEEP_SIZE or KEEP_WIDTH expansion mode
+					graph_image.expand_mode = 2  # KEEP_WIDTH
+					graph_image.stretch_mode = 5  # KEEP_ASPECT_CENTERED
+					print("Using KEEP_WIDTH expansion for larger image")
+				
+				# Set custom minimum size if needed
+				if image_size.x > 800:
+					# For larger images, use reasonable dimensions
+					graph_image.custom_minimum_size = Vector2(min(1000, max(800, image_size.x)), min(500, max(400, image_size.y)))
+				else:
+					# For smaller images, scale them up
+					graph_image.custom_minimum_size = Vector2(1000, 500)
+				
+				graph_image.visible = true
+				print("Successfully loaded graph image for construction mission: " + mission.graph_path)
+			else:
+				graph_image.visible = false
+				print("Failed to load graph image")
+	
+	# 2. Set company data
+	var company_data_container = get_node_or_null("PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent/GraphContainer/CompanyDataContainer")
+	if company_data_container:
+		company_data_container.visible = true
+		
+		# Check if we need to convert the company data to a horizontal layout
+		var company_data_label = company_data_container.get_node_or_null("CompanyDataLabel")
+		if company_data_label:
+			if mission.company_data.is_empty():
+				company_data_label.text = "[center][color=#e06666][font_size=18]No company data available.[/font_size][/color][/center]"
+			else:
+				# Split the original data to create a horizontal layout
+				var data_text = mission.company_data
+				
+				# Check if we need to reformat to save vertical space
+				if graph_image and graph_image.visible and graph_image.custom_minimum_size.y > 400:
+					print("Graph is large, reformatting company data to horizontal layout")
+					
+					# Parse and reformat the company data to be more compact
+					# This assumes the data has a typical format with company names and bullet points
+					var lines = data_text.split("\n")
+					var company_a_name = ""
+					var company_a_data = []
+					var company_b_name = ""
+					var company_b_data = []
+					var current_company = -1  # 0 for A, 1 for B
+					
+					# Parse the data by line
+					for line in lines:
+						line = line.strip_edges()
+						if line == "" or line.length() == 0:
+							continue
+							
+						if "[color=#60c2a8]" in line or "Company A:" in line:
+							# Found Company A header
+							company_a_name = line
+							current_company = 0
+						elif "[color=#e06666]" in line or "Company B:" in line:
+							# Found Company B header
+							company_b_name = line
+							current_company = 1
+						elif line.begins_with("•") or line.begins_with("-") or line.begins_with("*"):
+							# This is a data point
+							if current_company == 0:
+								company_a_data.append(line)
+							elif current_company == 1:
+								company_b_data.append(line)
+						elif "Enter A or B" in line or "If you need" in line:
+							# This is the question part - add to both
+							company_a_data.append(line)
+							company_b_data.append("")
+						elif "Hint:" in line:
+							# This is the hint - add to both
+							company_a_data.append(line)
+							company_b_data.append("")
+					
+					# Create a horizontal layout with two columns
+					var formatted_text = "[center]\n"
+					
+					# Add Company A
+					formatted_text += "[color=#ce5371][b]" + (company_a_name.replace("[b]", "").replace("[/b]", "").replace("[color=#60c2a8]", "").replace("[/color]", "")) + "[/b][/color]\n"
+					for point in company_a_data:
+						formatted_text += point + "\n"
+						
+					formatted_text += "\n"
+					
+					# Add Company B
+					formatted_text += "[color=#3182c0][b]" + (company_b_name.replace("[b]", "").replace("[/b]", "").replace("[color=#e06666]", "").replace("[/color]", "")) + "[/b][/color]\n"
+					for point in company_b_data:
+						formatted_text += point + "\n"
+						
+					formatted_text += "[/center]"
+					
+					# Set the formatted text
+					company_data_label.text = formatted_text
+					company_data_label.custom_minimum_size.y = 140  # Reduce height for horizontal layout
+				else:
+					# Use original data format
+					company_data_label.text = data_text
+					
+
+# Set up power math mission content
+func _setup_power_math_mission():
+	print("Setting up power math mission")
+	
+	# 1. Check if we have a graph image to display
+	var graph_image = get_node_or_null("PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent/GraphContainer/GraphCenterContainer/GraphImage")
+	if graph_image:
+		# Only show the graph image if a path is specified in the mission
+		if not mission.graph_path.is_empty():
+			# Try loading the graph image
+			var graph_texture = load(mission.graph_path)
+			if graph_texture:
+				# Set the texture
+				graph_image.texture = graph_texture
+				
+				# Configure proper scaling based on the image:
+				# - Get the image size
+				var image_size = graph_texture.get_size()
+				print("Image dimensions: " + str(image_size.x) + "x" + str(image_size.y))
+				
+				# - Determine if we need to adjust scaling based on image dimensions
+				var target_width = 1000  # Match the custom_minimum_size from the scene
+				var target_height = 500
+				
+				# - Adjust the expansion mode based on image size relative to target size
+				if image_size.x < target_width * 0.5 or image_size.y < target_height * 0.5:
+					# Small image - use SCALE expansion mode to make it larger
+					graph_image.expand_mode = 1  # SCALE
+					graph_image.stretch_mode = 5  # KEEP_ASPECT_CENTERED
+					print("Using SCALE expansion for small image")
+				else:
+					# Larger image - use KEEP_SIZE or KEEP_WIDTH expansion mode
+					graph_image.expand_mode = 2  # KEEP_WIDTH
+					graph_image.stretch_mode = 5  # KEEP_ASPECT_CENTERED
+					print("Using KEEP_WIDTH expansion for larger image")
+				
+				# Set custom minimum size if needed
+				if image_size.x > 800:
+					# For larger images, use reasonable dimensions
+					graph_image.custom_minimum_size = Vector2(min(1000, max(800, image_size.x)), min(500, max(400, image_size.y)))
+				else:
+					# For smaller images, scale them up
+					graph_image.custom_minimum_size = Vector2(1000, 500)
+				
+				graph_image.visible = true
+				print("Successfully loaded graph image for power mission: " + mission.graph_path)
+			else:
+				graph_image.visible = false
+				print("Failed to load graph image for power mission: " + mission.graph_path)
+		else:
+			graph_image.visible = false
+			print("No graph path specified for power mission")
+	
+	# 2. Hide company data container
+	var company_data_container = get_node_or_null("PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent/GraphContainer/CompanyDataContainer")
+	if company_data_container:
+		company_data_container.visible = false
+	
+	# 3. Add power math content if we're not showing a graph
+	var graph_center_container = get_node_or_null("PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent/GraphContainer/GraphCenterContainer")
+	if graph_center_container:
+		# Only show power math content if we don't have a graph image or if it's not visible
+		if mission.graph_path.is_empty() or not graph_image or not graph_image.visible:
+			# Create power math label
+			var power_math_label = graph_center_container.get_node_or_null("PowerMathLabel")
+			if power_math_label:
+				power_math_label.queue_free()
+				
+			# Create new label for the power math content
+			power_math_label = RichTextLabel.new()
+			power_math_label.name = "PowerMathLabel"
+			power_math_label.custom_minimum_size = Vector2(1000, 500)  # Smaller size to match new dimensions
+			power_math_label.bbcode_enabled = true
+			power_math_label.fit_content = true
+			graph_center_container.add_child(power_math_label)
+			
+			# Set the power math content
+			if mission.power_math_content.is_empty():
+				power_math_label.text = "No power math content available."
+			else:
+				power_math_label.text = mission.power_math_content
+				
+			power_math_label.visible = true
+			print("Added power math content as text")
 
 func hide_learning_panel():
 	visible = false
 	
+	# Show the HUD again when learning panel is hidden
+	var hud = get_node_or_null("/root/Main/CanvasLayer/HUD")
+	if hud:
+		hud.visible = true
+	
+	# Remove the barrier and re-enable background interaction
+	var barrier = get_node_or_null("BackgroundBarrier")
+	if barrier:
+		barrier.queue_free()
+	
+	# Unpause the game tree if it was paused
+	if get_tree().paused:
+		get_tree().paused = false
+	
 	# Emit signal to unlock building controls
 	panel_closed.emit()
 
-func create_chart():
-	# Create a comparative line chart showing both construction companies
-	
-	# First, clear any existing children
-	for child in $MarginContainer/VBoxContainer/GraphContainer.get_children():
-		child.queue_free()
-	
-	# Force a complete layout update
-	await get_tree().process_frame
-	await get_tree().process_frame
-	
-	# Get the exact size after layout is complete
-	var panel_rect = $MarginContainer/VBoxContainer/GraphContainer.get_global_rect()
-	print("Graph container size: ", panel_rect.size)
-	
-	# Create a container that fits exactly within the panel
-	var container = Control.new()
-	container.set_anchors_preset(Control.PRESET_FULL_RECT)
-	container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	container.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	$MarginContainer/VBoxContainer/GraphContainer.add_child(container)
-	
-	# Wait for container to be added and sized
-	await get_tree().process_frame
-	
-	# Get container dimensions - use direct measurement
-	var container_width = container.size.x 
-	var container_height = container.size.y
-	print("Container size: ", container.size)
-	
-	# Calculate responsive dimensions based on container size
-	var max_height = min(container_height * 0.8, 400)  # Responsive height, max 400
-	var chart_width = container_width * 0.85
-	var margin_left = min(container_width * 0.08, 80)  # Responsive left margin
-	var margin_bottom = min(container_height * 0.08, 40)
-	var base_y = max_height + margin_bottom  # Calculate base position dynamically
-	
-	# Create a background panel for the chart
-	var panel = Panel.new()
-	panel.set_anchors_preset(Control.PRESET_FULL_RECT)
-	panel.self_modulate = Color(0.1, 0.1, 0.1, 0.5)
-	container.add_child(panel)
-	
-	# Draw X and Y axes
-	var x_axis = Line2D.new()
-	x_axis.add_point(Vector2(margin_left, base_y))
-	x_axis.add_point(Vector2(margin_left + chart_width, base_y))
-	x_axis.width = 2
-	x_axis.default_color = Color.WHITE
-	container.add_child(x_axis)
-	
-	var y_axis = Line2D.new()
-	y_axis.add_point(Vector2(margin_left, base_y))
-	y_axis.add_point(Vector2(margin_left, base_y - max_height - 20))
-	y_axis.width = 2
-	y_axis.default_color = Color.WHITE
-	container.add_child(y_axis)
-	
-	# Add title first - centered over chart with proper positioning
-	var title = Label.new()
-	title.text = "Houses Built by Construction Companies"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", min(container_width * 0.04, 24))
-	
-	# Center the title properly
-	var title_width = min(container_width * 0.9, 500)  # Responsive width
-	title.position = Vector2(margin_left + (chart_width - title_width)/2, 15)
-	title.custom_minimum_size = Vector2(title_width, 30)
-	container.add_child(title)
-	
-	# Define the data points for both companies
-	# Both companies have same rate: 3 houses per worker per week
-	# Company A data: (6/2=3, 12/4=3, 18/6=3)
-	# Company B data: (9/3=3, 18/6=3, 27/9=3)
-	var company_a_data = [{x = 0, y = 0}, {x = 2, y = 6}, {x = 4, y = 12}, {x = 6, y = 18}, {x = 10, y = 30}, {x = 13.4, y = 40}] 
-	var company_b_data = [{x = 0, y = 0}, {x = 3, y = 9}, {x = 6, y = 18}, {x = 9, y = 27}, {x = 12, y = 36}, {x = 13.4, y = 40}]
-	
-	# Calculate the maximum value for scaling
-	var max_x = 15
-	var max_y = 40
-	
-	# Calculate spacing
-	var x_scale = chart_width / max_x
-	var y_scale = max_height / max_y
-	
-	# Create the lines for both companies
-	var line_a = Line2D.new()
-	line_a.width = 3
-	line_a.default_color = Color(0.2, 0.6, 1.0)  # Blue for Company A
-	
-	var line_b = Line2D.new()
-	line_b.width = 3
-	line_b.default_color = Color(1.0, 0.4, 0.4)  # Red for Company B
-	
-	# Arrays to store the points for drawing markers later
-	var points_a = []
-	var points_b = []
-	
-	# Add data points for Company A
-	for point in company_a_data:
-		var x_pos = margin_left + point.x * x_scale
-		var y_pos = base_y - point.y * y_scale
-		var point_pos = Vector2(x_pos, y_pos)
-		
-		# Add point to line
-		line_a.add_point(point_pos)
-		points_a.append(point_pos)
-		
-		# Add value label for specific points
-		if point.x in [2, 6, 10] or point.y == 40:
-			var label = Label.new()
-			label.text = str(point.y)
-			var font_size = min(container_width * 0.035, 20)
-			label.add_theme_font_size_override("font_size", font_size)
-			label.add_theme_color_override("font_color", Color(0.2, 0.6, 1.0))
-			label.position = Vector2(x_pos - (font_size * 0.75), y_pos - (font_size * 1.5))
-			container.add_child(label)
-	
-	# Add data points for Company B
-	for point in company_b_data:
-		var x_pos = margin_left + point.x * x_scale
-		var y_pos = base_y - point.y * y_scale
-		var point_pos = Vector2(x_pos, y_pos)
-		
-		# Add point to line
-		line_b.add_point(point_pos)
-		points_b.append(point_pos)
-		
-		# Add value label for specific points
-		if point.x in [3, 9, 12] or point.y == 40:
-			var label = Label.new()
-			label.text = str(point.y)
-			var font_size = min(container_width * 0.035, 20)
-			label.add_theme_font_size_override("font_size", font_size)
-			label.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
-			label.position = Vector2(x_pos - (font_size * 0.5), y_pos - (font_size * 1.25))
-			container.add_child(label)
-	
-	# Add the lines to the container
-	container.add_child(line_a)
-	container.add_child(line_b)
-	
-	# Add circle markers for Company A
-	for point in points_a:
-		var marker = ColorRect.new()
-		marker.color = Color(0.2, 0.6, 1.0)  # Blue for Company A
-		marker.size = Vector2(8, 8)
-		marker.position = Vector2(point.x - 4, point.y - 4)  # Center the marker on the point
-		container.add_child(marker)
-	
-	# Add circle markers for Company B
-	for point in points_b:
-		var marker = ColorRect.new()
-		marker.color = Color(1.0, 0.4, 0.4)  # Red for Company B
-		marker.size = Vector2(8, 8)
-		marker.position = Vector2(point.x - 4, point.y - 4)  # Center the marker on the point
-		container.add_child(marker)
-	
-	# Add grid lines
-	var y_step = max_height / 5  # Divide height into 5 parts
-	for i in range(1, 6):  # 5 horizontal grid lines
-		var y_pos = base_y - (i * y_step)  # Evenly spaced grid lines
-		var grid_line = Line2D.new()
-		grid_line.add_point(Vector2(margin_left, y_pos))
-		grid_line.add_point(Vector2(margin_left + chart_width, y_pos))
-		grid_line.width = 1
-		grid_line.default_color = Color(0.5, 0.5, 0.5, 0.3)  # Subtle grid color
-		container.add_child(grid_line)
-		
-		# Add y-axis value label
-		var y_value = int(i * (max_y / 5))
-		var y_label = Label.new()
-		y_label.text = str(y_value)
-		var font_size = min(container_width * 0.03, 16)
-		y_label.add_theme_font_size_override("font_size", font_size)
-		y_label.position = Vector2(margin_left - (font_size * 2), y_pos - (font_size * 0.5))
-		container.add_child(y_label)
-	
-	# Add x-axis labels
-	for i in range(0, max_x + 1, 3):  # 0, 3, 6, 9, 12, 15
-		var x_pos = margin_left + i * x_scale
-		
-		# Add vertical grid line
-		var grid_line = Line2D.new()
-		grid_line.add_point(Vector2(x_pos, base_y))
-		grid_line.add_point(Vector2(x_pos, base_y - max_height))
-		grid_line.width = 1
-		grid_line.default_color = Color(0.5, 0.5, 0.5, 0.2)  # Subtle grid color
-		container.add_child(grid_line)
-		
-		# Add x-axis label
-		var x_label = Label.new()
-		x_label.text = str(i)
-		var font_size = min(container_width * 0.03, 16)
-		x_label.add_theme_font_size_override("font_size", font_size)
-		x_label.position = Vector2(x_pos - (font_size * 0.3), base_y + (font_size * 0.5))
-		container.add_child(x_label)
-	
-	# Add axis labels with responsive font sizes and positioning
-	var x_axis_label = Label.new()
-	x_axis_label.text = "Number of Workers"
-	var axis_font_size = min(container_width * 0.04, 20)
-	x_axis_label.add_theme_font_size_override("font_size", axis_font_size)
-	# Center the X axis label
-	x_axis_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	x_axis_label.custom_minimum_size = Vector2(chart_width, 30)
-	x_axis_label.position = Vector2(margin_left, base_y + axis_font_size * 1.5)
-	container.add_child(x_axis_label)
-	
-	var y_axis_label = Label.new()
-	y_axis_label.text = "Houses Built"
-	y_axis_label.add_theme_font_size_override("font_size", axis_font_size)
-	y_axis_label.rotation = -PI/2
-	# Position Y axis label centered along the axis
-	y_axis_label.position = Vector2(margin_left - (axis_font_size * 2.5), base_y - max_height/2)
-	y_axis_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	y_axis_label.custom_minimum_size = Vector2(max_height, 30)
-	container.add_child(y_axis_label)
-	
-	# Add legend - position relative to chart size
-	var legend_bg = ColorRect.new()
-	legend_bg.color = Color(0.1, 0.1, 0.1, 0.8)
-	var legend_width = min(chart_width * 0.4, 200)
-	var legend_height = min(container_height * 0.16, 80)
-	legend_bg.position = Vector2(margin_left + chart_width - legend_width - 10, 30)
-	legend_bg.size = Vector2(legend_width, legend_height)
-	container.add_child(legend_bg)
-	
-	# Calculate legend positions relative to the legend background
-	var legend_x = legend_bg.position.x + 10
-	var legend_text_x = legend_x + 20
-	var legend_font_size = min(container_width * 0.03, 18)
-	
-	# Company A legend
-	var legend_a_color = ColorRect.new()
-	legend_a_color.color = Color(0.2, 0.6, 1.0)
-	legend_a_color.position = Vector2(legend_x, legend_bg.position.y + legend_height * 0.25)
-	legend_a_color.size = Vector2(15, 15)
-	container.add_child(legend_a_color)
-	
-	var legend_a_text = Label.new()
-	legend_a_text.text = "Company A: City Builders"
-	legend_a_text.add_theme_font_size_override("font_size", legend_font_size)
-	legend_a_text.position = Vector2(legend_text_x, legend_a_color.position.y - 2)
-	container.add_child(legend_a_text)
-	
-	# Company B legend
-	var legend_b_color = ColorRect.new()
-	legend_b_color.color = Color(1.0, 0.4, 0.4)
-	legend_b_color.position = Vector2(legend_x, legend_bg.position.y + legend_height * 0.65)
-	legend_b_color.size = Vector2(15, 15)
-	container.add_child(legend_b_color)
-	
-	var legend_b_text = Label.new()
-	legend_b_text.text = "Company B: Urban Growth"
-	legend_b_text.add_theme_font_size_override("font_size", legend_font_size)
-	legend_b_text.position = Vector2(legend_text_x, legend_b_color.position.y - 2)
-	container.add_child(legend_b_text)
+func _on_user_input_text_submitted(submitted_text):
+	_check_answer()
 
-func _on_check_button_pressed():
-	var user_answer = answer_field.text.strip_edges().to_upper()  # Convert to uppercase for case-insensitive comparison
+func _on_submit_button_pressed():
+	_check_answer()
+
+func _check_answer():
+	# Make sure mission is valid
+	if mission == null:
+		push_error("Mission is null in _check_answer")
+		return
+	
+	# Make sure we have a user input field
+	if not user_input:
+		push_error("Cannot check answer: user_input is null")
+		return
+	
+	var user_answer = user_input.text.strip_edges().to_upper()  # Convert to uppercase for case-insensitive comparison
+	
+	# Get the feedback label
+	var feedback_label = get_node_or_null("PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent/UserInputContainer/FeedbackLabel")
+	if not feedback_label:
+		push_error("Feedback label not found")
+		return
 	
 	# Make feedback visible
 	feedback_label.visible = true
 	
 	if user_answer == correct_answer:
 		is_answer_correct = true
-		feedback_label.text = "Correct! Company A (City Builders Inc.) would require fewer workers to build 40 houses. Both companies build at the same rate (3 houses per worker per week), but Company A has a slight advantage due to their organizational structure. For 40 houses, Company A needs 13.33 workers (rounded to 13) while Company B needs 13.33 workers (rounded to 14)."
+		
+		# Show feedback text
+		if not mission.feedback_text.is_empty():
+			feedback_label.text = mission.feedback_text
+		else:
+			feedback_label.text = "Correct! You've solved this problem successfully."
+		
 		feedback_label.add_theme_color_override("font_color", Color(0, 0.7, 0.2))
-		complete_button.disabled = false
+		
+		# Change submit button to "Complete" button
+		if submit_button:
+			submit_button.text = "COMPLETE"
+			
+			# Disconnect submit and connect complete signals
+			if submit_button.is_connected("pressed", Callable(self, "_on_submit_button_pressed")):
+				submit_button.pressed.disconnect(_on_submit_button_pressed)
+			
+			if not submit_button.is_connected("pressed", Callable(self, "_on_complete_mission")):
+				submit_button.pressed.connect(_on_complete_mission)
 	else:
-		feedback_label.text = "Not quite right. Look carefully at the lines for both companies. Calculate how many workers each company would need for 40 houses using the formula: workers = houses ÷ (houses per worker)."
+		# Show incorrect feedback
+		if not mission.incorrect_feedback.is_empty():
+			feedback_label.text = mission.incorrect_feedback
+		else:
+			feedback_label.text = "Not quite right. Please try again."
+		
 		feedback_label.add_theme_color_override("font_color", Color(0.9, 0.2, 0.2))
 
-func _on_complete_button_pressed():
+func _on_complete_mission():
 	if is_answer_correct:
 		# Complete the learning objective
 		for objective in mission.objectives:
