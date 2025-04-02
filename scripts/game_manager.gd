@@ -51,7 +51,7 @@ func setup_background_music():
 		
 		music_player.stream = music
 		music_player.volume_db = -12  # 25% volume (approx)
-#		music_player.play()
+		music_player.play()
 		print("Playing background music: jazz_new_orleans.mp3")
 	else:
 		print("ERROR: Could not load background music")
