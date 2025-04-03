@@ -100,6 +100,8 @@ func setup_building_sfx():
 		print("ERROR: Could not load building placement SFX")
 		
 # Setup construction sound effects
+# Note: Now mainly used for backward compatibility
+# Individual workers handle their own construction sounds
 func setup_construction_sfx():
 	construction_sfx = AudioStreamPlayer.new()
 	add_child(construction_sfx)
@@ -107,9 +109,9 @@ func setup_construction_sfx():
 	var sfx = load("res://sounds/construction.wav")
 	if sfx:
 		construction_sfx.stream = sfx
-		construction_sfx.volume_db = -5  # Louder volume
+		construction_sfx.volume_db = -8  # Reduced volume since workers have their own sounds
 		construction_sfx.bus = "SFX"  # Use the SFX bus
-		print("Construction SFX loaded successfully")
+		print("Main construction SFX loaded (for backward compatibility)")
 	else:
 		print("ERROR: Could not load construction SFX")
 		
@@ -125,45 +127,25 @@ func _on_structure_placed(structure_index, position):
 var construction_active = false
 var construction_sound_timer = null
 
-# Play construction sound (called by construction worker)
-func play_construction_sound():
-	print("GAME MANAGER: Received signal to play construction sound")
-	if construction_sfx and construction_sfx.stream:
-		construction_active = true
-		
-		# Create a timer for looping the sound if it doesn't exist
-		if not construction_sound_timer:
-			construction_sound_timer = Timer.new()
-			construction_sound_timer.name = "ConstructionSoundTimer"
-			construction_sound_timer.wait_time = 1.95  # Slightly less than the sound duration to avoid gaps
-			construction_sound_timer.autostart = false
-			construction_sound_timer.one_shot = false
-			add_child(construction_sound_timer)
-			construction_sound_timer.timeout.connect(_loop_construction_sound)
-		
-		# Start the sound and the loop timer
-		construction_sfx.play()
-		construction_sound_timer.start()
-		print("GAME MANAGER: Playing construction sound effect with looping")
-	else:
-		print("GAME MANAGER: Construction sound effect not properly loaded or initialized")
+# These functions remain for backward compatibility with mission logic
+# but they don't actually play sounds anymore since workers handle their own sounds
 
-# Function to loop the construction sound
+# Compatibility function for mission triggers
+func play_construction_sound():
+	print("GAME MANAGER: Received construction_started signal (for compatibility only)")
+	# We don't play any sounds from here anymore - workers handle their own sounds
+	# but we need to keep this function for backward compatibility
+	
+# Compatibility function for mission triggers  
 func _loop_construction_sound():
-	if construction_active and construction_sfx and construction_sfx.stream:
-		construction_sfx.play()
-		print("GAME MANAGER: Looping construction sound")
+	# This function exists only for backward compatibility
+	pass
 	
-# Stop construction sound (called when construction finishes)
+# Compatibility function for mission triggers
 func stop_construction_sound():
-	construction_active = false
-	
-	if construction_sound_timer:
-		construction_sound_timer.stop()
-	
-	if construction_sfx and construction_sfx.playing:
-		construction_sfx.stop()
-		print("GAME MANAGER: Stopped construction sound effect")
+	print("GAME MANAGER: Received construction_ended signal (for compatibility only)")
+	# We don't stop any sounds from here anymore - workers handle their own sounds
+	# but we need to keep this function for backward compatibility
 	
 # Setup construction signals properly
 func _setup_construction_signals():

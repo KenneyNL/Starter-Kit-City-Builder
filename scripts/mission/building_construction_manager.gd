@@ -177,7 +177,8 @@ func _create_worker(spawn_position: Vector3, target_position: Vector3):
 	# Create the worker node with the script
 	var worker_node = Node3D.new()
 	worker_node.set_script(worker_script)
-	worker_node.name = "Worker_" + str(int(target_position.x)) + "_" + str(int(target_position.z))
+	# Give each worker a unique name to avoid conflicts with their sound effects
+	worker_node.name = "Worker_" + str(int(target_position.x)) + "_" + str(int(target_position.z)) + "_" + str(randi())
 	
 	# Add the worker to the scene
 	if nav_region:
@@ -213,17 +214,26 @@ func _create_worker(spawn_position: Vector3, target_position: Vector3):
 	# Initialize the worker script
 	worker_node.initialize(model, anim_player, navigation_agent, target_position)
 	
+	# Introduce a tiny random delay before the worker reaches the construction site
+	# This helps stagger the sound effects and make them more natural
+	if worker_node.has_method("set_movement_speed"):
+		# Randomize movement speed slightly to stagger arrivals 
+		worker_node.set_movement_speed(randf_range(2.3, 2.7))
+	
 	return worker_node
 
-# Signal handlers for worker construction sounds
+# Signal handlers for worker construction sounds 
+# Now needed ONLY for mission-triggering logic, not for sound
 func _on_worker_construction_started():
 	print("CONSTRUCTION MANAGER: Received construction_started signal from worker")
-	print("CONSTRUCTION MANAGER: About to emit worker_construction_started signal")
+	# Forward the signal for mission managers/other systems that need it
+	# Workers now handle their own sounds independently
 	worker_construction_started.emit()
-	print("CONSTRUCTION MANAGER: Forwarded signal as worker_construction_started")
 
-# Signal handler for worker construction ended
+# Signal handler for construction ended signals
+# Now needed ONLY for mission-triggering logic, not for sound
 func _on_worker_construction_ended():
+	# Forward the signal for mission managers/other systems that need it
 	worker_construction_ended.emit()
 	print("Construction manager: forwarding construction_ended signal")
 
