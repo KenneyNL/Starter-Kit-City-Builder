@@ -7,12 +7,14 @@ var building_sfx: AudioStreamPlayer
 var construction_sfx: AudioStreamPlayer
 
 func _ready():
-	# Reference to the controls panel and HUD
+	# Reference to the controls panel, sound panel, and HUD
 	var controls_panel = $CanvasLayer/ControlsPanel
+	var sound_panel = $CanvasLayer/SoundPanel
 	var hud = $CanvasLayer/HUD
 	
-	# Set up the HUD's reference to the controls panel
+	# Set up the HUD's reference to the panels
 	hud.controls_panel = controls_panel
+	hud.sound_panel = sound_panel
 	
 	# Auto-show controls at start
 	if controls_panel:
@@ -33,11 +35,37 @@ func _ready():
 		
 	# Connect to construction signals via deferred call to make sure everything is ready
 	call_deferred("_setup_construction_signals")
+	
+	# Make sure sound buses are properly configured
+	call_deferred("_setup_sound_buses")
 
 # This function is called when the controls panel is closed
 func _on_controls_panel_closed():
 	print("Controls panel closed by player")
 	
+# Function to set up the sound buses
+func _setup_sound_buses():
+	# Wait a moment to ensure SoundManager is ready
+	await get_tree().process_frame
+	
+	# Get reference to SoundManager singleton
+	var sound_manager = get_node_or_null("/root/SoundManager")
+	if !sound_manager:
+		print("ERROR: SoundManager singleton not found!")
+		return
+	
+	# Move audio players to the appropriate buses
+	if music_player:
+		music_player.bus = "Music"
+	
+	if building_sfx:
+		building_sfx.bus = "SFX"
+	
+	if construction_sfx:
+		construction_sfx.bus = "SFX"
+	
+	print("Sound buses configured successfully")
+
 # Setup background music player
 func setup_background_music():
 	music_player = AudioStreamPlayer.new()
@@ -51,6 +79,7 @@ func setup_background_music():
 		
 		music_player.stream = music
 		music_player.volume_db = -12  # 25% volume (approx)
+		music_player.bus = "Music"  # Use the Music bus
 		music_player.play()
 		print("Playing background music: jazz_new_orleans.mp3")
 	else:
@@ -65,6 +94,7 @@ func setup_building_sfx():
 	if sfx:
 		building_sfx.stream = sfx
 		building_sfx.volume_db = -5
+		building_sfx.bus = "SFX"  # Use the SFX bus
 		print("Building placement SFX loaded successfully")
 	else:
 		print("ERROR: Could not load building placement SFX")
@@ -78,6 +108,7 @@ func setup_construction_sfx():
 	if sfx:
 		construction_sfx.stream = sfx
 		construction_sfx.volume_db = -5  # Louder volume
+		construction_sfx.bus = "SFX"  # Use the SFX bus
 		print("Construction SFX loaded successfully")
 	else:
 		print("ERROR: Could not load construction SFX")
