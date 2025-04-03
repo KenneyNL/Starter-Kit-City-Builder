@@ -7,3 +7,5 @@
 script = ExtResource("2_wqyte")
 model = ExtResource("1_r2n53")
 price = 10
+type = 6
+selector_scale = 2.8

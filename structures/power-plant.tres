@@ -11,3 +11,4 @@ price = 100
 population_count = 0
 kW_usage = 0.0
 kW_production = 40.0
+selector_scale = 13

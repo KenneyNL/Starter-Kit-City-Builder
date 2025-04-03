@@ -437,11 +437,15 @@ func update_structure():
 	var _model = structures[index].model.instantiate()
 	selector_container.add_child(_model)
 	
+	# Get reference to the selector sprite
+	var selector_sprite = selector.get_node("Sprite")
+	
 	# Apply appropriate scaling based on structure type
 	if structures[index].model.resource_path.contains("power_plant"):
 		# Scale power plant model to be much smaller (0.5x)
 		_model.scale = Vector3(0.5, 0.5, 0.5)
-		_model.position.y += 0.0 # No need for Y adjustment with scaling
+		# Center the power plant model within the selector
+		_model.position = Vector3(-3.0, 0.0, 3.0)  # Reset position
 	elif (structures[index].type == Structure.StructureType.RESIDENTIAL_BUILDING
 	   or structures[index].type == Structure.StructureType.ROAD
 	   or structures[index].type == Structure.StructureType.TERRAIN
@@ -452,6 +456,10 @@ func update_structure():
 	else:
 		# Standard positioning for other structures
 		_model.position.y += 0.25
+	
+	# Get the selector scale from the structure resource
+	var scale_factor = structures[index].selector_scale
+	selector_sprite.scale = Vector3(scale_factor, scale_factor, scale_factor)
 		
 	# Sound effects are now handled in game_manager.gd
 	
@@ -534,8 +542,13 @@ func _add_power_plant(position: Vector3, structure_index: int):
 	# Apply rotation from the selector to preserve the rotation the player chose
 	transform.basis = transform.basis * selector.basis
 	
-	# Set position
+	# Set position with offset to center the model at the grid position
 	transform.origin = position
+	
+	# Apply position offset to center the model (matching the preview)
+	# These offsets need to be transformed based on the current rotation
+	var offset = selector.basis * Vector3(0.25, 0, -0.25)
+	transform.origin += offset
 	
 	# Apply the complete transform in one go
 	power_plant_model.transform = transform

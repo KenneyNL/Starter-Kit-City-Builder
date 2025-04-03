@@ -26,3 +26,6 @@ enum StructureType {
 @export_subgroup("Electricity")
 @export var kW_usage:float = 0.0 # How much electricity this structure uses
 @export var kW_production:float = 0.0 # How much electricity this structure produces
+
+@export_subgroup("Visual")
+@export var selector_scale:float = 1.0 # Scale factor for the selector when this structure is selected
