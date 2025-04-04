@@ -15,6 +15,7 @@ var movement_speed: float = 2.5 # Default walking speed
 var construction_sound: AudioStreamPlayer # Use regular AudioStreamPlayer instead of 3D
 var loop_timer: Timer
 var my_sound_id: int = 0  # Unique ID for this worker's sound
+var sound_initialized: bool = false
 
 # Signals
 signal construction_started
@@ -65,6 +66,7 @@ func setup_sound():
 		construction_sound.volume_db = -5.0    # Volume level
 		construction_sound.bus = "SFX"         # Use the SFX bus
 		
+		sound_initialized = true
 		print("DEBUG: Worker " + str(my_sound_id) + " sound setup completed")
 	else:
 		push_error("Could not load construction sound effect!")
@@ -78,6 +80,14 @@ func setup_sound():
 	# Connect the timer to the loop function
 	loop_timer.timeout.connect(loop_construction_sound)
 	print("DEBUG: Timer set up and connected for worker " + str(my_sound_id))
+	
+	# Check if we need to connect to the audio_ready signal (for web)
+	if OS.has_feature("web"):
+		var sound_manager = get_node_or_null("/root/SoundManager")
+		if sound_manager and not sound_manager.audio_initialized:
+			# Connect to the audio_ready signal so we can start playing when audio is ready
+			sound_manager.audio_ready.connect(check_and_play_sound)
+			print("DEBUG: Worker " + str(my_sound_id) + " connected to audio_ready signal")
 
 func _physics_process(delta: float):
 	if construction_finished:
@@ -97,7 +107,7 @@ func _physics_process(delta: float):
 	elif is_construction_active:
 		# Make sure we keep the construction animation looping
 		ensure_animation_playing()
-		
+			
 # Make sure the construction animation keeps playing
 func ensure_animation_playing():
 	# Check if animation isn't playing or is on the wrong animation
@@ -148,21 +158,18 @@ func start_construction():
 	print("DEBUG: Worker " + str(my_sound_id) + " starting construction")
 	is_construction_active = true
 	
-	# Start playing construction sound
-	if construction_sound and construction_sound.stream:
-		# Set a random pitch to create variation between workers
-		construction_sound.pitch_scale = randf_range(0.9, 1.1)
-		
-		# Play the sound
-		construction_sound.play()
-		print("DEBUG: Starting sound playback for worker " + str(my_sound_id))
-		
-		# Start the loop timer
-		loop_timer.start()
-		print("DEBUG: Started loop timer for worker " + str(my_sound_id))
-	else:
-		push_error("Worker " + str(my_sound_id) + " has no sound stream!")
-		print("ERROR: Worker " + str(my_sound_id) + " has no sound stream!")
+	# Check if we can play sound (for web platform)
+	var can_play_sound = true
+	if OS.has_feature("web"):
+		var sound_manager = get_node_or_null("/root/SoundManager")
+		if sound_manager:
+			can_play_sound = sound_manager.audio_initialized
+	
+	# Start playing construction sound if possible
+	if can_play_sound and sound_initialized and construction_sound and construction_sound.stream:
+		play_sound()
+	elif OS.has_feature("web"):
+		print("DEBUG: Worker " + str(my_sound_id) + " waiting for audio initialization")
 	
 	# Emit signal for compatibility with existing system
 	construction_started.emit()
@@ -178,14 +185,32 @@ func start_construction():
 		elif animation_player.has_animation("idle"):
 			animation_player.play("idle")
 
+# Helper to play construction sound
+func play_sound():
+	if is_construction_active and construction_sound and construction_sound.stream:
+		# Set random pitch for variety
+		construction_sound.pitch_scale = randf_range(0.9, 1.1)
+		
+		# Play the sound
+		construction_sound.play()
+		print("DEBUG: Playing sound for worker " + str(my_sound_id))
+		
+		# Start the loop timer
+		loop_timer.start()
+
+# Called when audio becomes available in web builds
+func check_and_play_sound():
+	print("DEBUG: Audio now ready for worker " + str(my_sound_id))
+	if is_construction_active and not construction_finished:
+		play_sound()
+
 # Loop the construction sound independently
 func loop_construction_sound():
-	print("DEBUG: Loop timer triggered for worker " + str(my_sound_id))
 	if is_construction_active and construction_sound and construction_sound.stream:
 		# Stop the sound if it's still playing (to prevent overlap)
 		if construction_sound.playing:
 			construction_sound.stop()
-			
+				
 		# Slight random pitch variation on each loop
 		construction_sound.pitch_scale = randf_range(0.9, 1.1)
 		
@@ -193,7 +218,7 @@ func loop_construction_sound():
 		construction_sound.play()
 		print("DEBUG: Looping sound for worker " + str(my_sound_id))
 	else:
-		print("ERROR: Cannot loop sound - either worker not active or sound not set up")
+		print("DEBUG: Cannot loop sound - either worker not active or sound not set up")
 
 func finish_construction():
 	print("DEBUG: Worker " + str(my_sound_id) + " finishing construction")

@@ -23,10 +23,21 @@ func _ready():
 		# Connect the closed signal to handle when player closes the controls
 		controls_panel.closed.connect(_on_controls_panel_closed)
 	
-	# Set up audio
-	setup_background_music()
-	setup_building_sfx()
-	setup_construction_sfx()
+	# Check for audio initialization status (important for web)
+	var sound_manager = get_node_or_null("/root/SoundManager")
+	var can_initialize_audio = true
+	
+	if OS.has_feature("web") and sound_manager:
+		can_initialize_audio = sound_manager.audio_initialized
+		
+		if not can_initialize_audio:
+			# For web, wait for the audio_ready signal before initializing audio
+			sound_manager.audio_ready.connect(_initialize_game_audio)
+			print("Web platform detected: Deferring audio setup until user interaction")
+	
+	# Set up audio if allowed (immediate for desktop, after interaction for web)
+	if can_initialize_audio:
+		_initialize_game_audio()
 	
 	# Find the builder and connect to it
 	var builder = get_node_or_null("/root/Main/Builder")
@@ -38,6 +49,17 @@ func _ready():
 	
 	# Make sure sound buses are properly configured
 	call_deferred("_setup_sound_buses")
+
+# Initialize all game audio - called immediately on desktop, after user interaction on web
+func _initialize_game_audio():
+	print("Initializing all game audio...")
+	
+	# Set up all audio systems
+	setup_background_music()
+	setup_building_sfx()
+	setup_construction_sfx()
+	
+	print("All game audio initialized successfully")
 
 # This function is called when the controls panel is closed
 func _on_controls_panel_closed():
@@ -80,10 +102,52 @@ func setup_background_music():
 		music_player.stream = music
 		music_player.volume_db = -12  # 25% volume (approx)
 		music_player.bus = "Music"  # Use the Music bus
-		music_player.play()
-		print("Playing background music: jazz_new_orleans.mp3")
+		
+		# Check if we can play audio immediately (desktop) or need to wait (web)
+		var can_play_now = true
+		if OS.has_feature("web"):
+			var sound_manager = get_node_or_null("/root/SoundManager")
+			if sound_manager:
+				can_play_now = sound_manager.audio_initialized
+				
+				# If not initialized, connect to the ready signal
+				if not can_play_now:
+					sound_manager.audio_ready.connect(_start_background_music)
+					print("Background music setup complete, waiting for user interaction")
+		
+		# Play immediately if allowed
+		if can_play_now:
+			_start_background_music()
 	else:
 		print("ERROR: Could not load background music")
+
+# Start background music playing (called directly or via signal)
+func _start_background_music():
+	if music_player and music_player.stream and not music_player.playing:
+		# For web builds, use a more aggressive approach to starting audio
+		if OS.has_feature("web"):
+			# Make sure the sound is playing from the beginning
+			music_player.stop()
+			music_player.seek(0.0)
+			
+			# Force the music to be audible
+			music_player.volume_db = -12  # Original volume
+			music_player.bus = "Music"
+			
+			# Make sure the bus isn't muted
+			var sound_manager = get_node_or_null("/root/SoundManager")
+			if sound_manager:
+				sound_manager._apply_music_volume()
+				
+			# Play with a slight delay for better browser compatibility
+			get_tree().create_timer(0.1).timeout.connect(func(): 
+				music_player.play()
+				print("Started playing background music (web build)")
+			)
+		else:
+			# Standard approach for desktop builds
+			music_player.play()
+			print("Started playing background music")
 		
 # Setup building sound effects
 func setup_building_sfx():
@@ -117,11 +181,21 @@ func setup_construction_sfx():
 		
 # Play the building sound effect when a structure is placed
 func _on_structure_placed(structure_index, position):
-	if building_sfx and building_sfx.stream:
+	# Check web audio initialized status if needed
+	var can_play_audio = true
+	if OS.has_feature("web"):
+		var sound_manager = get_node_or_null("/root/SoundManager")
+		if sound_manager:
+			can_play_audio = sound_manager.audio_initialized
+	
+	# Only play if audio is initialized (always true on desktop, depends on user interaction for web)
+	if can_play_audio and building_sfx and building_sfx.stream:
 		if building_sfx.playing:
 			building_sfx.stop()
 		building_sfx.play()
 		print("Playing building placement SFX")
+	elif OS.has_feature("web"):
+		print("Structure placed but audio not yet initialized")
 	
 # Variables for construction sound looping
 var construction_active = false
