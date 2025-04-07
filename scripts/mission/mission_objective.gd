@@ -26,3 +26,8 @@ func is_completed() -> bool:
 func progress(amount: int = 1) -> void:
 	current_count = min(current_count + amount, target_count)
 	completed = is_completed()
+
+# Function to reduce the counter (for demolition)
+func regress(amount: int = 1) -> void:
+	current_count = max(current_count - amount, 0)
+	completed = is_completed()

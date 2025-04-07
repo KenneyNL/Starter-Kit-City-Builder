@@ -99,8 +99,20 @@ func _on_structure_removed(structure_index, position):
 	
 	var structure = builder.structures[structure_index]
 	
-	# Update population
-	total_population = max(0, total_population - structure.population_count)
+	# Update population (but only for non-residential buildings in mission 3)
+	# For residential buildings in mission 3, we handle population separately in builder._remove_resident_for_building
+	var skip_population_update = false
+	var mission_manager = get_node_or_null("/root/Main/MissionManager")
+	
+	if mission_manager and mission_manager.current_mission:
+		if mission_manager.current_mission.id == "3" and structure.type == Structure.StructureType.RESIDENTIAL_BUILDING:
+			# Only update population for one resident, since we're removing them one by one
+			# We don't do total reset based on structure.population_count
+			skip_population_update = true
+			# We decrement by 1 in builder._remove_resident_for_building instead
+			
+	if !skip_population_update:
+		total_population = max(0, total_population - structure.population_count)
 	
 	# Update electricity
 	total_kW_usage = max(0, total_kW_usage - structure.kW_usage)

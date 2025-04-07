@@ -275,6 +275,9 @@ func action_build(gridmap_position):
 			
 			# Don't place the building immediately - it will be placed when construction completes
 			# We leave gridmap empty for now
+			
+			# For mission 3, don't update objectives immediately - wait for construction to finish
+			# See _update_mission_objective_on_completion in building_construction_manager.gd
 		else:
 			# For non-road structures or not in mission 3, add to the gridmap as usual
 			gridmap.set_cell_item(gridmap_position, index, gridmap.get_orthogonal_index_from_basis(selector.basis))
@@ -352,8 +355,18 @@ func action_demolish(gridmap_position):
 		var current_item = gridmap.get_cell_item(gridmap_position)
 		var is_building = current_item >= 0
 		
+		# Check for building model in the scene as a direct child of builder
+		var building_model_name = "Building_" + str(int(gridmap_position.x)) + "_" + str(int(gridmap_position.z))
+		var has_building_model = has_node(building_model_name)
+		if has_building_model:
+			print("Found building model: " + building_model_name)
+		
 		# Store structure index before removal for signaling
 		var structure_index = -1
+		
+		# Clean up any construction site at this position before demolishing
+		if construction_manager and is_building:
+			construction_manager.handle_demolition(gridmap_position)
 		
 		# Remove the appropriate item
 		if is_road:
@@ -396,10 +409,21 @@ func action_demolish(gridmap_position):
 			structure_index = current_item
 			# Remove the building from the gridmap
 			gridmap.set_cell_item(gridmap_position, -1)
+			
+			# Also remove any direct building model in the scene
+			_remove_building_model(gridmap_position)
+			
+			# Check if this was a residential building to remove a resident model
+			if structures[structure_index].type == Structure.StructureType.RESIDENTIAL_BUILDING:
+				_remove_resident_for_building(gridmap_position)
 		
 		# Emit signal that structure was removed
 		if structure_index >= 0:
 			structure_removed.emit(structure_index, gridmap_position)
+			
+			# For mission 3, update mission objective when a residential building is demolished
+			if structures[structure_index].type == Structure.StructureType.RESIDENTIAL_BUILDING:
+				_update_mission_objective_on_demolish()
 			
 # This function is no longer needed since we're using a single NavRegion3D
 # Keeping it for compatibility, but it doesn't do anything now
@@ -567,6 +591,67 @@ func _remove_power_plant(position: Vector3):
 		
 	else:
 		print("No power plant found at position ", position)
+
+# Function to remove a resident model when a residential building is demolished
+func _remove_resident_for_building(position: Vector3):
+	# First, check if we have a nav region reference
+	if not nav_region and has_node("NavRegion3D"):
+		nav_region = get_node("NavRegion3D")
+	
+	if nav_region:
+		# Look for resident with matching position in the name
+		var resident_name = "Resident_" + str(int(position.x)) + "_" + str(int(position.z))
+		
+		# First try to find by exact name
+		var found = false
+		for child in nav_region.get_children():
+			if child.name.begins_with(resident_name):
+				print("Removing resident model for demolished building: ", child.name)
+				child.queue_free()
+				found = true
+				
+				# Update the HUD population count
+				var hud = get_node_or_null("/root/Main/CanvasLayer/HUD")
+				if hud:
+					hud.total_population = max(0, hud.total_population - 1)
+					hud.update_hud()
+					hud.population_updated.emit(hud.total_population)
+				
+				break
+				
+		# If not found by exact name, find any resident (as a fallback)
+		if not found:
+			var residents = get_tree().get_nodes_in_group("characters")
+			if residents.size() > 0:
+				# Just remove the first resident we find
+				print("Removing a resident model for demolished building (fallback)")
+				residents[0].queue_free()
+				
+				# Update the HUD population count
+				var hud = get_node_or_null("/root/Main/CanvasLayer/HUD")
+				if hud:
+					hud.total_population = max(0, hud.total_population - 1)
+					hud.update_hud()
+					hud.population_updated.emit(hud.total_population)
+
+# Function to update mission objectives when residential building is demolished
+func _update_mission_objective_on_demolish():
+	# Get reference to mission manager
+	var mission_manager = get_node_or_null("/root/Main/MissionManager")
+	
+	if mission_manager and mission_manager.current_mission:
+		# Check if we're in mission 3 (build 40 residential buildings)
+		if mission_manager.current_mission.id == "3":
+			# For mission 3, do nothing here - the fix_mission.gd script will handle updating
+			# the counter via the structure_removed signal
+			print("Residential building demolished, fix_mission.gd will update the objective count")
+			
+			# Population count is handled in _remove_resident_for_building
+		elif mission_manager.current_mission.id != "3":
+			# For other missions, use the normal method
+			var mission_id = mission_manager.current_mission.id
+			mission_manager.update_objective_progress(mission_id, MissionObjective.ObjectiveType.BUILD_RESIDENTIAL, -1)
+			print("Decremented residential building count in mission objective for mission " + mission_id)
 		
 # Function to remove terrain (grass or trees)
 func _remove_terrain(position: Vector3):
@@ -581,6 +666,75 @@ func _remove_terrain(position: Vector3):
 		print("Removed terrain at position ", position)
 	else:
 		print("No terrain found at position ", position)
+
+# Function to remove building model from scene
+func _remove_building_model(position: Vector3):
+	# Try multiple possible naming patterns
+	var building_patterns = [
+		"Building_" + str(int(position.x)) + "_" + str(int(position.z)),
+		"building-small-a_" + str(int(position.x)) + "_" + str(int(position.z)),
+		"building-small-b_" + str(int(position.x)) + "_" + str(int(position.z)),
+		"building-small-c_" + str(int(position.x)) + "_" + str(int(position.z)),
+		"building-small-d_" + str(int(position.x)) + "_" + str(int(position.z)),
+		"building-garage_" + str(int(position.x)) + "_" + str(int(position.z))
+	]
+	
+	# Check if we can find the building model with any of the pattern names
+	var found = false
+	for pattern in building_patterns:
+		if has_node(pattern):
+			# Get the building and remove it
+			var building = get_node(pattern)
+			building.queue_free()
+			print("Removed building model at position ", position, " with name: ", pattern)
+			found = true
+			break
+	
+	# If not found as direct child, try to find by position in navigation region
+	if !found and nav_region:
+		for child in nav_region.get_children():
+			# Skip non-building nodes
+			if !child.name.begins_with("Building") and !child.name.begins_with("building"):
+				continue
+				
+			# Check if this building is at our position (with some tolerance)
+			var pos_diff = (child.global_transform.origin - position).abs()
+			if pos_diff.x < 0.5 and pos_diff.z < 0.5:
+				child.queue_free()
+				print("Removed building model from nav_region at position ", position)
+				found = true
+				break
+	
+	# If still not found, search the entire scene
+	if !found:
+		var main = get_node_or_null("/root/Main")
+		if main:
+			for child in main.get_children():
+				# Skip non-building nodes
+				if !child.name.begins_with("Building") and !child.name.begins_with("building"):
+					continue
+					
+				# Check if this building is at our position (with some tolerance)
+				var pos_diff = (child.global_transform.origin - position).abs()
+				if pos_diff.x < 0.5 and pos_diff.z < 0.5:
+					child.queue_free()
+					print("Removed building model from Main at position ", position)
+					found = true
+					break
+	
+	# If STILL not found, try one last approach - scan for gridmap children
+	if !found and gridmap:
+		for child in gridmap.get_children():
+			# Check if this is any model at our position (with some tolerance)
+			var pos_diff = (child.global_transform.origin - position).abs()
+			if pos_diff.x < 0.5 and pos_diff.z < 0.5:
+				child.queue_free()
+				print("Removed model from gridmap at position ", position, " with name: ", child.name)
+				found = true
+				break
+	
+	if !found:
+		print("No building model found to remove at position ", position)
 
 # Function to remove a road model from the navigation region
 func _remove_road_from_navregion(position: Vector3):
@@ -738,6 +892,9 @@ func _on_construction_completed(position: Vector3):
 	
 	# Make sure the navigation mesh is updated
 	rebake_navigation_mesh()
+	
+	# Note that mission objective updates are now handled in the construction manager
+	# to ensure they only occur after construction is complete
 	
 	
 

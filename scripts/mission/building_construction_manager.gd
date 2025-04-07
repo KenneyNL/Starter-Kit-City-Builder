@@ -264,6 +264,9 @@ func _complete_construction(position: Vector3):
 	# Place the final building
 	_place_final_building(position, site["structure_index"])
 	
+	# Update mission objective now that construction is complete
+	_update_mission_objective_on_completion(site["structure_index"])
+	
 	# Check if we should spawn a resident
 	var mission_manager = builder.get_node_or_null("/root/Main/MissionManager")
 	var should_spawn_resident = true
@@ -332,6 +335,61 @@ func _complete_construction(position: Vector3):
 	construction_completed.emit(position)
 	
 	print("Construction completed at ", position)
+
+# Function to handle building demolition at a position
+func handle_demolition(position: Vector3):
+	# Check if this position has a construction site entry
+	if position in construction_sites:
+		print("Removing construction site at demolished position: ", position)
+		
+		# Clean up any resources
+		var site = construction_sites[position]
+		
+		# Clean up plot if it exists
+		if site["plot"] != null:
+			site["plot"].queue_free()
+			
+		# Clean up worker if it exists
+		if site["worker"] != null:
+			site["worker"].queue_free()
+			
+		# Remove the entry from the dictionary
+		construction_sites.erase(position)
+		print("Construction site entry removed for demolished building")
+	else:
+		print("No construction site found at demolished position: ", position)
+
+# Function to update mission objective when construction is complete
+func _update_mission_objective_on_completion(structure_index: int):
+	# Get reference to mission manager
+	var mission_manager = builder.get_node_or_null("/root/Main/MissionManager")
+	
+	if mission_manager and mission_manager.current_mission:
+		# Check if this is a residential building
+		if structure_index >= 0 and structure_index < builder.structures.size():
+			var structure = builder.structures[structure_index]
+			
+			if structure.type == Structure.StructureType.RESIDENTIAL_BUILDING:
+				print("Updating mission objective for completed residential building")
+				
+				# For mission 3, we'll rely on the fix_mission.gd script to maintain an accurate count
+				# This prevents double counting, as we just need to make sure buildings are counted
+				# based on their actual presence in the scene
+				if mission_manager.current_mission.id == "3":
+					# Instead of directly updating, we'll wait for the fix script to apply the proper count
+					print("Mission 3 residential building completed, count will be updated by fix script")
+				
+				# Special handling for mission 1
+				elif mission_manager.current_mission.id == "1":
+					# For mission 1, we need to make sure the objectives are updated
+					mission_manager.update_objective_progress(
+						mission_manager.current_mission.id,
+						MissionObjective.ObjectiveType.BUILD_RESIDENTIAL
+					)
+					
+					# Trigger an immediate progress check
+					mission_manager.check_mission_progress(mission_manager.current_mission.id)
+					print("Mission 1 progress check triggered after construction completed")
 
 # Place the final building at the construction site
 func _place_final_building(position: Vector3, structure_index: int):

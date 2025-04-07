@@ -124,6 +124,24 @@ func start_mission(mission: MissionData):
 	current_mission = mission
 	active_missions[mission.id] = mission
 	
+	# Fix for mission 3 to ensure accurate count
+	if mission.id == "3":
+		# Reset the residential building count to 0 to avoid any double counting
+		for objective in mission.objectives:
+			if objective.type == MissionObjective.ObjectiveType.BUILD_RESIDENTIAL:
+				objective.current_count = 0
+				objective.completed = false
+				print("Reset mission 3 residential count to 0")
+				
+		# Load and run the fix script to count actual buildings
+		var FixMissionScript = load("res://scripts/fix_mission.gd")
+		if FixMissionScript:
+			var fix_node = Node.new()
+			fix_node.set_script(FixMissionScript)
+			fix_node.name = "FixMissionHelper"
+			add_child(fix_node)
+			print("Added fix mission helper script")
+	
 	# Add decorative structures and curved roads
 	# Use more robust checking - fallback to ID for backward compatibility
 	var is_construction_or_expansion = (mission.id == "2" or mission.id == "3")
@@ -404,17 +422,28 @@ func _on_completion_continue_button_pressed(modal_to_close):
 
 func check_mission_progress(mission_id: String) -> bool:
 	if not active_missions.has(mission_id):
+		print("Mission ID not found in active missions: " + mission_id)
 		return false
 	
 	var mission = active_missions[mission_id]
 	var all_completed = true
 	
-	for objective in mission.objectives:
+	print("Checking progress for mission: " + mission_id + " - " + mission.title)
+	
+	# Print status of each objective
+	for i in range(mission.objectives.size()):
+		var objective = mission.objectives[i]
+		print("  Objective " + str(i+1) + ": " + objective.description)
+		print("    Type: " + str(objective.type) + ", Count: " + str(objective.current_count) + "/" + str(objective.target_count))
+		print("    Completed: " + str(objective.completed))
+		
 		if not objective.completed:
 			all_completed = false
-			break
+	
+	print("All objectives completed: " + str(all_completed))
 	
 	if all_completed:
+		print("COMPLETING MISSION: " + mission_id)
 		complete_mission(mission_id)
 		return true
 	
@@ -427,22 +456,28 @@ func update_objective_progress(mission_id: String, objective_type: int, amount: 
 	var mission = active_missions[mission_id]
 	
 	for objective in mission.objectives:
-		if objective.completed:
-			continue
-			
 		if objective.type == objective_type:
 			# For specific structure objectives, check structure index
 			if objective.type == MissionObjective.ObjectiveType.BUILD_SPECIFIC_STRUCTURE:
 				if structure_index != objective.structure_index:
 					continue
 			
-			# Update progress
+			# Track old count for comparison
 			var old_count = objective.current_count
-			objective.progress(amount)
+			
+			# Update progress (positive or negative)
+			if amount > 0:
+				objective.progress(amount)
+			else:
+				# For negative amounts (like when demolishing buildings)
+				objective.regress(abs(amount))
+				# Ensure completed flag is updated properly
+				objective.completed = objective.is_completed()
 			
 			# Emit signal if progress changed
 			if old_count != objective.current_count:
 				objective_progress.emit(objective, objective.current_count)
+				print("Objective progress updated from " + str(old_count) + " to " + str(objective.current_count))
 			
 			# Check if objective was just completed
 			if objective.completed and old_count != objective.current_count:
@@ -457,6 +492,18 @@ func _on_structure_placed(structure_index: int, position: Vector3):
 		return
 		
 	var structure = builder.structures[structure_index]
+	
+	# Check if this is a residential building in mission 3 (which uses construction workers)
+	var skip_residential_count = false
+	if structure.type == Structure.StructureType.RESIDENTIAL_BUILDING:
+		if current_mission and current_mission.id == "3":
+			# Skip residential count updates - will be handled after construction completes
+			skip_residential_count = true
+			print("Skipping immediate residential count update - will count after construction")
+			
+		# Special handling for mission 1 - always update immediately to allow mission to complete
+		elif current_mission and current_mission.id == "1":
+			print("Mission 1 detected, will update residential count immediately")
 	
 	# Special handling for power plant (Mission 5)
 	if structure.model.resource_path.contains("power_plant"):
@@ -484,7 +531,10 @@ func _on_structure_placed(structure_index: int, position: Vector3):
 			Structure.StructureType.ROAD:
 				update_objective_progress(mission_id, MissionObjective.ObjectiveType.BUILD_ROAD)
 			Structure.StructureType.RESIDENTIAL_BUILDING:
-				update_objective_progress(mission_id, MissionObjective.ObjectiveType.BUILD_RESIDENTIAL)
+				# Only update residential count if we're not in mission 3 or 1
+				if not skip_residential_count:
+					update_objective_progress(mission_id, MissionObjective.ObjectiveType.BUILD_RESIDENTIAL)
+					print("Immediate update to residential count - not using construction workers")
 				
 				# We don't spawn characters here anymore - this is handled by the builder.gd
 				# for both direct placement and worker construction
@@ -506,6 +556,19 @@ func update_mission_ui():
 	if mission_ui and current_mission:
 		mission_ui.update_mission_display(current_mission)
 		
+# Reset the count of a specific objective type in the current mission
+func reset_objective_count(objective_type: int, new_count: int = 0):
+	if not current_mission:
+		return
+		
+	for objective in current_mission.objectives:
+		if objective.type == objective_type:
+			objective.current_count = new_count
+			objective.completed = objective.is_completed()
+			objective_progress.emit(objective, objective.current_count)
+			print("Reset objective count to " + str(new_count) + " for objective type " + str(objective_type))
+			
+	update_mission_ui()
 func _on_learning_completed():
 	# Check current mission for progress
 	if current_mission != null and current_mission.id != "":
