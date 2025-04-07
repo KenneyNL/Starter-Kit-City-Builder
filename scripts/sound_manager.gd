@@ -119,41 +119,62 @@ func _initialize_web_audio():
 		
 	print("User interaction detected: Initializing web audio...")
 	
-	# For web browsers, we need a more direct and aggressive approach
-	if OS.has_feature("web"):
-		# 1. Explicitly unlock audio context by using JavaScript
-		JavaScript.eval("""
-			// Function to unlock Web Audio
-			function unlockAudio() {
-				// Get the AudioContext
-				var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-				
-				// Resume it (modern browsers)
-				if (audioCtx.state === 'suspended') {
-					audioCtx.resume().then(() => {
-						console.log('Audio context resumed successfully');
-					});
+	# Skip JavaScript code in editor, only run it in actual web export
+	if OS.has_feature("web") and not OS.is_debug_build():
+		# 1. Use JavaScriptBridge to unlock web audio
+		print("Running JavaScript to unlock audio context...")
+		# This is wrapped in a try-catch to handle any errors and prevent crashes
+		var js_code = """
+			try {
+				// Function to unlock Web Audio
+				function unlockAudio() {
+					// Get the AudioContext
+					var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+					
+					// Resume it (modern browsers)
+					if (audioCtx && audioCtx.state === 'suspended') {
+						audioCtx.resume().then(() => {
+							console.log('Audio context resumed successfully');
+						});
+					}
+					
+					// Create and play a silent buffer (older browsers)
+					if (audioCtx) {
+						var buffer = audioCtx.createBuffer(1, 1, 22050);
+						var source = audioCtx.createBufferSource();
+						source.buffer = buffer;
+						source.connect(audioCtx.destination);
+						source.start(0);
+						
+						console.log('Web Audio unlock attempt complete');
+					}
+					
+					// Also click to unlock for iOS
+					document.removeEventListener('click', unlockAudio);
+					document.removeEventListener('touchstart', unlockAudio);
+					document.removeEventListener('touchend', unlockAudio);
+					document.removeEventListener('keydown', unlockAudio);
 				}
 				
-				// Create and play a silent buffer (older browsers)
-				var buffer = audioCtx.createBuffer(1, 1, 22050);
-				var source = audioCtx.createBufferSource();
-				source.buffer = buffer;
-				source.connect(audioCtx.destination);
-				source.start(0);
-				
-				console.log('Web Audio unlock attempt complete');
-				
-				// Also click to unlock for iOS
-				document.removeEventListener('click', unlockAudio);
-				document.removeEventListener('touchstart', unlockAudio);
-				document.removeEventListener('touchend', unlockAudio);
-				document.removeEventListener('keydown', unlockAudio);
+				// Try to unlock now
+				unlockAudio();
+				console.log("Godot: Web audio unlock script executed");
+				true; // Return success
+			} catch (e) {
+				console.error("Godot: Web audio unlock error:", e);
+				false; // Return failure
 			}
-			
-			// Try to unlock now
-			unlockAudio();
-		""")
+		"""
+		
+		# Safely evaluate JavaScript code
+		if Engine.has_singleton("JavaScriptBridge"):
+			var js = Engine.get_singleton("JavaScriptBridge")
+			var result = js.eval(js_code)
+			print("JavaScript result: ", result)
+		else:
+			print("JavaScriptBridge singleton not available")
+	else:
+		print("Skipping JavaScript code in editor/debug mode")
 	
 	# Resume the AudioServer context
 	AudioServer.set_bus_mute(0, false) # Unmute master bus

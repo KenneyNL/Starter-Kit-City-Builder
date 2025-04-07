@@ -93,6 +93,9 @@ func setup_background_music():
 	music_player = AudioStreamPlayer.new()
 	add_child(music_player)
 	
+	# Set this to make the music player ignore the game tree's pause state
+	music_player.process_mode = Node.PROCESS_MODE_ALWAYS
+	
 	var music = load("res://sounds/jazz_new_orleans.mp3") 
 	if music:
 		# Set looping on the AudioStreamMP3 itself
@@ -154,6 +157,9 @@ func setup_building_sfx():
 	building_sfx = AudioStreamPlayer.new()
 	add_child(building_sfx)
 	
+	# Set this to make the sound effects player ignore the game tree's pause state
+	building_sfx.process_mode = Node.PROCESS_MODE_ALWAYS
+	
 	var sfx = load("res://sounds/building_placing.wav")
 	if sfx:
 		building_sfx.stream = sfx
@@ -169,6 +175,9 @@ func setup_building_sfx():
 func setup_construction_sfx():
 	construction_sfx = AudioStreamPlayer.new()
 	add_child(construction_sfx)
+	
+	# Set this to make the sound effects player ignore the game tree's pause state
+	construction_sfx.process_mode = Node.PROCESS_MODE_ALWAYS
 	
 	var sfx = load("res://sounds/construction.wav")
 	if sfx:
