@@ -109,7 +109,7 @@ func init_web_audio_from_js():
 		print("Audio initialization requested from JS")
 		_initialize_web_audio()
 
-# Initialize audio for web builds
+# Initialize audio for web builds - simplified approach following Mozilla guidelines
 func _initialize_web_audio():
 	if audio_initialized:
 		return
@@ -122,120 +122,63 @@ func _initialize_web_audio():
 	# Force unmute all buses to make sure audio can be heard
 	if music_bus_index != -1:
 		AudioServer.set_bus_mute(music_bus_index, false)
-		AudioServer.set_bus_volume_db(music_bus_index, 0)  # Maximum volume
+		AudioServer.set_bus_volume_db(music_bus_index, 0) # Full volume
 	if sfx_bus_index != -1:
 		AudioServer.set_bus_mute(sfx_bus_index, false)
-		AudioServer.set_bus_volume_db(sfx_bus_index, 0)  # Maximum volume
+		AudioServer.set_bus_volume_db(sfx_bus_index, 0) # Full volume
 	
 	# Skip JavaScript code in editor, only run it in actual web export
 	var js_result = false
 	if OS.has_feature("web"):
-		# 1. Use JavaScriptBridge to unlock web audio with enhanced compatibility
+		# Simple JavaScript to unlock audio context
 		print("Running JavaScript to unlock audio context...")
-		# This is wrapped in a try-catch to handle any errors and prevent crashes
 		var js_code = """
 		(function() {
-			var result = false;
 			try {
-				// Enhanced Web Audio unlock for browsers
+				// Target desktop and mobile browsers with a simple approach
+				console.log('Starting simple audio unlock process');
 				
-				// Detect if running inside an iframe and gain focus
-				if (window.parent !== window) {
-					window.focus();
-				}
-				
-				// Get all audio elements and start playing them
-				var audioElements = document.querySelectorAll('audio');
-				console.log('Found ' + audioElements.length + ' audio elements');
-				audioElements.forEach(function(audio, index) {
-					console.log('Audio element ' + index + ' - volume:', audio.volume, 'muted:', audio.muted);
-					// Set volume to max and unmute
-					audio.volume = 1.0;
-					audio.muted = false;
-					// Try to play any existing audio elements
-					audio.play().catch(function(e) {
-						console.log('Could not autoplay audio element:', e);
-					});
-				});
-				
-				// Store a global reference to reuse
+				// Create audio context
 				if (!window._godotAudioContext) {
-					console.log('Creating new AudioContext');
 					window._godotAudioContext = new (window.AudioContext || window.webkitAudioContext)();
 				}
-				var audioCtx = window._godotAudioContext;
-				console.log('AudioContext initial state:', audioCtx.state);
 				
-				// Resume the context (for Chrome/Edge/Safari)
-				if (audioCtx && audioCtx.state === 'suspended') {
-					console.log('Audio context is suspended, attempting to resume...');
-					audioCtx.resume();
+				var audioCtx = window._godotAudioContext;
+				console.log('Audio context state:', audioCtx.state);
+				
+				// Resume it
+				if (audioCtx.state === 'suspended') {
+					audioCtx.resume().then(function() {
+						console.log('Audio context resumed successfully');
+					});
 				}
 				
-				// Create a more audible tone to kickstart audio
+				// Play a simple, short beep to kickstart audio
 				var oscillator = audioCtx.createOscillator();
 				var gainNode = audioCtx.createGain();
-				gainNode.gain.value = 0.2; // Audible but not too loud
+				gainNode.gain.value = 0.1; // Quiet beep
 				oscillator.connect(gainNode);
 				gainNode.connect(audioCtx.destination);
-				oscillator.frequency.value = 440; // A4 note
 				oscillator.start(0);
-				oscillator.stop(0.5); // Short duration
+				oscillator.stop(0.1); // Very short
 				
-				// Play a second tone with different frequency after a short delay
-				setTimeout(function() {
-					var oscillator2 = audioCtx.createOscillator();
-					var gainNode2 = audioCtx.createGain();
-					gainNode2.gain.value = 0.2;
-					oscillator2.connect(gainNode2);
-					gainNode2.connect(audioCtx.destination);
-					oscillator2.frequency.value = 880; // One octave higher
-					oscillator2.start(0);
-					oscillator2.stop(0.5);
-				}, 600);
-				
-				// Also play a buffer (for iOS Safari)
-				var buffer = audioCtx.createBuffer(1, 8000, 22050);
-				// Fill the buffer with a simple sine wave
-				var bufferData = buffer.getChannelData(0);
-				for (var i = 0; i < bufferData.length; i++) {
-					bufferData[i] = Math.sin(i * 0.05) * 0.2;
-				}
-				var source = audioCtx.createBufferSource();
-				source.buffer = buffer;
-				source.connect(audioCtx.destination);
-				source.start(0);
-				
-				// Auto-unlock listeners when user interacts
-				var unlockEvents = ['touchstart', 'touchend', 'mousedown', 'keydown'];
-				
-				function unlockOnInteraction() {
-					unlockEvents.forEach(function(event) {
-						document.removeEventListener(event, unlockOnInteraction);
-					});
-					
-					// Try to resume again on direct user interaction
-					if (audioCtx.state === 'suspended') {
-						audioCtx.resume();
-					}
-				}
-				
-				unlockEvents.forEach(function(event) {
-					document.addEventListener(event, unlockOnInteraction, false);
+				// Add listeners to handle ongoing user gestures
+				['click', 'touchstart', 'touchend'].forEach(function(event) {
+					document.addEventListener(event, function() {
+						// If context is still suspended, try resuming it again
+						if (audioCtx.state === 'suspended') {
+							audioCtx.resume().then(function() {
+								console.log('Audio context resumed on user gesture');
+							});
+						}
+					}, {once: false});
 				});
 				
-				console.log('Web Audio unlock attempts completed. AudioContext state:', audioCtx.state);
-				
-				// Store result in a global variable instead of returning
-				window._godotAudioResult = audioCtx.state === 'running';
-				result = window._godotAudioResult;
-			} catch (e) {
-				console.error('Web Audio unlock error:', e);
-				window._godotAudioResult = false;
-				result = false;
+				return audioCtx.state;
+			} catch(e) {
+				console.error('Error initializing audio:', e);
+				return 'error';
 			}
-			
-			return result;
 		})()
 		"""
 		
@@ -243,111 +186,47 @@ func _initialize_web_audio():
 		if Engine.has_singleton("JavaScriptBridge"):
 			var js = Engine.get_singleton("JavaScriptBridge")
 			js_result = js.eval(js_code)
-			print("JavaScript result: ", js_result)
+			print("JavaScript audio context state: ", js_result)
 		else:
 			print("JavaScriptBridge singleton not available")
 	else:
 		print("Skipping JavaScript code in editor/debug mode")
 	
-	# Play multiple sounds at different volumes to initialize the audio context
-	# This approach helps across different browsers
-	var silent_players = []
+	# Create a single silent sound to test audio system
+	var test_player = AudioStreamPlayer.new()
+	add_child(test_player)
 	
-	# Create multiple silent players with different configurations
-	for i in range(5):  # Increased from 3 to 5 players
-		var silent_player = AudioStreamPlayer.new()
-		add_child(silent_player)
-		silent_players.append(silent_player)
-		
-		# Create a very short audio stream
-		var silent_stream = AudioStreamWAV.new()
-		silent_stream.format = AudioStreamWAV.FORMAT_16_BITS
-		silent_stream.stereo = true
-		
-		# Use slightly different data for each player
-		var data = PackedByteArray()
-		for j in range(100):  # Larger buffer
-			# Create a simple sine wave pattern with different frequencies
-			data.append(int((sin(j * (0.1 + i * 0.05)) * 127) + 128) % 256)
-			data.append(int((sin(j * (0.1 + i * 0.05)) * 127) + 128) % 256)
-		
-		silent_stream.data = data
-		
-		# Configure each player slightly differently
-		silent_player.stream = silent_stream
-		silent_player.volume_db = -40.0 + (i * 10.0)  # Gradually increasing volume
-		silent_player.pitch_scale = 0.5 + (i * 0.5)  # Different pitch scales
-		silent_player.bus = "Master"  # Force master bus
-		
-		# Play each player
-		silent_player.play()
+	# Create a simple tone
+	var test_stream = AudioStreamWAV.new()
+	test_stream.format = AudioStreamWAV.FORMAT_16_BITS
+	test_stream.stereo = true
 	
-	# Wait a moment before stopping (important for some browsers)
-	await get_tree().create_timer(0.5).timeout  # Increased wait time
+	# Simple silent data
+	var data = PackedByteArray([0, 0, 0, 0, 0, 0, 0, 0])
+	test_stream.data = data
 	
-	# Stop all silent players
-	for player in silent_players:
-		player.stop()
+	# Configure player
+	test_player.stream = test_stream
+	test_player.volume_db = -80.0 # Silent
+	test_player.bus = "Master"
 	
-	# Wait a frame to ensure everything is processed
-	await get_tree().process_frame
+	# Play the test sound
+	test_player.play()
 	
-	# Try playing on the actual audio buses with more audible tones
-	var test_players = []
+	# Wait a small amount of time
+	await get_tree().create_timer(0.1).timeout
 	
-	# Test play on each important bus
-	var bus_names = ["Master", "Music", "SFX"]
-	for bus_index in range(bus_names.size()):
-		var bus_name = bus_names[bus_index]
-		var test_player = AudioStreamPlayer.new()
-		add_child(test_player)
-		test_players.append(test_player)
-		
-		# Create test audio with audible tones
-		var test_stream = AudioStreamWAV.new()
-		test_stream.format = AudioStreamWAV.FORMAT_16_BITS
-		test_stream.stereo = true
-		
-		# Create a slightly audible tone
-		var data = PackedByteArray()
-		# Create a simple sawtooth wave with different frequencies per bus
-		var frequency = 440.0 * (1.0 + bus_index * 0.5)  # Different frequency per bus
-		for j in range(4000):  # Larger buffer for longer sound
-			var value = int(((j % int(22050/frequency)) / (22050/frequency) * 200) + 28)
-			data.append(value)
-			data.append(value)
-		
-		test_stream.data = data
-		
-		# Configure test player
-		test_player.stream = test_stream
-		test_player.volume_db = -20.0  # More audible for testing
-		test_player.bus = bus_name
-		
-		# Play test sound
-		test_player.play()
-		
-		print("Playing test tone on " + bus_name + " bus")
+	# Clean up
+	test_player.stop()
+	test_player.queue_free()
 	
-	# Wait again before cleanup - longer for audible confirmation
-	await get_tree().create_timer(0.8).timeout
-	
-	# Stop all test players
-	for player in test_players:
-		player.stop()
-	
-	# Clean up all players
-	await get_tree().process_frame
-	for player in silent_players + test_players:
-		player.queue_free()
-	
-	# Set the flag to prevent multiple initializations
+	# Mark as initialized
 	audio_initialized = true
 	print("Web audio initialized successfully")
 	
-	# Force highest volumes
-	music_volume = 1.0
-	sfx_volume = 1.0
+	# Set volumes to reasonable defaults
+	music_volume = 0.8
+	sfx_volume = 0.8
 	music_muted = false
 	sfx_muted = false
 	

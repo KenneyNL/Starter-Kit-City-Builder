@@ -195,261 +195,54 @@ func setup_background_music():
 # Start background music playing (called directly or via signal)
 func _start_background_music():
 	if music_player and music_player.stream and not music_player.playing:
-		# For web builds, use a more aggressive approach to starting audio
+		# For web builds, use a simple approach to starting audio
 		if OS.has_feature("web"):
-			print("Starting background music (web build) - music player status before:")
-			print("- Playing: " + str(music_player.playing))
-			print("- Stream: " + str(music_player.stream))
-			print("- Volume: " + str(music_player.volume_db))
-			print("- Bus: " + str(music_player.bus))
+			print("Starting background music (web build)")
 			
 			# Make sure we start from the beginning
 			music_player.stop()
 			music_player.seek(0.0)
 			
-			# Force the music to be audible - use even louder volume for web
-			music_player.volume_db = 0  # Full volume for web
-			music_player.bus = "Music"
+			# Set reasonable volume
+			music_player.volume_db = -10  # Normal volume for web
+			music_player.bus = "Music" 
 			
-			# Force all audio buses to be unmuted and at good volume
-			# Master bus
-			AudioServer.set_bus_mute(0, false)
-			AudioServer.set_bus_volume_db(0, 0)  # Full volume for master
+			# Make sure buses are unmuted
+			AudioServer.set_bus_mute(0, false) # Master
 			
 			# Music bus
 			var music_bus_idx = AudioServer.get_bus_index("Music")
 			if music_bus_idx >= 0:
 				print("Music bus found at index: " + str(music_bus_idx))
-				# Force unmute and good volume
-				AudioServer.set_bus_mute(music_bus_idx, false) 
-				AudioServer.set_bus_volume_db(music_bus_idx, 0)  # Set to maximum (0dB)
-				print("- Music bus mute: " + str(AudioServer.is_bus_mute(music_bus_idx)))
-				print("- Music bus volume: " + str(AudioServer.get_bus_volume_db(music_bus_idx)))
-			else:
-				print("WARNING: Music bus not found!")
-				
-			# Make sure sound manager settings aren't overriding
-			var sound_manager = get_node_or_null("/root/SoundManager")
-			if sound_manager:
-				# Force good settings
-				sound_manager.music_volume = 1.0
-				sound_manager.music_muted = false
-				sound_manager._apply_music_volume()
-				print("SoundManager settings:")
-				print("- Music volume: " + str(sound_manager.music_volume))
-				print("- Music muted: " + str(sound_manager.music_muted))
+				AudioServer.set_bus_mute(music_bus_idx, false)
 			
-			# Use JavaScript to directly ensure audio is unlocked and play a louder beep
+			# Play the music
+			music_player.play()
+			print("Started playing background music (web)")
+			
+			# Simple JavaScript to ensure audio context is running
 			if Engine.has_singleton("JavaScriptBridge"):
 				var js = Engine.get_singleton("JavaScriptBridge")
-				var js_result = js.eval("""
+				js.eval("""
 				(function() {
 					try {
-						// Force audio context to resume
-						if (window._godotAudioContext) {
-							console.log('GameManager: Current audio context state:', window._godotAudioContext.state);
-							if (window._godotAudioContext.state === 'suspended') {
-								console.log('GameManager: Forcing audio context resume before music');
-								window._godotAudioContext.resume();
-							}
-							
-							// Play a quick sound to kickstart audio with higher volume
-							var oscillator = window._godotAudioContext.createOscillator();
-							var gainNode = window._godotAudioContext.createGain();
-							gainNode.gain.value = 0.3; // More audible beep
-							oscillator.connect(gainNode);
-							gainNode.connect(window._godotAudioContext.destination);
-							oscillator.frequency.value = 440; // A4 note
-							oscillator.start(0);
-							oscillator.stop(0.3); // Longer beep
-							
-							// Play a second tone with different frequency after a short delay
-							setTimeout(function() {
-								var oscillator2 = window._godotAudioContext.createOscillator();
-								var gainNode2 = window._godotAudioContext.createGain();
-								gainNode2.gain.value = 0.3;
-								oscillator2.connect(gainNode2);
-								gainNode2.connect(window._godotAudioContext.destination);
-								oscillator2.frequency.value = 880; // One octave higher
-								oscillator2.start(0);
-								oscillator2.stop(0.3);
-							}, 400);
-							
-							// Attempt to find audio elements and manipulate them directly
-							var audioElements = document.querySelectorAll('audio');
-							console.log('Found', audioElements.length, 'audio elements');
-							audioElements.forEach(function(audio, index) {
-								console.log('Audio element', index, 'volume:', audio.volume, 'muted:', audio.muted);
-								// Set volume to maximum
-								audio.volume = 1.0;
-								audio.muted = false;
-								audio.play().catch(function(e) {
-									console.log('Could not autoplay audio element:', e);
-								});
-							});
-							
-							return window._godotAudioContext.state;
-						} else {
-							console.log('GameManager: No audio context found!');
-							return "no_context";
+						if (window._godotAudioContext && window._godotAudioContext.state === 'suspended') {
+							console.log('GameManager: Resuming audio context');
+							window._godotAudioContext.resume();
 						}
 					} catch(e) {
-						console.error('GameManager: Error resuming audio context:', e);
-						return "error: " + e.message;
+						console.error('GameManager: Error in audio context check:', e);
 					}
 				})()
 				""")
-				print("JavaScript audio context state: " + str(js_result))
-			
-			# Initial play attempt - with higher volume
-			music_player.volume_db = 0  # Maximum volume
-			music_player.play()
-			print("Playing background music NOW (web build)")
-			
-			# Schedule multiple retries with increasing volume
-			_retry_audio_playback()
 		else:
 			# Standard approach for desktop builds
 			music_player.play()
 			print("Started playing background music")
 			
-# New function to retry all audio in web builds
-func _retry_audio_playback():
-	if not OS.has_feature("web"):
-		return
-		
-	# Create a timer to retry audio multiple times
-	var retry_timer = Timer.new()
-	retry_timer.name = "AudioRetryTimer"
-	retry_timer.wait_time = 1.0
-	retry_timer.one_shot = false
-	add_child(retry_timer)
+# This retry audio function has been removed in favor of the simpler approach
 	
-	# Counter for retry attempts
-	var retry_count = 0
-	var max_retries = 10  # Increased retries
-	
-	# Connect retry function to timer
-	retry_timer.timeout.connect(func():
-		retry_count += 1
-		print("Audio retry attempt " + str(retry_count) + "/" + str(max_retries))
-		
-		# Stop after max retries
-		if retry_count >= max_retries:
-			retry_timer.stop()
-			retry_timer.queue_free()
-			return
-		
-		# Try to unlock audio with JavaScript on every retry
-		if Engine.has_singleton("JavaScriptBridge"):
-			var js = Engine.get_singleton("JavaScriptBridge")
-			var js_result = js.eval("""
-			(function() {
-				try {
-					if (window._godotAudioContext) {
-						console.log('Retry attempt ' + %d + ': Audio context state:', window._godotAudioContext.state);
-						window._godotAudioContext.resume();
-						
-						// Try different audio approaches on different retries
-						var freq = 440 * (1 + (%d * 0.1));
-						var osc = window._godotAudioContext.createOscillator();
-						var gain = window._godotAudioContext.createGain();
-						gain.gain.value = 0.25;
-						osc.frequency.value = freq;
-						osc.connect(gain);
-						gain.connect(window._godotAudioContext.destination);
-						osc.start();
-						osc.stop(0.3);
-						
-						// Find HTML audio elements and try to manipulate them directly
-						var audioElements = document.querySelectorAll('audio');
-						console.log('Found', audioElements.length, 'audio elements on retry attempt');
-						audioElements.forEach(function(audio, index) {
-							audio.volume = 1.0;
-							audio.muted = false;
-							audio.play().catch(function(e) {});
-						});
-						
-						return window._godotAudioContext.state;
-					} else {
-						return "no_context";
-					}
-				} catch(e) {
-					console.error('Error in retry JS:', e);
-					return "error";
-				}
-			})();
-			""" % [retry_count, retry_count])
-			print("JavaScript audio retry result (" + str(retry_count) + "): " + str(js_result))
-		
-		# Try to restart all audio players
-		if music_player and music_player.stream:
-			# Always keep volume at maximum for retries
-			music_player.volume_db = 0
-			
-			# Ensure music bus is also at maximum
-			var music_bus_idx = AudioServer.get_bus_index("Music")
-			if music_bus_idx >= 0:
-				AudioServer.set_bus_mute(music_bus_idx, false)
-				AudioServer.set_bus_volume_db(music_bus_idx, 0)  # Full volume
-			
-			# On some attempts, try reloading the music
-			if retry_count % 3 == 0:  # Every 3rd retry
-				print("Attempting to reload music file on retry " + str(retry_count))
-				var reloaded_music = load("res://sounds/jazz_new_orleans.mp3")
-				if reloaded_music:
-					print("Reloaded music successfully")
-					if reloaded_music is AudioStreamMP3:
-						reloaded_music.loop = true
-					music_player.stream = reloaded_music
-			
-			# Force play again
-			music_player.stop()
-			music_player.play()
-			print("Retrying music playback with maximum volume")
-			
-			# Try playing a simpler sound on alternate attempts
-			if retry_count % 2 == 0:  # Every 2nd retry
-				print("Trying alternate sound on retry " + str(retry_count))
-				var alt_player = AudioStreamPlayer.new()
-				add_child(alt_player)
-				alt_player.name = "AltAudioTest" + str(retry_count)
-				var alt_sound = load("res://sounds/building_placing.wav")
-				if alt_sound:
-					alt_player.stream = alt_sound
-					alt_player.volume_db = 0
-					alt_player.bus = "Music"
-					alt_player.play()
-					# This player will clean itself up after playing
-					alt_player.finished.connect(func(): alt_player.queue_free())
-	)
-	
-	# Start the timer
-	retry_timer.start()
-	
-# Helper function to retry music playback for web builds
-func _retry_individual_audio_play(player: AudioStreamPlayer, attempt: int, max_attempts: int):
-	if !player.playing and attempt < max_attempts:
-		print("Retrying individual audio playback, attempt %d/%d" % [attempt, max_attempts])
-		
-		# Force set volume and unmute
-		player.volume_db = -5 + (attempt * 2)  # Increase volume with each attempt
-		
-		# For the bus
-		var music_bus_idx = AudioServer.get_bus_index("Music")
-		if music_bus_idx >= 0:
-			AudioServer.set_bus_mute(music_bus_idx, false)
-			AudioServer.set_bus_volume_db(music_bus_idx, -5 + (attempt * 2))
-			print("Music bus volume set to " + str(AudioServer.get_bus_volume_db(music_bus_idx)) + "dB")
-		
-		# Try to play again
-		player.play()
-		
-		# Schedule another retry if needed
-		if attempt < max_attempts - 1:
-			get_tree().create_timer(0.6).timeout.connect(
-				Callable(self, "_retry_individual_audio_play").bind(player, attempt + 1, max_attempts)
-			)
+# This helper has been removed in favor of a simpler approach
 		
 # Setup building sound effects
 func setup_building_sfx():

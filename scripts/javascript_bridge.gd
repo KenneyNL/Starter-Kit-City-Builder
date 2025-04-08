@@ -347,97 +347,43 @@ class JavaScriptGlobal:
 		(function() {
 			var result = false;
 			try {
-				// Detect if running inside an iframe and gain focus
-				if (window.parent !== window) {
-					window.focus();
-				}
+				// Simple approach to unlock audio
+				console.log('Running simplified audio unlock');
 				
-				// Get all audio elements and start playing them
-				var audioElements = document.querySelectorAll('audio');
-				console.log('Found ' + audioElements.length + ' audio elements');
-				audioElements.forEach(function(audio, index) {
-					console.log('Audio element ' + index + ' - volume:', audio.volume, 'muted:', audio.muted);
-					// Set volume to max and unmute
-					audio.volume = 1.0;
-					audio.muted = false;
-					// Try to play any existing audio elements
-					audio.play().catch(function(e) {
-						console.log('Could not autoplay audio element:', e);
-					});
-				});
-				
-				// Get all possible AudioContext implementations
-				var AudioContext = window.AudioContext || window.webkitAudioContext;
-				
-				// Check if we already have an audioContext in the window
+				// Create audio context if needed
 				if (!window._godotAudioContext) {
-					console.log('Creating new AudioContext in JSBridge');
-					window._godotAudioContext = new AudioContext();
+					window._godotAudioContext = new (window.AudioContext || window.webkitAudioContext)();
 				}
 				
 				var audioCtx = window._godotAudioContext;
-				console.log('JSBridge: AudioContext state:', audioCtx.state);
+				console.log('Audio context state:', audioCtx.state);
 				
-				// Resume it (modern browsers)
-				if (audioCtx && audioCtx.state === 'suspended') {
-					console.log('Audio context is suspended, attempting to resume...');
-					audioCtx.resume().then(function() {
-						console.log('Resume promise resolved. New state:', audioCtx.state);
-					});
+				// Resume it (for Chrome/Safari)
+				if (audioCtx.state === 'suspended') {
+					audioCtx.resume();
 				}
 				
-				// Play multiple audible tones to kickstart audio
-				// First tone
+				// Play a short, quiet beep
 				var oscillator = audioCtx.createOscillator();
 				var gainNode = audioCtx.createGain();
-				gainNode.gain.value = 0.3; // More audible tone
-				oscillator.frequency.value = 440; // A4 note
+				gainNode.gain.value = 0.01; // Very quiet
 				oscillator.connect(gainNode);
 				gainNode.connect(audioCtx.destination);
 				oscillator.start(0);
-				oscillator.stop(0.3);
+				oscillator.stop(0.1);
 				
-				// Second tone after a delay (to verify audio is still working)
-				setTimeout(function() {
-					var oscillator2 = audioCtx.createOscillator();
-					var gainNode2 = audioCtx.createGain();
-					gainNode2.gain.value = 0.3;
-					oscillator2.frequency.value = 660; // Higher note
-					oscillator2.connect(gainNode2);
-					gainNode2.connect(audioCtx.destination);
-					oscillator2.start(0);
-					oscillator2.stop(0.3);
-				}, 500);
-				
-				// For iOS Safari, create and play an audio buffer with actual content
-				var buffer = audioCtx.createBuffer(1, 8000, 22050);
-				// Fill the buffer with a simple sine wave
-				var bufferData = buffer.getChannelData(0);
-				for (var i = 0; i < bufferData.length; i++) {
-					bufferData[i] = Math.sin(i * 0.05) * 0.2;
-				}
-				var source = audioCtx.createBufferSource();
-				source.buffer = buffer;
-				source.connect(audioCtx.destination);
-				source.start(0);
-				
-				// Add event listeners for user interaction to unlock audio
-				var unlockEvents = ['touchstart', 'touchend', 'mousedown', 'keydown'];
-				unlockEvents.forEach(function(event) {
-					document.addEventListener(event, function unlockOnce() {
-						document.removeEventListener(event, unlockOnce);
+				// Add event listeners for future interactions
+				['click', 'touchstart', 'touchend'].forEach(function(event) {
+					document.addEventListener(event, function() {
 						if (audioCtx.state === 'suspended') {
-							audioCtx.resume().then(function() {
-								console.log('AudioContext resumed by user interaction:', event);
-							});
+							audioCtx.resume();
 						}
-					}, false);
+					}, {once: false});
 				});
 				
-				console.log('JSBridge: Web Audio unlock attempts completed. AudioContext state:', audioCtx.state);
 				result = audioCtx.state === 'running';
 			} catch (e) {
-				console.error("JavaScript bridge: Web audio unlock error:", e);
+				console.error("JavaScript bridge: Audio unlock error:", e);
 				result = false;
 			}
 			return result;
