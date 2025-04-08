@@ -41,20 +41,13 @@ func _ready():
 		# We'll use both mouse and keyboard events to be thorough
 		get_viewport().connect("gui_focus_changed", _on_user_interaction)
 		
-		# We won't use connect("gui_input") as it causes errors in HTML5
-		# Instead, we'll rely on the _input method
-		print("Using _input method for web audio initialization")
+		# Use the _input method instead of trying to connect to signals
+		# This approach works better for capturing all input events in web builds
+		print("Using _input method for audio initialization")
 	else:
 		# For non-web platforms, we can initialize immediately
 		audio_initialized = true
 		print("Non-web build: Audio initialized immediately")
-
-# Process input events for web audio initialization
-func _input(event):
-	if OS.has_feature("web") and not audio_initialized:
-		if event is InputEventMouseButton or event is InputEventKey:
-			if event.pressed:
-				_initialize_web_audio()
 
 # Setup audio buses (doesn't start audio playback)
 func _setup_audio_buses():
@@ -102,6 +95,13 @@ func _on_user_interaction(_arg=null):
 	if OS.has_feature("web") and not audio_initialized:
 		_initialize_web_audio()
 
+# Process input events directly
+func _input(event):
+	if OS.has_feature("web") and not audio_initialized:
+		if event is InputEventMouseButton or event is InputEventKey:
+			if event.pressed:
+				_initialize_web_audio()
+				
 # If this method is called from JavaScript, it will help the game to 
 # initialize audio properly in web builds
 func init_web_audio_from_js():
@@ -109,130 +109,42 @@ func init_web_audio_from_js():
 		print("Audio initialization requested from JS")
 		_initialize_web_audio()
 
-# Initialize audio for web builds - simplified approach following Mozilla guidelines
+# Initialize audio for web builds
 func _initialize_web_audio():
 	if audio_initialized:
 		return
 		
 	print("User interaction detected: Initializing web audio...")
 	
-	# Resume the AudioServer context immediately
+	# Resume the AudioServer context
 	AudioServer.set_bus_mute(0, false) # Unmute master bus
 	
-	# Force unmute all buses to make sure audio can be heard
-	if music_bus_index != -1:
-		AudioServer.set_bus_mute(music_bus_index, false)
-		AudioServer.set_bus_volume_db(music_bus_index, 0) # Full volume
-	if sfx_bus_index != -1:
-		AudioServer.set_bus_mute(sfx_bus_index, false)
-		AudioServer.set_bus_volume_db(sfx_bus_index, 0) # Full volume
+	# Play and immediately stop a silent sound to initialize the audio context
+	var silent_player = AudioStreamPlayer.new()
+	add_child(silent_player)
 	
-	# Skip JavaScript code in editor, only run it in actual web export
-	var js_result = false
-	if OS.has_feature("web"):
-		# Simple JavaScript to unlock audio context
-		print("Running JavaScript to unlock audio context...")
-		var js_code = """
-		(function() {
-			try {
-				// Target desktop and mobile browsers with a simple approach
-				console.log('Starting simple audio unlock process');
-				
-				// Create audio context
-				if (!window._godotAudioContext) {
-					window._godotAudioContext = new (window.AudioContext || window.webkitAudioContext)();
-				}
-				
-				var audioCtx = window._godotAudioContext;
-				console.log('Audio context state:', audioCtx.state);
-				
-				// Resume it
-				if (audioCtx.state === 'suspended') {
-					audioCtx.resume().then(function() {
-						console.log('Audio context resumed successfully');
-					});
-				}
-				
-				// Play a simple, short beep to kickstart audio
-				var oscillator = audioCtx.createOscillator();
-				var gainNode = audioCtx.createGain();
-				gainNode.gain.value = 0.1; // Quiet beep
-				oscillator.connect(gainNode);
-				gainNode.connect(audioCtx.destination);
-				oscillator.start(0);
-				oscillator.stop(0.1); // Very short
-				
-				// Add listeners to handle ongoing user gestures
-				['click', 'touchstart', 'touchend'].forEach(function(event) {
-					document.addEventListener(event, function() {
-						// If context is still suspended, try resuming it again
-						if (audioCtx.state === 'suspended') {
-							audioCtx.resume().then(function() {
-								console.log('Audio context resumed on user gesture');
-							});
-						}
-					}, {once: false});
-				});
-				
-				return audioCtx.state;
-			} catch(e) {
-				console.error('Error initializing audio:', e);
-				return 'error';
-			}
-		})()
-		"""
-		
-		# Safely evaluate JavaScript code
-		if Engine.has_singleton("JavaScriptBridge"):
-			var js = Engine.get_singleton("JavaScriptBridge")
-			js_result = js.eval(js_code)
-			print("JavaScript audio context state: ", js_result)
-		else:
-			print("JavaScriptBridge singleton not available")
-	else:
-		print("Skipping JavaScript code in editor/debug mode")
+	# Create a very short silent audio stream
+	var silent_stream = AudioStreamWAV.new()
+	silent_stream.format = AudioStreamWAV.FORMAT_16_BITS
+	silent_stream.stereo = true
+	silent_stream.data = PackedByteArray([0, 0, 0, 0]) # Minimal silent data
 	
-	# Create a single silent sound to test audio system
-	var test_player = AudioStreamPlayer.new()
-	add_child(test_player)
+	# Play and immediately stop to kickstart audio
+	silent_player.stream = silent_stream
+	silent_player.volume_db = -80.0
+	silent_player.play()
 	
-	# Create a simple tone
-	var test_stream = AudioStreamWAV.new()
-	test_stream.format = AudioStreamWAV.FORMAT_16_BITS
-	test_stream.stereo = true
-	
-	# Simple silent data
-	var data = PackedByteArray([0, 0, 0, 0, 0, 0, 0, 0])
-	test_stream.data = data
-	
-	# Configure player
-	test_player.stream = test_stream
-	test_player.volume_db = -80.0 # Silent
-	test_player.bus = "Master"
-	
-	# Play the test sound
-	test_player.play()
-	
-	# Wait a small amount of time
+	# Wait a moment before stopping (important for some browsers)
 	await get_tree().create_timer(0.1).timeout
+	silent_player.stop()
 	
 	# Clean up
-	test_player.stop()
-	test_player.queue_free()
+	await get_tree().process_frame
+	silent_player.queue_free()
 	
-	# Mark as initialized
+	# Set the flag to prevent multiple initializations
 	audio_initialized = true
 	print("Web audio initialized successfully")
-	
-	# Set volumes to reasonable defaults
-	music_volume = 0.8
-	sfx_volume = 0.8
-	music_muted = false
-	sfx_muted = false
-	
-	# Ensure all audio buses are correctly configured
-	_apply_music_volume()
-	_apply_sfx_volume()
 	
 	# Notify any waiting game systems that audio is now available
 	audio_ready.emit()

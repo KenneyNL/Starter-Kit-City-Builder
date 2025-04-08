@@ -1,10 +1,16 @@
 extends Node
 class_name MissionManager
 
+# Add the JavaScript bridge for HTML5 export
+# This ensures JavaScript is available and degrades gracefully on other platforms
+const JSBridge = preload("res://scripts/javascript_bridge.gd")
+
 signal mission_started(mission: MissionData)
 signal mission_completed(mission: MissionData)
 signal objective_completed(objective: MissionObjective)
 signal objective_progress(objective: MissionObjective, new_count: int)
+signal game_started()
+signal all_missions_completed()
 
 @export var missions: Array[MissionData] = []
 @export var mission_ui: Control
@@ -15,6 +21,7 @@ var current_mission: MissionData
 var active_missions: Dictionary = {}  # mission_id: MissionData
  
 var character_spawned: bool = false
+var learning_companion_connected: bool = false
 
 # Mission skip variables
 var skip_key_presses: int = 0
@@ -36,7 +43,6 @@ func _ready():
 	var old_panel = get_node_or_null("LearningPanel")
 	if old_panel:
 		old_panel.queue_free()
-		print("Removed old learning panel from mission manager")
 		
 	# Load the learning panel scene fresh each time
 	var learning_panel_scene = load("res://scenes/learning_panel.tscn")
@@ -44,7 +50,6 @@ func _ready():
 		learning_panel = learning_panel_scene.instantiate()
 		learning_panel.name = "LearningPanelFromScene"
 		add_child(learning_panel)
-		print("Loaded fresh learning panel from scene file")
 	else:
 		print("ERROR: Could not load learning_panel.tscn scene")
 	
@@ -54,7 +59,6 @@ func _ready():
 		fullscreen_learning_panel = fullscreen_panel_scene.instantiate()
 		fullscreen_learning_panel.name = "FullscreenLearningPanel"
 		add_child(fullscreen_learning_panel)
-		print("Loaded fullscreen learning panel from scene file")
 	else:
 		print("ERROR: Could not load fullscreen_learning_panel.tscn scene")
 		
@@ -76,6 +80,29 @@ func _ready():
 		fullscreen_learning_panel.panel_closed.connect(_on_learning_panel_closed)
 	else:
 		print("WARNING: Fullscreen learning panel not found!")
+	
+	# For web builds, try to proactively initialize audio on load
+	if OS.has_feature("web"):
+		# Try to find sound manager and init audio
+		var sound_manager = get_node_or_null("/root/SoundManager")
+		if sound_manager and not sound_manager.audio_initialized:
+			# Connect to user input to detect interaction
+			get_viewport().gui_focus_changed.connect(_on_gui_focus_for_audio)
+			get_tree().get_root().connect("gui_input", _on_gui_input_for_audio)
+	
+	# Set up communication with the learning companion
+	_setup_learning_companion_communication()
+	
+	# Create a simple timer to force a learning companion connection in 3 seconds
+	# This is a fallback in case the normal connection doesn't work
+	var connection_timer = Timer.new()
+	connection_timer.wait_time = 3.0
+	connection_timer.one_shot = true
+	connection_timer.autostart = true
+	connection_timer.name = "ConnectionTimer"
+	add_child(connection_timer)
+	connection_timer.timeout.connect(_force_learning_companion_connection)
+	print("Created timer to force learning companion connection in 3 seconds")
 	
 	# Load third mission if not already in the list
 	var third_mission = load("res://mission/third_mission.tres")
@@ -111,9 +138,105 @@ func _ready():
 			if mission.id == "3":
 				mission.next_mission_id = "4"
 	
+	# Emit game_started signal before starting the first mission
+	game_started.emit()
+	
 	# Start the first mission if available
 	if missions.size() > 0:
 		start_mission(missions[0])
+
+# Web-specific audio initialization helper methods
+func _on_gui_focus_for_audio(_control=null):
+	if OS.has_feature("web"):
+		_try_init_audio_on_interaction()
+
+func _on_gui_input_for_audio(_event=null):
+	if OS.has_feature("web"):
+		_try_init_audio_on_interaction()
+
+# Used to handle input for possible audio initialization in web
+func _input(event):
+	# Process mission skipping
+	if event is InputEventKey and event.pressed and not event.is_echo():
+		if event.keycode == SKIP_KEY:  # Use the configured skip key
+			var current_time = Time.get_ticks_msec() / 1000.0
+			
+			# Reset counter if too much time has passed since last press
+			if current_time - last_skip_press_time > skip_key_timeout:
+				skip_key_presses = 0
+			
+			# Update time and increment counter
+			last_skip_press_time = current_time
+			skip_key_presses += 1
+			
+			# Show progress toward skipping
+			if mission_ui and mission_ui.has_method("show_temporary_message"):
+				if skip_key_presses < skip_key_required:
+					mission_ui.show_temporary_message("Mission skip: " + str(skip_key_presses) + "/" + str(skip_key_required) + " presses", 0.75, Color(1.0, 0.7, 0.2))
+				else:
+					mission_ui.show_temporary_message("Mission skipped!", 2.0, Color(0.2, 0.8, 0.2))
+			
+			# Check if we've reached the required number of presses
+			if skip_key_presses >= skip_key_required:
+				skip_key_presses = 0
+				_skip_current_mission()
+	
+	# For web builds, use any input to initialize audio
+	if OS.has_feature("web"):
+		if event is InputEventMouseButton or event is InputEventKey:
+			if event.pressed:
+				_try_init_audio_on_interaction()
+
+# Helper to try initializing audio on user interaction
+func _try_init_audio_on_interaction():
+	# Find the sound manager
+	var sound_manager = get_node_or_null("/root/SoundManager")
+	if sound_manager and not sound_manager.audio_initialized:
+		print("User interaction detected in MissionManager, attempting audio init")
+		sound_manager._initialize_web_audio()
+		
+		# Also use JavaScript bridge to help with audio
+		if JSBridge.has_interface():
+			JSBridge.get_interface().ensure_audio_initialized()
+		
+		# Try to kick-start music if game manager exists
+		var game_manager = get_node("/root/GameManager")
+		if game_manager and game_manager.has_method("_start_background_music"):
+			game_manager._start_background_music()
+		
+# Function to set up communication with the learning companion
+func _setup_learning_companion_communication():
+	# First, check if JavaScript is available
+	if JSBridge.has_interface():
+		print("Setting up learning companion communication via postMessage")
+		
+		# Try to initialize audio first since we now have user interaction
+		JSBridge.get_interface().ensure_audio_initialized()
+		
+		# Connect directly using the simpler postMessage approach
+		JSBridge.get_interface().connectLearningCompanionViaPostMessage(
+			# Success callback
+			func():
+				learning_companion_connected = true
+				print("Successfully connected to learning companion")
+
+				# Connect signals to JavaScript callbacks
+				game_started.connect(_on_game_started_for_companion)
+				mission_started.connect(_on_mission_started_for_companion)
+				mission_completed.connect(_on_mission_completed_for_companion)
+				all_missions_completed.connect(_on_all_missions_completed_for_companion)
+
+				print("Learning companion event handlers connected")
+
+				# Try to initialize audio again to ensure it works
+				JSBridge.get_interface().ensure_audio_initialized(),
+			func():
+				learning_companion_connected = false
+				print("Failed to connect to learning companion via postMessage")
+
+		)
+	else:
+		print("JavaScript interface for learning companion not available")
 
 func start_mission(mission: MissionData):
 	# Check that the mission data is valid
@@ -124,6 +247,9 @@ func start_mission(mission: MissionData):
 	current_mission = mission
 	active_missions[mission.id] = mission
 	
+	# Send mission started event to the learning companion
+	_on_mission_started_for_companion(mission)
+	
 	# Fix for mission 3 to ensure accurate count
 	if mission.id == "3":
 		# Reset the residential building count to 0 to avoid any double counting
@@ -131,7 +257,6 @@ func start_mission(mission: MissionData):
 			if objective.type == MissionObjective.ObjectiveType.BUILD_RESIDENTIAL:
 				objective.current_count = 0
 				objective.completed = false
-				print("Reset mission 3 residential count to 0")
 				
 		# Load and run the fix script to count actual buildings
 		var FixMissionScript = load("res://scripts/fix_mission.gd")
@@ -140,7 +265,6 @@ func start_mission(mission: MissionData):
 			fix_node.set_script(FixMissionScript)
 			fix_node.name = "FixMissionHelper"
 			add_child(fix_node)
-			print("Added fix mission helper script")
 	
 	# Add decorative structures and curved roads
 	# Use more robust checking - fallback to ID for backward compatibility
@@ -164,21 +288,18 @@ func start_mission(mission: MissionData):
 		if not has_road_corner:
 			var road_corner = load("res://structures/road-corner.tres")
 			if road_corner:
-				print("Adding road-corner structure for mission 3")
 				builder.structures.append(road_corner)
 		
 		# Add the grass-trees-tall if missing
 		if not has_grass_trees_tall:
 			var grass_trees_tall = load("res://structures/grass-trees-tall.tres")
 			if grass_trees_tall:
-				print("Adding grass-trees-tall structure for mission 3")
 				builder.structures.append(grass_trees_tall)
 		
 		# Add the grass if missing
 		if not has_grass:
 			var grass = load("res://structures/grass.tres")
 			if grass:
-				print("Adding grass structure for mission 3")
 				builder.structures.append(grass)
 	
 	# Special handling for power plant mission: add power plant
@@ -197,7 +318,6 @@ func start_mission(mission: MissionData):
 		if not has_power_plant:
 			var power_plant = load("res://structures/power-plant.tres")
 			if power_plant:
-				print("Adding power plant structure for mission 4")
 				builder.structures.append(power_plant)
 		
 		# Update the mesh library to include the new structures
@@ -226,8 +346,6 @@ func start_mission(mission: MissionData):
 					
 					mesh_library.set_item_mesh_transform(id, transform)
 			
-			print("Updated mesh library for mission 3 with new structures")
-			
 			# Make sure the builder's structure selector is updated
 			builder.update_structure()
 	
@@ -242,20 +360,16 @@ func start_mission(mission: MissionData):
 	
 	# Show learning panel if mission has a learning objective
 	if has_learning_objective:
-		print("Found learning objective. Using learning panel for mission: ", mission.id)
-		
 		# Determine which panel to use based on whether full_screen_path is provided
 		if not mission.full_screen_path.is_empty():
 			# Use fullscreen panel for fullscreen missions
 			if fullscreen_learning_panel:
-				print("Using fullscreen learning panel for mission with fullscreen path")
 				fullscreen_learning_panel.show_fullscreen_panel(mission)
 			else:
 				print("ERROR: Fullscreen learning panel not available but mission requires it")
 		else:
 			# Use regular panel for traditional missions
 			if learning_panel:
-				print("Using regular learning panel")
 				learning_panel.show_learning_panel(mission)
 			else:
 				print("ERROR: Regular learning panel not available")
@@ -278,6 +392,9 @@ func complete_mission(mission_id: String):
 	# Remove from active missions
 	active_missions.erase(mission_id)
 	
+	# Send mission completed event to the learning companion
+	_on_mission_completed_for_companion(mission)
+	
 	# Start next mission if specified
 	if mission.next_mission_id != "":
 		for next_mission in missions:
@@ -294,7 +411,8 @@ func complete_mission(mission_id: String):
 
 # Shows a modal when all missions are complete
 func _show_completion_modal():
-	print("Showing completion modal - all missions finished")
+	# Emit signal that all missions are completed
+	all_missions_completed.emit()
 	
 	# Create the modal overlay
 	var modal = ColorRect.new()
@@ -403,47 +521,95 @@ func _show_completion_modal():
 	var canvas_layer = get_node("/root/Main/CanvasLayer")
 	if canvas_layer:
 		canvas_layer.add_child(modal)
-		print("Added completion modal to CanvasLayer")
 	else:
 		add_child(modal)
-		print("Added completion modal to MissionManager")
 	
 	# Connect button signal - use a specific method for clarity and debugging
 	continue_button.pressed.connect(_on_completion_continue_button_pressed.bind(modal))
 
 # Handler for the mission completion continue button
 func _on_completion_continue_button_pressed(modal_to_close):
-	print("Completion continue button was pressed - closing modal")
 	if is_instance_valid(modal_to_close) and modal_to_close is Node and modal_to_close.is_inside_tree():
 		modal_to_close.queue_free()
-		print("Modal should now be closed")
 	else:
 		push_error("Invalid modal reference or modal already removed")
 
+# Event handler functions for learning companion communication
+func _on_game_started_for_companion():
+	if not learning_companion_connected:
+		return
+		
+	print("Sending game started event to learning companion")
+	if JSBridge.has_interface():
+		JSBridge.get_interface().onGameStarted()
+
+func _on_mission_started_for_companion(mission: MissionData):
+	if not learning_companion_connected:
+		return
+		
+	print("Sending mission started event to learning companion for mission: " + mission.id)
+	if JSBridge.has_interface():
+		# Convert mission data to a format that can be passed to JavaScript
+		var mission_data = {
+			"id": mission.id,
+			"title": mission.title,
+			"description": mission.description,
+			"intro_text": mission.intro_text,
+		}
+		JSBridge.get_interface().onMissionStarted(mission_data)
+
+func _on_mission_completed_for_companion(mission: MissionData):
+	if not learning_companion_connected:
+		return
+		
+	print("Sending mission completed event to learning companion for mission: " + mission.id)
+	if JSBridge.has_interface():
+		# Convert mission data to a format that can be passed to JavaScript
+		var mission_data = {
+			"id": mission.id,
+			"title": mission.title,
+			"description": mission.description,
+		}
+		JSBridge.get_interface().onMissionCompleted(mission_data)
+
+func _on_all_missions_completed_for_companion():
+	if not learning_companion_connected:
+		return
+		
+	print("Sending all missions completed event to learning companion")
+	if JSBridge.has_interface():
+		JSBridge.get_interface().onAllMissionsCompleted()
+
+# Function to force learning companion connection after a delay
+func _force_learning_companion_connection():
+	print("Forcing learning companion connection after delay")
+	
+	# Set the connection flag to true even if the connection might have failed
+	learning_companion_connected = true
+	
+	# Try to ensure audio is initialized as well
+	if JSBridge:
+		if JSBridge.has_interface():
+			JSBridge.get_interface().ensure_audio_initialized()
+	
+	# Emit game started event
+	_on_game_started_for_companion()
+	
+	print("Force-sent game started event to learning companion")
+
 func check_mission_progress(mission_id: String) -> bool:
 	if not active_missions.has(mission_id):
-		print("Mission ID not found in active missions: " + mission_id)
 		return false
 	
 	var mission = active_missions[mission_id]
 	var all_completed = true
 	
-	print("Checking progress for mission: " + mission_id + " - " + mission.title)
-	
-	# Print status of each objective
 	for i in range(mission.objectives.size()):
 		var objective = mission.objectives[i]
-		print("  Objective " + str(i+1) + ": " + objective.description)
-		print("    Type: " + str(objective.type) + ", Count: " + str(objective.current_count) + "/" + str(objective.target_count))
-		print("    Completed: " + str(objective.completed))
-		
 		if not objective.completed:
 			all_completed = false
 	
-	print("All objectives completed: " + str(all_completed))
-	
 	if all_completed:
-		print("COMPLETING MISSION: " + mission_id)
 		complete_mission(mission_id)
 		return true
 	
@@ -477,7 +643,6 @@ func update_objective_progress(mission_id: String, objective_type: int, amount: 
 			# Emit signal if progress changed
 			if old_count != objective.current_count:
 				objective_progress.emit(objective, objective.current_count)
-				print("Objective progress updated from " + str(old_count) + " to " + str(objective.current_count))
 			
 			# Check if objective was just completed
 			if objective.completed and old_count != objective.current_count:
@@ -499,18 +664,11 @@ func _on_structure_placed(structure_index: int, position: Vector3):
 		if current_mission and current_mission.id == "3":
 			# Skip residential count updates - will be handled after construction completes
 			skip_residential_count = true
-			print("Skipping immediate residential count update - will count after construction")
-			
-		# Special handling for mission 1 - always update immediately to allow mission to complete
-		elif current_mission and current_mission.id == "1":
-			print("Mission 1 detected, will update residential count immediately")
 	
 	# Special handling for power plant (Mission 5)
 	if structure.model.resource_path.contains("power_plant"):
-		print("Power plant detected! Looking for mission 5...")
 		for mission_id in active_missions:
 			if active_missions[mission_id].id == "5":
-				print("Mission 5 found, completing objectives...")
 				var mission = active_missions[mission_id]
 				for objective in mission.objectives:
 					if not objective.completed:
@@ -520,7 +678,6 @@ func _on_structure_placed(structure_index: int, position: Vector3):
 				
 				# Force mission completion check
 				check_mission_progress(mission_id)
-				print("Mission 5 progress checked")
 	
 	for mission_id in active_missions:
 		# Update generic structure objective
@@ -534,8 +691,7 @@ func _on_structure_placed(structure_index: int, position: Vector3):
 				# Only update residential count if we're not in mission 3 or 1
 				if not skip_residential_count:
 					update_objective_progress(mission_id, MissionObjective.ObjectiveType.BUILD_RESIDENTIAL)
-					print("Immediate update to residential count - not using construction workers")
-				
+					
 				# We don't spawn characters here anymore - this is handled by the builder.gd
 				# for both direct placement and worker construction
 					
@@ -566,9 +722,9 @@ func reset_objective_count(objective_type: int, new_count: int = 0):
 			objective.current_count = new_count
 			objective.completed = objective.is_completed()
 			objective_progress.emit(objective, objective.current_count)
-			print("Reset objective count to " + str(new_count) + " for objective type " + str(objective_type))
 			
 	update_mission_ui()
+
 func _on_learning_completed():
 	# Check current mission for progress
 	if current_mission != null and current_mission.id != "":
@@ -584,44 +740,12 @@ func _on_learning_panel_closed():
 	if builder:
 		builder.disabled = false
 		
-# Method to process keyboard input for mission skipping
-func _input(event):
-	if event is InputEventKey and event.pressed and not event.is_echo():
-		if event.keycode == SKIP_KEY:  # Use the configured skip key
-			var current_time = Time.get_ticks_msec() / 1000.0
-			
-			# Reset counter if too much time has passed since last press
-			if current_time - last_skip_press_time > skip_key_timeout:
-				skip_key_presses = 0
-			
-			# Update time and increment counter
-			last_skip_press_time = current_time
-			skip_key_presses += 1
-			
-			# Show progress toward skipping
-			if mission_ui and mission_ui.has_method("show_temporary_message"):
-				if skip_key_presses < skip_key_required:
-					mission_ui.show_temporary_message("Mission skip: " + str(skip_key_presses) + "/" + str(skip_key_required) + " presses", 0.75, Color(1.0, 0.7, 0.2))
-				else:
-					mission_ui.show_temporary_message("Mission skipped!", 2.0, Color(0.2, 0.8, 0.2))
-			
-			# Print feedback to console
-			if skip_key_presses < skip_key_required:
-				print("Mission skip: " + str(skip_key_presses) + "/" + str(skip_key_required) + " key presses")
-			
-			# Check if we've reached the required number of presses
-			if skip_key_presses >= skip_key_required:
-				skip_key_presses = 0
-				_skip_current_mission()
-				
 # Method to skip the current mission
 func _skip_current_mission():
 	if not current_mission:
-		print("No mission to skip")
 		return
 		
 	var mission_id = current_mission.id
-	print("Skipping mission " + mission_id)
 	
 	# Auto-complete all objectives in the current mission
 	for objective in current_mission.objectives:
@@ -640,13 +764,11 @@ func _skip_current_mission():
 		
 func _spawn_character_on_road(building_position: Vector3):
 	if !character_scene:
-		print("No character scene provided!")
 		return
 		
 	# Check if a character has already been spawned
 	var existing_characters = get_tree().get_nodes_in_group("characters")
 	if existing_characters.size() > 0 or character_spawned:
-		print("Character already spawned, not spawning again.")
 		character_spawned = true
 		return
 		
@@ -658,12 +780,9 @@ func _spawn_character_on_road(building_position: Vector3):
 	var nearest_road_position = _find_nearest_road(building_position, gridmap)
 	
 	if nearest_road_position != Vector3.ZERO:
-		print("Found nearest road at: ", nearest_road_position)
-		
 		# Make sure there are no existing characters
 		for existing in get_tree().get_nodes_in_group("characters"):
 			existing.queue_free()
-			print("Cleaned up existing character")
 		
 		# Use the pre-made character pathing scene
 		var character = load("res://scenes/character_pathing.tscn").instantiate()
@@ -679,18 +798,15 @@ func _spawn_character_on_road(building_position: Vector3):
 		if nav_region:
 			# Add character as a child of the NavRegion3D
 			nav_region.add_child(character)
-			print("Added character as child of NavRegion3D")
 		else:
 			# Fallback to root if NavRegion3D doesn't exist
 			get_tree().root.add_child(character)
-			print("WARNING: NavRegion3D not found, adding character to root")
 		
 		# Position character just slightly above the road's surface
 		character.global_transform.origin = Vector3(nearest_road_position.x, 0.1, nearest_road_position.z)
 		
 		# Set an initial target to get the character moving
 		var target_position = _find_patrol_target(nearest_road_position, gridmap, 8.0)
-		print("Initial target set to: ", target_position)
 		
 		# Allow the character to initialize
 		await get_tree().process_frame
@@ -703,16 +819,10 @@ func _spawn_character_on_road(building_position: Vector3):
 			
 			# Set target position
 			nav_agent.set_target_position(target_position)
-			print("Navigation target set")
 		
 		# Make the character start moving
 		if character.has_method("set_movement_target"):
 			character.set_movement_target(target_position)
-			print("Movement target set for character")
-		else:
-			print("Character does not have set_movement_target method!")
-	else:
-		print("No road found near building!")
 		
 func _setup_character_for_navigation(character, initial_target):
 	# Access character's script to set up navigation
@@ -723,35 +833,28 @@ func _setup_character_for_navigation(character, initial_target):
 		if model.has_node("AnimationPlayer"):
 			var anim_player = model.get_node("AnimationPlayer")
 			anim_player.play("walk")
-			print("Animation player started")
-		else:
-			print("No animation player found in character model!")
 			
 	# Configure navigation agent parameters
 	if character.has_node("NavigationAgent3D"):
 		var nav_agent = character.get_node("NavigationAgent3D")
 		nav_agent.path_desired_distance = 0.5
 		nav_agent.target_desired_distance = 0.5
-		print("Navigation agent configured")
 		
 		# Force movement to start immediately
 		if character.has_method("set_movement_target"):
 			# Wait a bit to make sure the navigation mesh is ready
 			await get_tree().create_timer(1.0).timeout
 			character.set_movement_target(initial_target)
-			print("Initial target set for character: ", initial_target)
 	
 	# Ensure auto-patrol is enabled if the character supports it
 	if character.get("auto_patrol") != null:
 		character.auto_patrol = true
-		print("Auto patrol enabled for character")
 		
 	# Set a starting movement target if not moving
 	await get_tree().create_timer(2.0).timeout
 	if character.get("is_moving") != null and !character.is_moving:
 		if character.has_method("pick_random_target"):
 			character.pick_random_target()
-			print("Forcing initial movement with pick_random_target()")
 		
 func _find_patrol_target(start_position: Vector3, gridmap: GridMap, max_distance: float) -> Vector3:
 	# With the navigation mesh system, we can simplify this to just return a point
@@ -771,7 +874,6 @@ func _find_patrol_target(start_position: Vector3, gridmap: GridMap, max_distance
 				
 				# Check if there's a road at this position in the NavRegion3D
 				if nav_region.has_node(road_name):
-					print("Found target road at ", check_pos)
 					return check_pos
 	
 	# If all else fails, just return a point 5 units away in a random direction
@@ -781,7 +883,6 @@ func _find_patrol_target(start_position: Vector3, gridmap: GridMap, max_distance
 		randf_range(-1.0, 1.0)
 	).normalized() * 5.0
 	
-	print("No road found, using random target")
 	return start_position + random_direction
 		
 # Function to find a connected road piece to determine orientation
@@ -817,9 +918,6 @@ func _find_nearest_road(position: Vector3, gridmap: GridMap) -> Vector3:
 	var min_distance = 100.0
 	var best_road_length = 0.0
 	
-	print("Searching for road near position: ", position)
-	print("Available structures: ", builder.structures.size())
-	
 	# First pass: find all roads based on their presence in the NavRegion3D
 	var road_positions = []
 	
@@ -851,8 +949,6 @@ func _find_nearest_road(position: Vector3, gridmap: GridMap) -> Vector3:
 				if nav_region and nav_region.has_node(road_name):
 					road_positions.append(check_pos)
 	
-	print("Found ", road_positions.size(), " road positions")
-	
 	# Second pass: evaluate roads based on distance and connected length
 	for road_pos in road_positions:
 		var distance = position.distance_to(road_pos)
@@ -865,9 +961,6 @@ func _find_nearest_road(position: Vector3, gridmap: GridMap) -> Vector3:
 		elif distance < min_distance:
 			nearest_road = road_pos
 			min_distance = distance
-	
-	if nearest_road != Vector3.ZERO:
-		print("Selected road at: ", nearest_road)
 	
 	return nearest_road
 	
