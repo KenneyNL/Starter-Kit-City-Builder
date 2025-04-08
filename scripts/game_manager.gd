@@ -68,6 +68,21 @@ func _initialize_game_audio():
 func _on_controls_panel_closed():
 	print("Controls panel closed by player")
 	
+	# This is the perfect place to initialize audio for web builds
+	# since we know the user has interacted with the game
+	if OS.has_feature("web"):
+		print("User closed controls panel - perfect time to ensure audio is working")
+		
+		# Force initialize the sound manager (will have no effect if already initialized)
+		var sound_manager = get_node_or_null("/root/SoundManager")
+		if sound_manager and not sound_manager.audio_initialized:
+			sound_manager._initialize_web_audio()
+		
+		# Make sure our music is playing
+		if music_player and music_player.stream and not music_player.playing:
+			print("Starting background music after user interaction")
+			music_player.play()
+	
 # Function to set up the sound buses
 func _setup_sound_buses():
 	# Wait a moment to ensure SoundManager is ready
