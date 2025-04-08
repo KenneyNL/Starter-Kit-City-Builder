@@ -296,7 +296,9 @@ func _initialize_web_audio():
 	var test_players = []
 	
 	# Test play on each important bus
-	for bus_index, bus_name in enumerate(["Master", "Music", "SFX"]):
+	var bus_names = ["Master", "Music", "SFX"]
+	for bus_index in range(bus_names.size()):
+		var bus_name = bus_names[bus_index]
 		var test_player = AudioStreamPlayer.new()
 		add_child(test_player)
 		test_players.append(test_player)
