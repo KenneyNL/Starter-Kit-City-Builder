@@ -428,9 +428,9 @@ func _retry_audio_playback():
 	retry_timer.start()
 	
 # Helper function to retry music playback for web builds
-func _retry_music_play(player: AudioStreamPlayer, attempt: int, max_attempts: int):
+func _retry_individual_audio_play(player: AudioStreamPlayer, attempt: int, max_attempts: int):
 	if !player.playing and attempt < max_attempts:
-		print("Retrying music playback, attempt %d/%d" % [attempt, max_attempts])
+		print("Retrying individual audio playback, attempt %d/%d" % [attempt, max_attempts])
 		
 		# Force set volume and unmute
 		player.volume_db = -5 + (attempt * 2)  # Increase volume with each attempt
@@ -448,7 +448,7 @@ func _retry_music_play(player: AudioStreamPlayer, attempt: int, max_attempts: in
 		# Schedule another retry if needed
 		if attempt < max_attempts - 1:
 			get_tree().create_timer(0.6).timeout.connect(
-				Callable(self, "_retry_music_play").bind(player, attempt + 1, max_attempts)
+				Callable(self, "_retry_individual_audio_play").bind(player, attempt + 1, max_attempts)
 			)
 		
 # Setup building sound effects
@@ -529,28 +529,7 @@ func stop_construction_sound():
 	# We don't stop any sounds from here anymore - workers handle their own sounds
 	# but we need to keep this function for backward compatibility
 	
-# Helper function to retry music playback for web builds
-func _retry_music_play(player: AudioStreamPlayer, attempt: int, max_attempts: int):
-	if !player.playing and attempt < max_attempts:
-		print("Retrying music playback, attempt %d/%d" % [attempt, max_attempts])
-		
-		# Force set volume and unmute
-		player.volume_db = -10
-		
-		# For the bus
-		var music_bus_idx = AudioServer.get_bus_index("Music")
-		if music_bus_idx >= 0:
-			AudioServer.set_bus_mute(music_bus_idx, false)
-			AudioServer.set_bus_volume_db(music_bus_idx, -8)
-		
-		# Try to play again
-		player.play()
-		
-		# Schedule another retry if needed
-		if attempt < max_attempts - 1:
-			get_tree().create_timer(0.6).timeout.connect(
-				Callable(self, "_retry_music_play").bind(player, attempt + 1, max_attempts)
-			)
+# Removed duplicate _retry_music_play function that was here
 	
 # Setup construction signals properly
 func _setup_construction_signals():
