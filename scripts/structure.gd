@@ -29,3 +29,9 @@ enum StructureType {
 
 @export_subgroup("Visual")
 @export var selector_scale:float = 1.0 # Scale factor for the selector when this structure is selected
+
+@export_subgroup("Game Progression")
+@export var unlocked:bool = false # Whether this structure is available to the player
+
+@export_subgroup("Game Progression")
+@export var description: String = "Description" # Whether this structure is available to the player

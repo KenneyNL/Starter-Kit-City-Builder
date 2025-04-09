@@ -390,6 +390,9 @@ func complete_mission(mission_id: String):
 		builder.map.cash += mission.rewards.cash
 		builder.update_cash()
 	
+	# Handle structure unlocking when mission is completed
+	_handle_structure_unlocking(mission)
+	
 	# Remove from active missions
 	active_missions.erase(mission_id)
 	
@@ -1079,3 +1082,127 @@ func _get_connected_road_length(road_position: Vector3, gridmap: GridMap) -> flo
 		road_length = max(road_length, connected_roads + 1)
 	
 	return road_length
+
+# This function handles structure unlocking when a mission is completed
+func _handle_structure_unlocking(mission):
+	if not builder:
+		return
+	
+	var unlocked_structures = []
+	
+	# Check for explicitly defined unlocked items in mission
+	if mission is Resource and "unlocked_items" in mission and mission.unlocked_items.size() > 0:
+		print("Found unlocked_items in mission: " + mission.id)
+		print("Unlocked items: " + str(mission.unlocked_items))
+		
+		var items = mission.unlocked_items
+		for item_path in items:
+			# Find the structure in builder's structures that matches this path
+			for structure in builder.structures:
+				if structure.model and structure.model.resource_path == item_path:
+					# Make sure structure has the unlocked property before setting it
+					if "unlocked" in structure:
+						structure.unlocked = true
+						unlocked_structures.append(structure)
+						print("Unlocked structure: " + structure.model.resource_path)
+					else:
+						print("WARNING: Structure " + structure.model.resource_path + " doesn't have an 'unlocked' property")
+	
+	# Check for power plant unlocking in power-related missions
+	if mission.id == "4" or mission.id == "5" or mission.power_math_content != "":
+		for structure in builder.structures:
+			if structure.model and structure.model.resource_path.contains("power_plant"):
+				# Make sure structure has the unlocked property before setting it
+				if "unlocked" in structure:
+					structure.unlocked = true
+					# Only add to unlocked_structures if not already there
+					if not unlocked_structures.has(structure):
+						unlocked_structures.append(structure)
+				else:
+					print("WARNING: Power plant structure doesn't have an 'unlocked' property")
+	
+	# Check for curved roads and decorations in city expansion missions
+	if mission.id == "2" or mission.id == "3":
+		for structure in builder.structures:
+			if structure.model and (structure.model.resource_path.contains("road-corner") or structure.model.resource_path.contains("grass-trees-tall")):
+				# Make sure structure has the unlocked property before setting it
+				if "unlocked" in structure:
+					structure.unlocked = true
+					# Only add to unlocked_structures if not already there
+					if not unlocked_structures.has(structure):
+						unlocked_structures.append(structure)
+				else:
+					print("WARNING: Road/decoration structure doesn't have an 'unlocked' property")
+	
+	# Make sure the builder starts with a valid unlocked structure selected
+	var found_unlocked = false
+	for i in range(builder.structures.size()):
+		var structure = builder.structures[i]
+		if "unlocked" in structure and structure.unlocked:
+			builder.index = i
+			builder.update_structure()
+			found_unlocked = true
+			break
+			
+	# If no structures are unlocked, unlock a basic one
+	if not found_unlocked and builder.structures.size() > 0:
+		var structure = builder.structures[0]
+		if "unlocked" in structure:
+			structure.unlocked = true
+			builder.index = 0
+			builder.update_structure()
+		else:
+			print("WARNING: First structure doesn't have an 'unlocked' property")
+	
+	# Show the unlocked items panel if we unlocked anything
+	if unlocked_structures.size() > 0:
+		_show_unlocked_items_panel(unlocked_structures)
+
+# Shows a panel with the newly unlocked items
+func _show_unlocked_items_panel(unlocked_structures):
+	print("Showing unlocked items panel with " + str(unlocked_structures.size()) + " structures")
+	
+	# Wait a short delay before showing the panel
+	await get_tree().create_timer(0.5).timeout
+	
+	# Load the panel scene
+	var unlocked_panel_scene = load("res://scenes/unlocked_items_panel.tscn")
+	if unlocked_panel_scene:
+		print("Successfully loaded unlocked_items_panel.tscn")
+		var unlocked_panel = unlocked_panel_scene.instantiate()
+		
+		# Find the best parent for the panel - try the HUD if it exists
+		var hud = get_node_or_null("/root/Main/CanvasLayer/HUD")
+		if hud:
+			print("Adding panel to HUD")
+			hud.add_child(unlocked_panel)
+		else:
+			# Try CanvasLayer
+			var canvas = get_node_or_null("/root/Main/CanvasLayer")
+			if canvas:
+				print("Adding panel to CanvasLayer")
+				canvas.add_child(unlocked_panel)
+			else:
+				# Fallback to root
+				print("Adding panel to root")
+				get_tree().root.add_child(unlocked_panel)
+		
+		# Wait for panel to be added
+		await get_tree().process_frame
+		
+		# Make sure the panel is visible and on top
+		unlocked_panel.z_index = 100
+		unlocked_panel.show()
+		
+		# Setup and show the panel
+		unlocked_panel.setup(unlocked_structures)
+		unlocked_panel.show_panel()
+		
+		# Connect the closed signal
+		unlocked_panel.closed.connect(func():
+			print("Unlocked panel was closed")
+			# Make sure the game is unpaused
+			get_tree().paused = false
+		)
+	else:
+		push_error("Could not load unlocked_items_panel scene")
