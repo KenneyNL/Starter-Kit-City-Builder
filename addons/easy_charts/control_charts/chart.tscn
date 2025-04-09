@@ -1,10 +1,9 @@
 [gd_scene load_steps=10 format=3 uid="uid://dlwq4kmdb3bhs"]
 
-[ext_resource type="Script" path="res://addons/easy_charts/control_charts/chart.gd" id="1"]
-[ext_resource type="PackedScene" path="res://addons/easy_charts/utilities/containers/data_tooltip/data_tooltip.tscn" id="2"]
-[ext_resource type="Script" path="res://addons/easy_charts/utilities/containers/canvas/canvas.gd" id="3"]
-[ext_resource type="Script" path="res://addons/easy_charts/utilities/containers/canvas/plot_box/plot_box.gd" id="4"]
-[ext_resource type="Script" path="res://addons/easy_charts/utilities/containers/canvas/plot_box/grid_box.gd" id="5"]
+[ext_resource type="Script" uid="uid://b2d6l2etm3am0" path="res://addons/easy_charts/control_charts/chart.gd" id="1"]
+[ext_resource type="Script" uid="uid://dyvjo0g47l1ku" path="res://addons/easy_charts/utilities/containers/canvas/canvas.gd" id="3"]
+[ext_resource type="Script" uid="uid://cppabxoq0wq7q" path="res://addons/easy_charts/utilities/containers/canvas/plot_box/plot_box.gd" id="4"]
+[ext_resource type="Script" uid="uid://c4c40cjr0ynh6" path="res://addons/easy_charts/utilities/containers/canvas/plot_box/grid_box.gd" id="5"]
 [ext_resource type="PackedScene" path="res://addons/easy_charts/utilities/containers/legend/function_legend.tscn" id="6"]
 
 [sub_resource type="Theme" id="4"]
@@ -17,6 +16,9 @@ content_margin_top = 15.0
 content_margin_right = 15.0
 content_margin_bottom = 15.0
 draw_center = false
+
+[sub_resource type="Resource" id="Resource_mhich"]
+metadata/__load_path__ = "res://addons/easy_charts/utilities/containers/data_tooltip/data_tooltip.tscn"
 
 [node name="Chart" type="PanelContainer"]
 anchors_preset = 15
@@ -87,7 +89,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_default_cursor_shape = 3
 
-[node name="Tooltip" parent="Canvas/CanvasContainer/DataContainer/PlotContainer/PlotBox" instance=ExtResource("2")]
+[node name="Tooltip" parent="Canvas/CanvasContainer/DataContainer/PlotContainer/PlotBox"]
 layout_mode = 0
 offset_left = -67.0
 offset_top = -33.0

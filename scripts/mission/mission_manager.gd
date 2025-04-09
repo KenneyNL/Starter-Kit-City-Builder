@@ -248,6 +248,7 @@ func start_mission(mission: MissionData):
 	active_missions[mission.id] = mission
 	
 	# Send mission started event to the learning companion
+	# This will also send the companion dialog data
 	_on_mission_started_for_companion(mission)
 	
 	# Fix for mission 3 to ensure accurate count
@@ -393,6 +394,7 @@ func complete_mission(mission_id: String):
 	active_missions.erase(mission_id)
 	
 	# Send mission completed event to the learning companion
+	# This will also send the companion dialog data
 	_on_mission_completed_for_companion(mission)
 	
 	# Start next mission if specified
@@ -402,7 +404,8 @@ func complete_mission(mission_id: String):
 				start_mission(next_mission)
 				break
 	else:
-		# This was the last mission - show completion modal
+		# This was the last mission - show completion modal and emit all_missions_completed
+		# This will also trigger the companion dialog
 		_show_completion_modal()
 	
 	# Emit signal for mission completion
@@ -536,15 +539,22 @@ func _on_completion_continue_button_pressed(modal_to_close):
 
 # Event handler functions for learning companion communication
 func _on_game_started_for_companion():
+	# If learning companion is not connected, just log but still proceed
+	# This allows the game to start in the editor
 	if not learning_companion_connected:
+		print("Learning companion not connected, skipping companion events for game start")
 		return
 		
 	print("Sending game started event to learning companion")
 	if JSBridge.has_interface():
 		JSBridge.get_interface().onGameStarted()
+		
 
 func _on_mission_started_for_companion(mission: MissionData):
+	# If learning companion is not connected, just log but still proceed with mission
+	# This allows missions to load in the editor
 	if not learning_companion_connected:
+		print("Learning companion not connected, skipping companion events for mission: " + mission.id)
 		return
 		
 	print("Sending mission started event to learning companion for mission: " + mission.id)
@@ -557,9 +567,25 @@ func _on_mission_started_for_companion(mission: MissionData):
 			"intro_text": mission.intro_text,
 		}
 		JSBridge.get_interface().onMissionStarted(mission_data)
+		
+		# Send mission started dialog if available in mission data
+		if mission.companion_dialog.has("mission_started"):
+			var dialog_data = mission.companion_dialog["mission_started"]
+			JSBridge.get_interface().sendCompanionDialog("mission_started", dialog_data)
+		else:
+			# Fallback dialog if not defined in mission data
+			var fallback_dialog = {
+				"text": "Starting Mission " + mission.id + ": " + mission.title + ". Let's do this!",
+				"animation": "excited",
+				"duration": 3000
+			}
+			JSBridge.get_interface().sendCompanionDialog("mission_started", fallback_dialog)
 
 func _on_mission_completed_for_companion(mission: MissionData):
+	# If learning companion is not connected, just log but still proceed with mission
+	# This allows missions to complete in the editor
 	if not learning_companion_connected:
+		print("Learning companion not connected, skipping companion events for mission completion: " + mission.id)
 		return
 		
 	print("Sending mission completed event to learning companion for mission: " + mission.id)
@@ -571,14 +597,43 @@ func _on_mission_completed_for_companion(mission: MissionData):
 			"description": mission.description,
 		}
 		JSBridge.get_interface().onMissionCompleted(mission_data)
+		
+		# Send mission completed dialog if available in mission data
+		if mission.companion_dialog.has("mission_completed"):
+			var dialog_data = mission.companion_dialog["mission_completed"]
+			JSBridge.get_interface().sendCompanionDialog("mission_completed", dialog_data)
+		else:
+			# Fallback dialog if not defined in mission data
+			var fallback_dialog = {
+				"text": "Great job completing Mission " + mission.id + "! You're making excellent progress!",
+				"animation": "happy",
+				"duration": 3000
+			}
+			JSBridge.get_interface().sendCompanionDialog("mission_completed", fallback_dialog)
 
 func _on_all_missions_completed_for_companion():
+	# If learning companion is not connected, just log but still proceed
+	# This allows all missions to complete in the editor
 	if not learning_companion_connected:
+		print("Learning companion not connected, skipping companion events for all missions completed")
 		return
 		
 	print("Sending all missions completed event to learning companion")
 	if JSBridge.has_interface():
 		JSBridge.get_interface().onAllMissionsCompleted()
+		
+		# Send all_missions_completed dialog to learning companion if current mission has it
+		if current_mission != null and current_mission.companion_dialog.has("all_missions_completed"):
+			var dialog_data = current_mission.companion_dialog["all_missions_completed"]
+			JSBridge.get_interface().sendCompanionDialog("all_missions_completed", dialog_data)
+		else:
+			# Use fallback dialog if not defined in mission
+			var dialog_data = {
+				"text": "Congratulations! You've completed all the missions in STEM City! You're a master city planner!",
+				"animation": "excited",
+				"duration": 0  # No reset, stay excited
+			}
+			JSBridge.get_interface().sendCompanionDialog("all_missions_completed", dialog_data)
 
 # Function to force learning companion connection after a delay
 func _force_learning_companion_connection():
@@ -643,10 +698,46 @@ func update_objective_progress(mission_id: String, objective_type: int, amount: 
 			# Emit signal if progress changed
 			if old_count != objective.current_count:
 				objective_progress.emit(objective, objective.current_count)
+				
+				# Check for progress milestones (25%, 50%, 75%) but only if learning companion is connected
+				if learning_companion_connected and objective.target_count > 0:
+					var progress_percentage = (float(objective.current_count) / float(objective.target_count)) * 100.0
+					var milestone_keys = [
+						["mission_progress_25", 25.0, false],
+						["mission_progress_50", 50.0, false],
+						["mission_progress_75", 75.0, false]
+					]
+					
+					# Check each milestone
+					for milestone in milestone_keys:
+						var key = milestone[0]
+						var threshold = milestone[1]
+						var old_percentage = (float(old_count) / float(objective.target_count)) * 100.0
+						
+						# Only trigger if we just crossed this threshold
+						if old_percentage < threshold and progress_percentage >= threshold:
+							if mission.companion_dialog.has(key) and JSBridge.has_interface():
+								print("Sending progress milestone dialog: " + key)
+								var dialog_data = mission.companion_dialog[key]
+								JSBridge.get_interface().sendCompanionDialog(key, dialog_data)
 			
 			# Check if objective was just completed
 			if objective.completed and old_count != objective.current_count:
 				objective_completed.emit(objective)
+				
+				# Only send dialog if learning companion is connected
+				if learning_companion_connected:
+					# Send objective-specific dialog to learning companion if available
+					var objective_key = "objective_completed_" + str(objective.type)
+					if mission.companion_dialog.has(objective_key):
+						var dialog_data = mission.companion_dialog[objective_key]
+						if JSBridge.has_interface():
+							JSBridge.get_interface().sendCompanionDialog(objective_key, dialog_data)
+					# Or send generic objective completion dialog if available
+					elif mission.companion_dialog.has("objective_completed"):
+						var dialog_data = mission.companion_dialog["objective_completed"]
+						if JSBridge.has_interface():
+							JSBridge.get_interface().sendCompanionDialog("objective_completed", dialog_data)
 	
 	# Check if mission is now complete
 	check_mission_progress(mission_id)

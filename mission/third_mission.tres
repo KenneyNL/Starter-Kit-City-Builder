@@ -33,3 +33,35 @@ company_data = ""
 power_math_content = ""
 num_of_user_inputs = 1
 input_labels = Array[String]([])
+companion_dialog = {
+"hint_request": {
+"animation": "thinking",
+"duration": 5000,
+"text": "Try placing the construction workers near where you want to build. They'll automatically start constructing buildings!"
+},
+"mission_completed": {
+"animation": "celebration",
+"duration": 5000,
+"text": "Amazing job! You've successfully built all 40 residential buildings. The city looks fantastic!"
+},
+"mission_progress_25": {
+"animation": "happy",
+"duration": 5000,
+"text": "Great progress! You've completed 25% of the buildings. Keep it up!"
+},
+"mission_progress_50": {
+"animation": "excited",
+"duration": 5000,
+"text": "Halfway there! The city is really taking shape now."
+},
+"mission_progress_75": {
+"animation": "excited",
+"duration": 5000,
+"text": "Almost there! Just a few more buildings to go."
+},
+"mission_started": {
+"animation": "greeting",
+"duration": 5000,
+"text": "Welcome to the City Expansion Project! We need to build 40 residential buildings using our construction workers."
+}
+}

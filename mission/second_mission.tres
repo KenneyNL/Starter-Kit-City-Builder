@@ -33,3 +33,30 @@ company_data = ""
 power_math_content = ""
 num_of_user_inputs = 1
 input_labels = Array[String]([])
+companion_dialog = {
+"correct_answer": {
+"animation": "happy",
+"duration": 5000,
+"text": ["Perfect! Company A is more efficient because each worker builds more houses per week.", "Exactly right! You found the company that can build the houses with fewer workers."]
+},
+"incorrect_answer": {
+"animation": "sad",
+"duration": 5000,
+"text": ["Let's think about this differently. Look at how many houses each worker can build per week and calculate from there.", "Not quite right. Check the rates carefully: how many houses can one worker build in a week for each company?"]
+},
+"mission_completed": {
+"animation": "happy",
+"duration": 6000,
+"text": "Great job selecting the most efficient construction company! Your city will grow faster now."
+},
+"mission_started": {
+"animation": "excited",
+"duration": 6000,
+"text": ["It's time to expand our city! We need to choose the most efficient construction company.", "We have two construction companies offering their services. Let's analyze which one is better!"]
+},
+"objective_completed_7": {
+"animation": "happy",
+"duration": 5000,
+"text": ["You've solved the construction company problem! That's good mathematical thinking.", "You've made a wise decision based on the data. That's how city planners work!"]
+}
+}

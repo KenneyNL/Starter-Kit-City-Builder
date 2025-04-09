@@ -89,6 +89,27 @@ func start_construction(position: Vector3, structure_index: int, rotation_basis 
 	
 	# Find a road position to spawn the worker
 	_spawn_worker_for_construction(position)
+	
+	# Send building_selected dialog to learning companion if available in the current mission
+	var mission_manager = builder.get_node_or_null("/root/Main/MissionManager")
+	if mission_manager and mission_manager.current_mission and mission_manager.learning_companion_connected:
+		var mission = mission_manager.current_mission
+		
+		# Check if there's a building_selected dialog for this mission
+		if mission.companion_dialog.has("building_selected"):
+			const JSBridge = preload("res://scripts/javascript_bridge.gd")
+			if JSBridge.has_interface():
+				var dialog_data = mission.companion_dialog["building_selected"]
+				JSBridge.get_interface().sendCompanionDialog("building_selected", dialog_data)
+		
+		# For power plant mission (mission 5), send a special dialog
+		if structure_index >= 0 and structure_index < builder.structures.size():
+			var structure = builder.structures[structure_index]
+			if structure.model.resource_path.contains("power_plant") and mission.id == "5":
+				const JSBridge = preload("res://scripts/javascript_bridge.gd")
+				if JSBridge.has_interface() and mission.companion_dialog.has("building_selected"):
+					var dialog_data = mission.companion_dialog["building_selected"]
+					JSBridge.get_interface().sendCompanionDialog("building_selected", dialog_data)
 
 # Process active construction sites
 func _process(delta):
@@ -370,6 +391,27 @@ func _place_final_building(position: Vector3, structure_index: int):
 			building.basis = site["rotation_basis"]
 	
 	building.scale = Vector3(3.0, 3.0, 3.0)  # Scale to match other buildings
+	
+	# Send placement_success dialog to learning companion if available in the current mission
+	var mission_manager = builder.get_node_or_null("/root/Main/MissionManager")
+	if mission_manager and mission_manager.current_mission and mission_manager.learning_companion_connected:
+		var mission = mission_manager.current_mission
+		
+		# Check if we have dialog for successful placement
+		if mission.companion_dialog.has("placement_success"):
+			const JSBridge = preload("res://scripts/javascript_bridge.gd")
+			if JSBridge.has_interface():
+				var dialog_data = mission.companion_dialog["placement_success"]
+				JSBridge.get_interface().sendCompanionDialog("placement_success", dialog_data)
+		
+		# For power plant mission (mission 5), check if we placed a power plant
+		if structure_index >= 0 and structure_index < builder.structures.size():
+			var structure = builder.structures[structure_index]
+			if structure.model.resource_path.contains("power_plant") and mission.id == "5":
+				const JSBridge = preload("res://scripts/javascript_bridge.gd")
+				if JSBridge.has_interface() and mission.companion_dialog.has("placement_success"):
+					var dialog_data = mission.companion_dialog["placement_success"]
+					JSBridge.get_interface().sendCompanionDialog("placement_success", dialog_data)
 
 # Make a model semi-transparent with outline effect
 func _make_model_transparent(model: Node3D, alpha: float):

@@ -1,11 +1,14 @@
 [gd_resource type="Resource" script_class="Structure" load_steps=3 format=3 uid="uid://ch8vtcpine1lc"]
 
 [ext_resource type="PackedScene" uid="uid://cpv75mfsda1ml" path="res://models/pavement.glb" id="1_gudnj"]
-[ext_resource type="Script" path="res://scripts/structure.gd" id="2_i48go"]
+[ext_resource type="Script" uid="uid://smbpvh2nwds4" path="res://scripts/structure.gd" id="2_i48go"]
 
 [resource]
 script = ExtResource("2_i48go")
 model = ExtResource("1_gudnj")
-price = 10
 type = 6
+price = 10
+population_count = 0
+kW_usage = 0.0
+kW_production = 0.0
 selector_scale = 2.8

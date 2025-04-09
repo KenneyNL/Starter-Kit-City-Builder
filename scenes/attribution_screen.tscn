@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://ib2t48fgsw62"]
 
 [ext_resource type="FontFile" uid="uid://d0cxd77jybrcn" path="res://fonts/lilita_one_regular.ttf" id="1_ncwjb"]
-[ext_resource type="Script" path="res://scripts/attribution_screen.gd" id="1_qwu4y"]
+[ext_resource type="Script" uid="uid://dsdnejv05yxyb" path="res://scripts/attribution_screen.gd" id="1_qwu4y"]
 
 [node name="AttributionScreen" type="CanvasLayer"]
 script = ExtResource("1_qwu4y")

@@ -195,6 +195,37 @@ func _setup_multiple_user_inputs():
 	spacer.name = "InputSpacer"
 	spacer.custom_minimum_size.y = 20
 	user_input_container.add_child(spacer)
+	
+	# Add a hint button below the inputs
+	var hint_button_container = HBoxContainer.new()
+	hint_button_container.name = "HintButtonContainer"
+	hint_button_container.size_flags_horizontal = Control.SIZE_FILL
+	hint_button_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	user_input_container.add_child(hint_button_container)
+	
+	var hint_button = Button.new()
+	hint_button.name = "HintButton"
+	hint_button.text = "Need a Hint?"
+	hint_button.custom_minimum_size = Vector2(200, 40)
+	
+	# Style the hint button
+	var button_style = StyleBoxFlat.new()
+	button_style.bg_color = Color(0.2, 0.2, 0.3, 0.8)
+	button_style.border_width_left = 2
+	button_style.border_width_top = 2
+	button_style.border_width_right = 2
+	button_style.border_width_bottom = 2
+	button_style.border_color = Color(0.376, 0.760, 0.658, 0.5)  # Teal border
+	button_style.corner_radius_top_left = 5
+	button_style.corner_radius_top_right = 5
+	button_style.corner_radius_bottom_right = 5
+	button_style.corner_radius_bottom_left = 5
+	
+	hint_button.add_theme_stylebox_override("normal", button_style)
+	hint_button.add_theme_font_size_override("font_size", 20)
+	hint_button.pressed.connect(_on_hint_button_pressed)
+	
+	hint_button_container.add_child(hint_button)
 
 # Reset the panel to a clean state
 func _reset_panel():
@@ -282,6 +313,13 @@ func _setup_traditional_mode():
 		
 	# Set up mission-specific content for construction or power mission
 	_setup_mission_specific_content()
+	
+	# Send question_shown dialog to learning companion if available
+	if mission.companion_dialog.has("question_shown"):
+		var dialog_data = mission.companion_dialog["question_shown"]
+		const JSBridge = preload("res://scripts/javascript_bridge.gd")
+		if JSBridge.has_interface():
+			JSBridge.get_interface().sendCompanionDialog("question_shown", dialog_data)
 	
 	print("Setup traditional mode complete")
 
@@ -547,6 +585,13 @@ func _check_answer():
 		
 		feedback_label.add_theme_color_override("font_color", Color(0, 0.7, 0.2))
 		
+		# Send correct answer dialog to learning companion if available
+		if mission.companion_dialog.has("correct_answer"):
+			var dialog_data = mission.companion_dialog["correct_answer"]
+			const JSBridge = preload("res://scripts/javascript_bridge.gd")
+			if JSBridge.has_interface():
+				JSBridge.get_interface().sendCompanionDialog("correct_answer", dialog_data)
+		
 		# Change submit button to "Complete" button
 		if submit_button:
 			submit_button.text = "COMPLETE"
@@ -565,6 +610,13 @@ func _check_answer():
 			feedback_label.text = "Not quite right. Please try again."
 		
 		feedback_label.add_theme_color_override("font_color", Color(0.9, 0.2, 0.2))
+		
+		# Send incorrect answer dialog to learning companion if available
+		if mission.companion_dialog.has("incorrect_answer"):
+			var dialog_data = mission.companion_dialog["incorrect_answer"]
+			const JSBridge = preload("res://scripts/javascript_bridge.gd")
+			if JSBridge.has_interface():
+				JSBridge.get_interface().sendCompanionDialog("incorrect_answer", dialog_data)
 
 func _on_complete_mission():
 	if is_answer_correct:
@@ -578,3 +630,33 @@ func _on_complete_mission():
 		
 		# Emit signal
 		completed.emit()
+
+func _on_hint_button_pressed():
+	print("Hint button pressed")
+	
+	# First hint request
+	if mission.companion_dialog.has("hint_request"):
+		var dialog_data = mission.companion_dialog["hint_request"]
+		const JSBridge = preload("res://scripts/javascript_bridge.gd")
+		if JSBridge.has_interface():
+			JSBridge.get_interface().sendCompanionDialog("hint_request", dialog_data)
+	
+	# Additional hint if available and first hint was already shown
+	# We'll use a timer to ensure there's a delay between hints
+	var second_hint_timer = Timer.new()
+	second_hint_timer.wait_time = 6.0  # Wait 6 seconds before showing second hint
+	second_hint_timer.one_shot = true
+	second_hint_timer.autostart = true
+	add_child(second_hint_timer)
+	
+	# Connect the timeout signal
+	second_hint_timer.timeout.connect(func():
+		if mission.companion_dialog.has("hint_second"):
+			var dialog_data = mission.companion_dialog["hint_second"]
+			const JSBridge = preload("res://scripts/javascript_bridge.gd")
+			if JSBridge.has_interface():
+				JSBridge.get_interface().sendCompanionDialog("hint_second", dialog_data)
+		
+		# Clean up the timer
+		second_hint_timer.queue_free()
+	)

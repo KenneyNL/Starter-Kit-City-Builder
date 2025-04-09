@@ -1,12 +1,12 @@
-[gd_scene load_steps=11 format=3 uid="uid://cgk66f6rg03mj"]
+[gd_scene load_steps=10 format=3 uid="uid://cgk66f6rg03mj"]
 
-[ext_resource type="Script" path="res://scripts/hud_manager.gd" id="1_6vdxc"]
+[ext_resource type="Script" uid="uid://bp75qrvcc3at4" path="res://scripts/hud_manager.gd" id="1_6vdxc"]
 [ext_resource type="Texture2D" uid="uid://hendpftbt4iw" path="res://sprites/population_icon.png" id="2_28oy1"]
 [ext_resource type="Texture2D" uid="uid://jk3mremfu7lm" path="res://sprites/electricity_icon.png" id="3_2u5bk"]
 [ext_resource type="FontFile" uid="uid://d0cxd77jybrcn" path="res://fonts/lilita_one_regular.ttf" id="4_qfmf5"]
 [ext_resource type="Texture2D" uid="uid://bng0d1sou7c8a" path="res://sprites/coin.png" id="5_vd1bj"]
 [ext_resource type="Texture2D" uid="uid://cgpwknjrqnuae" path="res://sprites/help_icon.png" id="6_i1y88"]
-[ext_resource type="Texture2D" uid="uid://bwp2j1v3vnqbf" path="res://sprites/unmuted.png" id="7_80m3c"]
+[ext_resource type="Texture2D" uid="uid://hx3maksi7ma" path="res://sprites/unmuted.png" id="7_80m3c"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_q176i"]
 font = ExtResource("4_qfmf5")
