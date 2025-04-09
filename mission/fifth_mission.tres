@@ -31,3 +31,5 @@ feedback_text = ""
 incorrect_feedback = ""
 company_data = ""
 power_math_content = ""
+num_of_user_inputs = 1
+input_labels = Array[String]([])

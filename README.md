@@ -1,6 +1,7 @@
 <p align="center"><img src="icon.png"/></p>
 
-# Starter Kit City Builder
+
+# Stem City
 
 This package includes a basic template for a 3D city builder in Godot 4.3 (stable). Includes features like;
 
@@ -9,6 +10,13 @@ This package includes a basic template for a 3D city builder in Godot 4.3 (stabl
 - Dynamic MeshLibrary creation
 - Saving/loading
 - Sprites and 3D Models _(CC0 licensed)_
+
+### Standards Covered
+
+- 8.EE
+  - 8.EE.A - Work with radicals and integer exponents.
+  - 8.EE.B - Understand the connections between proportional relationships, lines, and linear equations.
+
 
 ### Screenshot
 
@@ -33,6 +41,11 @@ This package includes a basic template for a 3D city builder in Godot 4.3 (stabl
 
 ATTRIBUTE
 "Power Plant" (https://skfb.ly/6vZoR) by Romain PERRONE is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
+building placing.wav by strange_dragoon -- https://freesound.org/s/271141/ -- License: Attribution 3.0
+building construct p2.wav by strange_dragoon -- https://freesound.org/s/271135/ -- License: Attribution 3.0
+Assets included in this package (2D sprites, 3D models and sound effects) are [CC0 licensed](https://creativecommons.org/publicdomain/zero/1.0/)
+
+
 
 MIT License
 

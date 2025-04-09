@@ -1,10 +1,10 @@
 <component name="libraryTable">
   <library name="GdSdk Master" type="GdScript">
-    <properties path="$USER_HOME$/Library/Caches/JetBrains/Rider2024.3/projects/stem-city.46f8129/sdk/GdSdk Master" version="Master" date="2024-06-01T15:14:16.000+02:00" />
+    <properties path="$USER_HOME$/.cache/JetBrains/Rider2024.3/projects/stem-city.408706df/sdk/GdSdk Master" version="Master" date="2024-06-01T15:14:16.000+02:00" />
     <CLASSES />
     <JAVADOC />
     <SOURCES>
-      <root url="file://$USER_HOME$/Library/Caches/JetBrains/Rider2024.3/projects/stem-city.46f8129/sdk/GdSdk Master" />
+      <root url="file://$USER_HOME$/.cache/JetBrains/Rider2024.3/projects/stem-city.408706df/sdk/GdSdk Master" />
     </SOURCES>
   </library>
 </component>

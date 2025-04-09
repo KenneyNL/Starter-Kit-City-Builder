@@ -8,3 +8,7 @@ script = ExtResource("1_5fmmh")
 model = ExtResource("1_ump1f")
 type = 0
 price = 25
+population_count = 0
+kW_usage = 0.0
+kW_production = 0.0
+selector_scale = 2.8

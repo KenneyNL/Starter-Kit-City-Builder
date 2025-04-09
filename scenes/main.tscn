@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=3 uid="uid://vgwrcfy1qawf"]
+[gd_scene load_steps=27 format=3 uid="uid://vgwrcfy1qawf"]
 
 [ext_resource type="Script" path="res://scripts/builder.gd" id="1_jybm7"]
 [ext_resource type="Environment" uid="uid://jbptgqvstei3" path="res://scenes/main-environment.tres" id="1_yndf3"]
@@ -21,6 +21,7 @@
 [ext_resource type="PackedScene" uid="uid://cgk66f6rg03mj" path="res://scenes/hud.tscn" id="18_hud"]
 [ext_resource type="PackedScene" uid="uid://bqjnp7uypupog" path="res://scenes/controls_panel.tscn" id="19_controls"]
 [ext_resource type="Script" path="res://scripts/game_manager.gd" id="20_game_manager"]
+[ext_resource type="PackedScene" path="res://scenes/sound_panel.tscn" id="21_sound_panel"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mission"]
 bg_color = Color(0.145098, 0.172549, 0.231373, 0.941176)
@@ -119,6 +120,9 @@ shadow_opacity = 0.75
 [node name="HUD" parent="CanvasLayer" instance=ExtResource("18_hud")]
 
 [node name="ControlsPanel" parent="CanvasLayer" instance=ExtResource("19_controls")]
+
+[node name="SoundPanel" parent="CanvasLayer" instance=ExtResource("21_sound_panel")]
+anchors_preset = 8
 
 [node name="MissionManager" type="Node" parent="." node_paths=PackedStringArray("mission_ui", "builder")]
 script = ExtResource("10_oe3re")
