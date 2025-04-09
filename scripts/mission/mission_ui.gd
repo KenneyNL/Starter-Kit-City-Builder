@@ -103,3 +103,18 @@ func show_temporary_message(message: String, duration: float = 2.0, color: Color
 func _on_temp_message_timer_timeout():
 	if temp_message_label:
 		temp_message_label.visible = false
+
+# Handle updating the UI with multiple missions
+func update_missions(missions_dictionary: Dictionary):
+	# If no missions, hide the panel
+	if missions_dictionary.size() == 0:
+		visible = false
+		return
+		
+	# For now, just take the first mission in the dictionary
+	# In a multi-mission UI, we might display them differently
+	var mission_id = missions_dictionary.keys()[0]
+	var mission = missions_dictionary[mission_id]
+	
+	# Use the existing function to update the display
+	update_mission_display(mission)

@@ -60,3 +60,4 @@ companion_dialog = {
 "text": ["You've solved the construction company problem! That's good mathematical thinking.", "You've made a wise decision based on the data. That's how city planners work!"]
 }
 }
+unlocked_items = Array[String](["res://models/road-corner.glb", "res://models/building-small-b.glb", "res://models/grass-trees-tall.glb"])

@@ -10,7 +10,9 @@ enum ObjectiveType {
 	BUILD_INDUSTRIAL,
 	REACH_CASH_AMOUNT,
 	LEARNING,
-	CUSTOM
+	CUSTOM,
+	MEET_CHARACTER,
+	ECONOMY
 }
 
 @export var type: ObjectiveType

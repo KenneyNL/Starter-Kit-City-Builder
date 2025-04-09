@@ -18,6 +18,12 @@ func _ready():
 	# Hide panel initially
 	visible = false
 	
+	# Ensure we're set to process regardless of pause state
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	
+	# Make sure we grab input focus
+	mouse_filter = Control.MOUSE_FILTER_STOP
+	
 	# Wait for the scene to be ready
 	await get_tree().process_frame
 	
@@ -47,6 +53,10 @@ func show_learning_panel(mission_data: MissionData):
 	
 	mission = mission_data
 	
+	# Make panel fully visible and ensure process mode is set to handle input while paused
+	visible = true
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	
 	# First, reset the panel to a clean state
 	_reset_panel()
 	
@@ -63,18 +73,26 @@ func show_learning_panel(mission_data: MissionData):
 	# Set up user input fields based on mission data
 	if mission.num_of_user_inputs > 1:
 		_setup_multiple_user_inputs()
+		# Set focus to the first input field after a short delay
+		get_tree().create_timer(0.2).timeout.connect(func():
+			if user_inputs.size() > 0 and user_inputs[0]:
+				user_inputs[0].grab_focus()
+				print("Set focus to the first input field in multi-input")
+		)
 	else:
 		# Traditional single input
 		if user_input:
 			user_input.placeholder_text = mission.question_text if not mission.question_text.is_empty() else "Enter your answer"
+			# Set focus to the single input field after a short delay
+			get_tree().create_timer(0.2).timeout.connect(func():
+				user_input.grab_focus()
+				print("Set focus to the single input field")
+			)
 	
 	# Hide the HUD when learning panel is shown
 	var hud = get_node_or_null("/root/Main/CanvasLayer/HUD")
 	if hud:
 		hud.visible = false
-	
-	# Make the panel visible
-	visible = true
 	
 	# Make sure we're on top
 	if get_parent():

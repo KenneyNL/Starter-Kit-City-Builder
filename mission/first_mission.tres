@@ -74,3 +74,4 @@ companion_dialog = {
 "text": ["Amazing! You built your first residential building where people can live.", "You just built a home for your city residents! The population is growing."]
 }
 }
+unlocked_items = Array[String](["res://models/building-small-a.glb"])

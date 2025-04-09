@@ -13,6 +13,9 @@ enum StructureType {
 }
 
 
+@export_subgroup("Gameplay")
+@export var title: String = "" 
+
 @export_subgroup("Model")
 @export var model:PackedScene # Model of the structure
 
@@ -35,3 +38,7 @@ enum StructureType {
 
 @export_subgroup("Game Progression")
 @export var description: String = "Description" # Whether this structure is available to the player
+
+
+@export_subgroup("Game Progression")
+@export var thumbnail: String = "Thumbnail" # Whether this structure is available to the player

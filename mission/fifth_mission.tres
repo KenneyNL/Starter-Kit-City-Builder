@@ -65,3 +65,4 @@ companion_dialog = {
 "text": "Perfect placement! Now the power plant can distribute electricity to all the houses in your city."
 }
 }
+unlocked_items = Array[String](["res://models/power_plant-wind.glb", "res://models/building-garage.glb"])

@@ -81,3 +81,4 @@ companion_dialog = {
 "text": "This is a system of equations problem. We have two houses with different combinations of gaming consoles and TVs."
 }
 }
+unlocked_items = Array[String](["res://models/power_plant-coal.glb", "res://models/power_plant-solar.glb"])
