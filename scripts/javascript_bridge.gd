@@ -302,6 +302,52 @@ class JavaScriptGlobal:
 		else:
 			print("JavaScriptBridge singleton not available")
 
+	# Handle audio actions via JavaScript
+	static func handle_audio_action(action: String, sound_name: String = "", volume: float = -1.0):
+		if not OS.has_feature("web"):
+			return false
+		
+		print("Handling audio action via JavaScript bridge: " + action)
+		
+		var action_data = {
+			"action": action,
+			"sound": sound_name,
+		}
+		
+		if volume >= 0.0:
+			action_data["volume"] = volume
+			
+		var action_json = JSON.stringify(action_data)
+		var script = """
+		(function() {
+			try {
+				if (window.parent) {
+					console.log('Sending audio action to parent window:', %s);
+					window.parent.postMessage({ 
+						type: 'stemCity_audio',
+						data: %s,
+						source: 'godot-game',
+						timestamp: Date.now()
+					}, '*');
+					return true;
+				} else {
+					console.log('No parent window found for audio action');
+					return false;
+				}
+			} catch (e) {
+				console.error('Error sending audio action via postMessage:', e);
+				return false;
+			}
+		})();
+		""" % [action_json, action_json]
+		
+		if Engine.has_singleton("JavaScriptBridge"):
+			var js = Engine.get_singleton("JavaScriptBridge")
+			return js.eval(script)
+		else:
+			print("JavaScriptBridge singleton not available")
+			return false
+	
 	# Helper method to ensure the sound manager's audio is initialized
 	# Call this method after user interaction to ensure audio works
 	static func ensure_audio_initialized():
@@ -310,16 +356,11 @@ class JavaScriptGlobal:
 			
 		print("Ensuring audio is initialized via JavaScript bridge")
 		
+		# Setup audio message listener if it's not already set up
+		setup_audio_message_listener()
+		
 		# Try to initialize audio through the sound manager if it exists
-		var sound_manager = null
-		# Use the singleton pattern to find the SoundManager node
-		if Engine.get_main_loop().has_meta("sound_manager"):
-			sound_manager = Engine.get_main_loop().get_meta("sound_manager")
-		else:
-			# Try to find it in the scene tree
-			var scene_tree = Engine.get_main_loop() as SceneTree
-			if scene_tree:
-				sound_manager = scene_tree.root.get_node_or_null("/root/SoundManager")
+		var sound_manager = _get_sound_manager()
 			
 		if sound_manager and sound_manager.has_method("init_web_audio_from_js"):
 			print("Found SoundManager, calling init_web_audio_from_js")
@@ -393,3 +434,73 @@ class JavaScriptGlobal:
 		var result = js_interface.eval(script)
 		print("JavaScript audio initialization result:", result)
 		return result
+		
+	# Setup audio message listener from JavaScript
+	static func setup_audio_message_listener():
+		if not OS.has_feature("web"):
+			return false
+			
+		print("Setting up audio message listener via JavaScript bridge")
+		
+		if not Engine.has_singleton("JavaScriptBridge"):
+			print("JavaScriptBridge singleton not available")
+			return false
+			
+		var js = Engine.get_singleton("JavaScriptBridge")
+		
+		# Register the callback function
+		js.set_callback("godot_audio_callback", Callable(_get_sound_manager(), "process_js_audio_state"))
+		
+		# Set up a listener for audio state messages
+		var script = """
+		(function() {
+			// Set up message listener if not already done
+			if (!window.godot_audio_listener_initialized) {
+				window.addEventListener('message', function(event) {
+					if (event.data && event.data.type === 'stemCity_audio_state') {
+						console.log('Godot received audio state:', event.data);
+						// Call our Godot callback with the state data
+						if (typeof godot_audio_callback === 'function') {
+							console.log('Sending audio state to Godot');
+							godot_audio_callback(event.data.data);
+						} else {
+							console.warn('godot_audio_callback is not available');
+						}
+					}
+				});
+				
+				console.log('Audio message listener initialized');
+				window.godot_audio_listener_initialized = true;
+				
+				// Request initial audio state from parent
+				window.parent.postMessage({
+					type: 'stemCity_audio',
+					data: { action: 'GET_STATE' },
+					source: 'godot-game',
+					timestamp: Date.now()
+				}, '*');
+				
+				return true;
+			}
+			return false;
+		})();
+		"""
+		
+		var result = js.eval(script)
+		print("Audio message listener setup result: ", result)
+		return result
+	
+	# Helper to get the sound manager instance
+	static func _get_sound_manager():
+		var sound_manager = null
+		
+		# Try to find using meta
+		if Engine.get_main_loop().has_meta("sound_manager"):
+			sound_manager = Engine.get_main_loop().get_meta("sound_manager")
+		else:
+			# Try to find in scene tree
+			var scene_tree = Engine.get_main_loop() as SceneTree
+			if scene_tree:
+				sound_manager = scene_tree.root.get_node_or_null("/root/SoundManager")
+				
+		return sound_manager

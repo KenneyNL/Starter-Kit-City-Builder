@@ -12,11 +12,15 @@ config_version=5
 
 config/name="Starter Kit City Builder"
 config/tags=PackedStringArray("starterkit")
-run/main_scene="res://scenes/attribution_screen.tscn"
+run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.3", "Forward Plus")
 boot_splash/bg_color=Color(0.92549, 0.92549, 0.960784, 1)
 boot_splash/image="res://splash-screen.png"
 config/icon="res://icon.png"
+
+[audio]
+
+general/default_playback_type.web=0
 
 [autoload]
 
@@ -113,6 +117,7 @@ camera_center={
 
 [rendering]
 
+textures/vram_compression/import_etc2_astc=true
 anti_aliasing/quality/msaa_3d=2
 debug/shapes/navigation/enable_edge_lines=false
 debug/shapes/navigation/enable_edge_lines.web=false

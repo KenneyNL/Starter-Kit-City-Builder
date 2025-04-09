@@ -151,13 +151,6 @@ layout_mode = 2
 theme_override_constants/separation = 5
 alignment = 1
 
-[node name="InputLabel" type="Label" parent="PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent/UserInputContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.376471, 0.760784, 0.658824, 1)
-theme_override_font_sizes/font_size = 32
-text = "Enter your answer:"
-horizontal_alignment = 1
-
 [node name="UserInput" type="LineEdit" parent="PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent/UserInputContainer"]
 custom_minimum_size = Vector2(600, 80)
 layout_mode = 2

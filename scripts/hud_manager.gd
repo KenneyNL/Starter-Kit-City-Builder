@@ -65,9 +65,6 @@ func _on_structure_placed(structure_index, position):
 	
 	var structure = builder.structures[structure_index]
 	
-	# Debug info
-	print("Structure placed: " + str(structure.type) + " with population: " + str(structure.population_count))
-	
 	# Only update population for non-residential buildings or if we're NOT in the construction mission
 	var is_residential = structure.type == Structure.StructureType.RESIDENTIAL_BUILDING
 	var mission_manager = get_node_or_null("/root/Main/MissionManager")
@@ -83,7 +80,6 @@ func _on_structure_placed(structure_index, position):
 	# Always update electricity usage/production
 	total_kW_usage += structure.kW_usage
 	total_kW_production += structure.kW_production
-	print("Energy updated - Usage: " + str(total_kW_usage) + " kW, Production: " + str(total_kW_production) + " kW")
 	
 	# Update HUD
 	update_hud()
@@ -117,7 +113,6 @@ func _on_structure_removed(structure_index, position):
 	# Update electricity
 	total_kW_usage = max(0, total_kW_usage - structure.kW_usage)
 	total_kW_production = max(0, total_kW_production - structure.kW_production)
-	print("Energy updated after removal - Usage: " + str(total_kW_usage) + " kW, Production: " + str(total_kW_production) + " kW")
 	
 	# Update HUD
 	update_hud()
@@ -165,7 +160,6 @@ func update_hud():
 		# Update the color of the indicator rectangle
 		if electricity_indicator:
 			electricity_indicator.color = indicator_color
-			print("Electricity indicator updated - Color: " + str(indicator_color))
 
 # Tooltip handling
 func _on_population_icon_mouse_entered():

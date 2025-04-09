@@ -15,24 +15,32 @@ completed = false
 [resource]
 script = ExtResource("2_mum3p")
 id = "4"
-title = "Power Math Challenge"
-description = "Your city of 40 houses needs a reliable electricity supply. Calculate the total power demand using the formula and determine how many power plants you need to build. This will require using mathematical skills with exponents and radicals."
+title = "Residential Energy Usage"
+description = ""
 objectives = Array[ExtResource("1_dhx01")]([SubResource("Resource_c06be")])
 rewards = {
 "cash": 0
 }
 next_mission_id = "5"
 graph_path = ""
-full_screen_path = "res://images/city_expansion.png"
-intro_text = "Your city now has 40 houses and requires reliable electricity. You'll need to build the right number of power plants to meet your city's needs."
-question_text = "How many power plants are needed to power 40 houses? (Enter a number)"
-correct_answer = "1"
-feedback_text = "Correct! Your calculations are accurate. Total power demand is 2×√40 + 40^0.8 = 12.64 + 19.14 = 31.78 kilowatts. Since each plant generates 40 kilowatts, 1 power plant is sufficient. The plant will power all houses within a 31.6 grid unit radius (5×√40 = 31.6)."
-incorrect_feedback = "Not quite right. Remember to follow these steps:
-1. Calculate power needed: 2×√40 + 40^0.8
-2. For √40, use 6.32 (or calculate precisely)
-3. For 40^0.8, use about 19.14
-4. Add both parts: 12.64 + 19.14 = 31.78 kilowatts
-5. Divide by plant output (40 kW) and round up to a whole number"
+full_screen_path = ""
+intro_text = "A neighborhood is calculating energy usage from gaming consoles and TVs.
+At House A, they ran 2 gaming consoles and 3 TVs and used a total of 660 kilowatt-hours (kWh) of electricity.
+At House B, they ran 4 gaming consoles and 1 TV and used 760 kWh of electricity."
+question_text = ""
+correct_answer = "150,70"
+feedback_text = "Correct! You've accurately calculated that gaming consoles use 150 kWh and TVs use 70 kWh. Using a system of equations: 2x + 3y = 660 and 4x + y = 760, you can solve by substitution to find x = 150 and y = 70."
+incorrect_feedback = "Not quite right. Try setting up a system of equations:
+- House A: 2 gaming consoles + 3 TVs = 660 kWh
+- House B: 4 gaming consoles + 1 TV = 760 kWh
+Let x be the kWh for gaming consoles and y be the kWh for TVs.
+So we have: 2x + 3y = 660 and 4x + y = 760
+Solve for y in the second equation: y = 760 - 4x
+Substitute into the first equation: 2x + 3(760 - 4x) = 660
+Simplify: 2x + 2280 - 12x = 660
+Solve: -10x = -1620
+Therefore: x = 150 and y = 70"
 company_data = ""
 power_math_content = ""
+num_of_user_inputs = 2
+input_labels = Array[String](["Gaming Consoles", "TVs"])

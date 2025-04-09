@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://cbk07cxgshg26"
 path.s3tc="res://.godot/imported/selector.png-a5b2e7bc2bf34414a6d0f4a4e1472988.s3tc.ctex"
+path.etc2="res://.godot/imported/selector.png-a5b2e7bc2bf34414a6d0f4a4e1472988.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://sprites/selector.png"
-dest_files=["res://.godot/imported/selector.png-a5b2e7bc2bf34414a6d0f4a4e1472988.s3tc.ctex"]
+dest_files=["res://.godot/imported/selector.png-a5b2e7bc2bf34414a6d0f4a4e1472988.s3tc.ctex", "res://.godot/imported/selector.png-a5b2e7bc2bf34414a6d0f4a4e1472988.etc2.ctex"]
 
 [params]
 

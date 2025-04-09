@@ -16,3 +16,5 @@ class_name MissionData
 @export var incorrect_feedback: String = "" # Feedback text shown when answer is incorrect
 @export var company_data: String = "" # Company data for mission 2
 @export var power_math_content: String = "" # Power math content for mission 4
+@export var num_of_user_inputs: int = 1 # Number of user input fields to display
+@export var input_labels: Array[String] = [] # Labels for each input field

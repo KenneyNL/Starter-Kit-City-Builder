@@ -36,7 +36,6 @@ func _ready():
 		if not can_initialize_audio:
 			# For web, wait for the audio_ready signal before initializing audio
 			sound_manager.audio_ready.connect(_initialize_game_audio)
-			print("Web platform detected: Deferring audio setup until user interaction")
 	
 	# Set up audio if allowed (immediate for desktop, after interaction for web)
 	if can_initialize_audio:
@@ -55,24 +54,16 @@ func _ready():
 
 # Initialize all game audio - called immediately on desktop, after user interaction on web
 func _initialize_game_audio():
-	print("Initializing all game audio...")
-	
 	# Set up all audio systems
 	setup_background_music()
 	setup_building_sfx()
 	setup_construction_sfx()
-	
-	print("All game audio initialized successfully")
 
 # This function is called when the controls panel is closed
 func _on_controls_panel_closed():
-	print("Controls panel closed by player")
-	
 	# This is the perfect place to initialize audio for web builds
 	# since we know the user has interacted with the game
 	if OS.has_feature("web"):
-		print("User closed controls panel - perfect time to ensure audio is working")
-		
 		# Force initialize the sound manager (will have no effect if already initialized)
 		var sound_manager = get_node_or_null("/root/SoundManager")
 		if sound_manager and not sound_manager.audio_initialized:
@@ -80,9 +71,8 @@ func _on_controls_panel_closed():
 		
 		# Make sure our music is playing
 		if music_player and music_player.stream and not music_player.playing:
-			print("Starting background music after user interaction")
 			music_player.play()
-	
+
 # Function to set up the sound buses
 func _setup_sound_buses():
 	# Wait a moment to ensure SoundManager is ready
@@ -91,7 +81,6 @@ func _setup_sound_buses():
 	# Get reference to SoundManager singleton
 	var sound_manager = get_node_or_null("/root/SoundManager")
 	if !sound_manager:
-		print("ERROR: SoundManager singleton not found!")
 		return
 	
 	# Move audio players to the appropriate buses
@@ -103,8 +92,6 @@ func _setup_sound_buses():
 	
 	if construction_sfx:
 		construction_sfx.bus = "SFX"
-	
-	print("Sound buses configured successfully")
 
 # Setup background music player
 func setup_background_music():
@@ -116,35 +103,22 @@ func setup_background_music():
 	
 	# Use a direct file path for the music file to avoid any loading issues
 	var music_path = "res://sounds/jazz_new_orleans.mp3"
-	print("Loading music from path: " + music_path)
 	
 	# Try both direct preload and load for maximum compatibility
 	var music = null
 	
 	# Try preload first - this ensures MP3 is pre-decoded
-	print("Attempting to preload music file...")
 	music = preload("res://sounds/jazz_new_orleans.mp3")
 	
-	# Log preload status
-	if music:
-		print("Music file preloaded successfully: " + str(music))
-	else:
-		print("Preload failed, falling back to regular load")
+	# If preload failed, try regular load
+	if !music:
 		music = load(music_path)
-		if music:
-			print("Music file loaded successfully via regular load: " + str(music))
 		
 	# Continue setup if we have the music file
 	if music:
-		# Double-check the import settings
-		print("Music stream info - Class: " + str(music.get_class()))
-		
 		# Set looping on the AudioStreamMP3 itself
 		if music is AudioStreamMP3:
 			music.loop = true
-			print("Set loop=true on AudioStreamMP3")
-		else:
-			print("Warning: Music is not AudioStreamMP3, it is " + str(music.get_class()))
 		
 		music_player.stream = music
 		music_player.volume_db = 0  # Full volume for better web playback
@@ -153,13 +127,9 @@ func setup_background_music():
 		# Direct check of music bus
 		var music_bus_idx = AudioServer.get_bus_index("Music")
 		if music_bus_idx >= 0:
-			print("Music bus found at index: " + str(music_bus_idx))
 			# Force bus volume
 			AudioServer.set_bus_volume_db(music_bus_idx, 0)
 			AudioServer.set_bus_mute(music_bus_idx, false)
-			print("Music bus volume set to: " + str(AudioServer.get_bus_volume_db(music_bus_idx)) + "dB")
-		else:
-			print("WARNING: Music bus not found!")
 		
 		# Check if we can play audio immediately (desktop) or need to wait (web)
 		var can_play_now = true
@@ -167,7 +137,6 @@ func setup_background_music():
 			var sound_manager = get_node_or_null("/root/SoundManager")
 			if sound_manager:
 				can_play_now = sound_manager.audio_initialized
-				print("Web build - audio initialized: " + str(can_play_now))
 				
 				# Force SoundManager settings
 				sound_manager.music_volume = 1.0
@@ -177,19 +146,14 @@ func setup_background_music():
 				# If not initialized, connect to the ready signal
 				if not can_play_now:
 					sound_manager.audio_ready.connect(_start_background_music)
-					print("Background music setup complete, waiting for user interaction")
 		
 		# Play immediately if allowed
 		if can_play_now:
 			_start_background_music()
 	else:
-		print("ERROR: Could not load background music from path: " + music_path)
-		
 		# Try a fallback sound as music
-		print("Attempting to load fallback sound...")
 		var fallback_sound = load("res://sounds/building_placing.wav")
 		if fallback_sound:
-			print("Loaded fallback sound")
 			music_player.stream = fallback_sound
 			music_player.volume_db = 0
 			music_player.bus = "Music"
@@ -203,17 +167,12 @@ func setup_background_music():
 			
 			if can_play_now:
 				music_player.play()
-				print("Playing fallback sound as music")
-		else:
-			print("Could not load fallback sound either")
 
 # Start background music playing (called directly or via signal)
 func _start_background_music():
 	if music_player and music_player.stream and not music_player.playing:
 		# For web builds, use a simple approach to starting audio
 		if OS.has_feature("web"):
-			print("Starting background music (web build)")
-			
 			# Make sure we start from the beginning
 			music_player.stop()
 			music_player.seek(0.0)
@@ -228,12 +187,10 @@ func _start_background_music():
 			# Music bus
 			var music_bus_idx = AudioServer.get_bus_index("Music")
 			if music_bus_idx >= 0:
-				print("Music bus found at index: " + str(music_bus_idx))
 				AudioServer.set_bus_mute(music_bus_idx, false)
 			
 			# Play the music
 			music_player.play()
-			print("Started playing background music (web)")
 			
 			# Simple JavaScript to ensure audio context is running
 			if Engine.has_singleton("JavaScriptBridge"):
@@ -253,7 +210,6 @@ func _start_background_music():
 		else:
 			# Standard approach for desktop builds
 			music_player.play()
-			print("Started playing background music")
 			
 # This retry audio function has been removed in favor of the simpler approach
 	
@@ -272,9 +228,6 @@ func setup_building_sfx():
 		building_sfx.stream = sfx
 		building_sfx.volume_db = -5
 		building_sfx.bus = "SFX"  # Use the SFX bus
-		print("Building placement SFX loaded successfully")
-	else:
-		print("ERROR: Could not load building placement SFX")
 		
 # Setup construction sound effects
 # Note: Now mainly used for backward compatibility
@@ -291,9 +244,6 @@ func setup_construction_sfx():
 		construction_sfx.stream = sfx
 		construction_sfx.volume_db = -8  # Reduced volume since workers have their own sounds
 		construction_sfx.bus = "SFX"  # Use the SFX bus
-		print("Main construction SFX loaded (for backward compatibility)")
-	else:
-		print("ERROR: Could not load construction SFX")
 		
 # Play the building sound effect when a structure is placed
 func _on_structure_placed(structure_index, position):
@@ -309,10 +259,7 @@ func _on_structure_placed(structure_index, position):
 		if building_sfx.playing:
 			building_sfx.stop()
 		building_sfx.play()
-		print("Playing building placement SFX")
-	elif OS.has_feature("web"):
-		print("Structure placed but audio not yet initialized")
-	
+
 # Variables for construction sound looping
 var construction_active = false
 var construction_sound_timer = null
@@ -322,9 +269,9 @@ var construction_sound_timer = null
 
 # Compatibility function for mission triggers
 func play_construction_sound():
-	print("GAME MANAGER: Received construction_started signal (for compatibility only)")
 	# We don't play any sounds from here anymore - workers handle their own sounds
 	# but we need to keep this function for backward compatibility
+	pass
 	
 # Compatibility function for mission triggers  
 func _loop_construction_sound():
@@ -333,21 +280,18 @@ func _loop_construction_sound():
 	
 # Compatibility function for mission triggers
 func stop_construction_sound():
-	print("GAME MANAGER: Received construction_ended signal (for compatibility only)")
 	# We don't stop any sounds from here anymore - workers handle their own sounds
 	# but we need to keep this function for backward compatibility
+	pass
 	
 # Removed duplicate _retry_music_play function that was here
 	
 # Setup construction signals properly
 func _setup_construction_signals():
-	print("GAME MANAGER DELAYED: Attempting to find construction manager")
 	var builder = get_node_or_null("/root/Main/Builder")
-	print("GAME MANAGER DELAYED: Found builder:", builder)
 	
 	if builder and builder.has_method("get") and builder.get("construction_manager"):
 		var construction_manager = builder.construction_manager
-		print("GAME MANAGER DELAYED: Construction manager found:", construction_manager)
 		
 		if construction_manager:
 			# Disconnect any existing connections first to avoid duplicates
@@ -360,8 +304,3 @@ func _setup_construction_signals():
 			# Connect signals
 			construction_manager.worker_construction_started.connect(play_construction_sound)
 			construction_manager.worker_construction_ended.connect(stop_construction_sound)
-			print("GAME MANAGER DELAYED: Connected to construction manager signals")
-		else:
-			print("GAME MANAGER DELAYED: Construction manager is null")
-	else:
-		print("GAME MANAGER DELAYED: Builder doesn't have construction_manager property")	

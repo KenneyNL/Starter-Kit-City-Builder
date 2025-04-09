@@ -17,8 +17,6 @@ func _ready():
 		
 		# Do initial count on mission start
 		update_mission_3_count()
-	else:
-		print("ERROR: Could not find Builder node for signal connections")
 
 # Called when a structure is placed
 func _on_structure_placed(structure_index, position):
@@ -30,7 +28,6 @@ func _on_structure_removed(structure_index, position):
 	var builder = get_node_or_null("/root/Main/Builder")
 	if builder and structure_index >= 0 and structure_index < builder.structures.size():
 		if builder.structures[structure_index].type == 1:  # Residential building
-			print("Residential building demolished at " + str(position) + ", updating mission count")
 			# Wait one frame to make sure the GridMap is updated
 			await get_tree().process_frame
 			# Update the count
@@ -45,7 +42,6 @@ func update_mission_3_count():
 	# Find the mission manager
 	var mission_manager = get_node_or_null("/root/Main/MissionManager")
 	if not mission_manager:
-		print("ERROR: Could not find MissionManager")
 		return
 		
 	# Check if we're in mission 3
@@ -64,26 +60,21 @@ func update_mission_3_count():
 		if current_count != count:
 			# Reset the objective count to match the actual number
 			mission_manager.reset_objective_count(3, count)  # 3 is the BUILD_RESIDENTIAL type
-			print("Updated mission 3 objective count to match actual building count: " + str(count))
 	
 func count_residential_buildings():
 	# Find the builder
 	var builder = get_node_or_null("/root/Main/Builder")
 	if not builder:
-		print("ERROR: Could not find Builder")
 		return 0
 		
 	# Find the gridmap
 	var gridmap = builder.gridmap
 	if not gridmap:
-		print("ERROR: Could not find GridMap")
 		return 0
 		
 	# Count residential buildings in the gridmap
 	var residential_count = 0
 	var found_positions = []
-	
-	print("COUNTING: Starting residential building count")
 	
 	# First count buildings in the gridmap
 	for cell in gridmap.get_used_cells():
@@ -92,14 +83,10 @@ func count_residential_buildings():
 			if builder.structures[structure_index].type == 1:  # 1 is RESIDENTIAL_BUILDING type
 				residential_count += 1
 				found_positions.append(Vector2(cell.x, cell.z))
-				print("COUNTING: Found residential building in GridMap at " + str(cell))
-	
-	print("COUNTING: Found " + str(residential_count) + " buildings in GridMap")
 				
 	# Also count completed buildings that might not be in the gridmap
 	if builder.has_node("NavRegion3D"):
 		var nav_region = builder.get_node("NavRegion3D")
-		var nav_buildings = 0
 		
 		for child in nav_region.get_children():
 			if child.name.begins_with("Building_"):
@@ -112,15 +99,10 @@ func count_residential_buildings():
 					# Only count if we haven't already counted this position
 					if not pos in found_positions:
 						residential_count += 1
-						nav_buildings += 1
 						found_positions.append(pos)
-						print("COUNTING: Found building model in NavRegion3D at " + str(pos))
-		
-		print("COUNTING: Found " + str(nav_buildings) + " additional buildings in NavRegion3D")
 	
 	# Also count any buildings under construction
 	if builder.construction_manager:
-		var construction_count = 0
 		for position in builder.construction_manager.construction_sites:
 			var site = builder.construction_manager.construction_sites[position]
 			if site.structure_index >= 0 and site.structure_index < builder.structures.size():
@@ -131,13 +113,6 @@ func count_residential_buildings():
 						var pos = Vector2(position.x, position.z)
 						if not pos in found_positions:
 							residential_count += 1
-							construction_count += 1
 							found_positions.append(pos)
-							print("COUNTING: Found completed construction site at " + str(position))
-					else:
-						print("COUNTING: Ignoring completed construction site at " + str(position) + " because no building found in GridMap")
-						
-		print("COUNTING: Found " + str(construction_count) + " buildings from construction sites")
 	
-	print("COUNTING: Final total - " + str(residential_count) + " residential buildings")
 	return residential_count
