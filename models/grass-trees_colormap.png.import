@@ -2,18 +2,20 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bnn1b2yg61elu"
-path.s3tc="res://.godot/imported/colormap.png-c1bc3c3aabeec406ff4b53328583776a.s3tc.ctex"
-path.etc2="res://.godot/imported/colormap.png-c1bc3c3aabeec406ff4b53328583776a.etc2.ctex"
+uid="uid://b8l28de0bquvh"
+path.s3tc="res://.godot/imported/grass-trees_colormap.png-dfa57c874305a3beb22f3746cd6c2447.s3tc.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"imported_formats": ["s3tc_bptc"],
 "vram_texture": true
+}
+generator_parameters={
+"md5": "6cb3446cd14edd128e0040af70e0dd5a"
 }
 
 [deps]
 
-source_file="res://models/Textures/colormap.png"
-dest_files=["res://.godot/imported/colormap.png-c1bc3c3aabeec406ff4b53328583776a.s3tc.ctex", "res://.godot/imported/colormap.png-c1bc3c3aabeec406ff4b53328583776a.etc2.ctex"]
+source_file="res://models/grass-trees_colormap.png"
+dest_files=["res://.godot/imported/grass-trees_colormap.png-dfa57c874305a3beb22f3746cd6c2447.s3tc.ctex"]
 
 [params]
 

@@ -44,3 +44,40 @@ company_data = ""
 power_math_content = ""
 num_of_user_inputs = 2
 input_labels = Array[String](["Gaming Consoles", "TVs"])
+companion_dialog = {
+"correct_answer": {
+"animation": "celebration",
+"duration": 5000,
+"text": "Excellent work! You correctly determined that gaming consoles use 150 kWh and TVs use 70 kWh."
+},
+"hint_request": {
+"animation": "thinking",
+"duration": 5000,
+"text": "Try setting up two equations: 2x + 3y = 660 for House A and 4x + y = 760 for House B, where x is the energy used by consoles and y is the energy used by TVs."
+},
+"hint_second": {
+"animation": "thinking",
+"duration": 5000,
+"text": "You can solve this by substitution. Rearrange the second equation to find y = 760 - 4x, then substitute this into the first equation."
+},
+"incorrect_answer": {
+"animation": "sad",
+"duration": 5000,
+"text": "Not quite right. Let's try setting up the equations again. Remember, we have 2 consoles and 3 TVs using 660 kWh at House A, and 4 consoles and 1 TV using 760 kWh at House B."
+},
+"mission_completed": {
+"animation": "happy",
+"duration": 5000,
+"text": "Now that we know the energy usage, we can plan our city's power needs much better. Well done!"
+},
+"mission_started": {
+"animation": "greeting",
+"duration": 5000,
+"text": "Let's tackle a challenging energy problem! We need to figure out how much electricity gaming consoles and TVs use."
+},
+"question_shown": {
+"animation": "thinking",
+"duration": 5000,
+"text": "This is a system of equations problem. We have two houses with different combinations of gaming consoles and TVs."
+}
+}

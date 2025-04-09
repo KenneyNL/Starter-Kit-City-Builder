@@ -1,11 +1,14 @@
 [gd_resource type="Resource" script_class="Structure" load_steps=3 format=3 uid="uid://bqb6g3t0tebno"]
 
 [ext_resource type="PackedScene" uid="uid://d0nnrx2y4px2v" path="res://models/building-garage.glb" id="1_gyclk"]
-[ext_resource type="Script" path="res://scripts/structure.gd" id="2_jrinw"]
+[ext_resource type="Script" uid="uid://smbpvh2nwds4" path="res://scripts/structure.gd" id="2_jrinw"]
 
 [resource]
 script = ExtResource("2_jrinw")
 model = ExtResource("1_gyclk")
-price = 70
 type = 1
+price = 70
+population_count = 0
+kW_usage = 0.0
+kW_production = 0.0
 selector_scale = 2.8

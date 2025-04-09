@@ -1,11 +1,14 @@
 [gd_resource type="Resource" script_class="Structure" load_steps=3 format=3 uid="uid://dveu4dnue0d54"]
 
 [ext_resource type="PackedScene" uid="uid://euxdh7lkq0oj" path="res://models/road-intersection.glb" id="1_pnjl2"]
-[ext_resource type="Script" path="res://scripts/structure.gd" id="2_3eq5k"]
+[ext_resource type="Script" uid="uid://smbpvh2nwds4" path="res://scripts/structure.gd" id="2_3eq5k"]
 
 [resource]
 script = ExtResource("2_3eq5k")
 model = ExtResource("1_pnjl2")
-price = 25
 type = 0
+price = 25
+population_count = 0
+kW_usage = 0.0
+kW_production = 0.0
 selector_scale = 2.8

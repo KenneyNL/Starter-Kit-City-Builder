@@ -219,6 +219,14 @@ func action_build(gridmap_position):
 			var mission_id = mission_manager.current_mission.id
 			if mission_id == "3" or (mission_id == "1" and is_residential):
 				use_worker_construction = true
+			
+			# Send placement_hint dialog if available and we're on power plant mission
+			if mission_id == "5" and is_power_plant and mission_manager.learning_companion_connected:
+				if mission_manager.current_mission.companion_dialog.has("placement_hint"):
+					var dialog_data = mission_manager.current_mission.companion_dialog["placement_hint"]
+					const JSBridge = preload("res://scripts/javascript_bridge.gd")
+					if JSBridge.has_interface():
+						JSBridge.get_interface().sendCompanionDialog("placement_hint", dialog_data)
 		
 		# Sound effects are handled via game_manager.gd through the structure_placed signal
 		

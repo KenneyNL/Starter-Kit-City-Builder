@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://cq1w6ovisjgsg"]
 
-[ext_resource type="Script" path="res://scripts/mission/fullscreen_learning_panel.gd" id="1_kq0jb"]
+[ext_resource type="Script" uid="uid://w2g0h4c8ymo4" path="res://scripts/mission/fullscreen_learning_panel.gd" id="1_kq0jb"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxFlat_empty"]
 

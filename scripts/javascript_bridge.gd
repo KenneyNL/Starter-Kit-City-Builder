@@ -301,6 +301,40 @@ class JavaScriptGlobal:
 			js.eval(script)
 		else:
 			print("JavaScriptBridge singleton not available")
+			
+	static func sendCompanionDialog(key: String, dialog_data: Dictionary):
+		if not OS.has_feature("web"):
+			return
+			
+		print("Sending companion dialog for key: " + key)
+		var dialog_json = JSON.stringify(dialog_data)
+		var script = """
+		(function() {
+			try {
+				if (window.parent) {
+					console.log('Sending companion dialog to parent window');
+					window.parent.postMessage({ 
+						type: 'stemCity_companionDialog',
+						key: '%s',
+						data: %s,
+						source: 'godot-game',
+						timestamp: Date.now()
+					}, '*');
+				} else {
+					console.log('No parent window found for companion dialog');
+				}
+			} catch (e) {
+				console.error('Error sending companion dialog via postMessage:', e);
+			}
+		})();
+		""" % [key, dialog_json]
+		
+		# Use Engine.get_singleton for consistency with sound_manager.gd
+		if Engine.has_singleton("JavaScriptBridge"):
+			var js = Engine.get_singleton("JavaScriptBridge")
+			js.eval(script)
+		else:
+			print("JavaScriptBridge singleton not available")
 
 	# Handle audio actions via JavaScript
 	static func handle_audio_action(action: String, sound_name: String = "", volume: float = -1.0):
