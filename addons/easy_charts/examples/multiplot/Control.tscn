@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://7v0v5lsl0kqe"]
 
-[ext_resource type="Script" path="res://addons/easy_charts/examples/multiplot/Control.gd" id="1"]
+[ext_resource type="Script" uid="uid://dy7dau5waslst" path="res://addons/easy_charts/examples/multiplot/Control.gd" id="1"]
 [ext_resource type="PackedScene" uid="uid://dlwq4kmdb3bhs" path="res://addons/easy_charts/control_charts/chart.tscn" id="2"]
 
 [sub_resource type="StyleBoxFlat" id="1"]

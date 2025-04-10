@@ -9,6 +9,10 @@ class_name MissionUI
 var temp_message_label: Label
 var temp_message_timer: Timer
 
+# Preload checkbox textures
+var checkbox_checked = preload("res://sprites/checkbox.png")
+var checkbox_unchecked = preload("res://sprites/checkbox_outline.png") 
+
 # Use a Label node directly instead of a scene
 # This assumes the ObjectiveLabel node is set up correctly and can be duplicated
 
@@ -31,27 +35,36 @@ func update_mission_display(mission: MissionData):
 	
 	# Add new objectives
 	for objective in mission.objectives:
-		# Duplicate the ObjectiveLabel from the scene
-		var label = $"../ObjectiveLabel".duplicate()
-		objectives_container.add_child(label)
+		# Create a container for the objective
+		var container = HBoxContainer.new()
+		container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		objectives_container.add_child(container)
 		
-		# Make font size larger and ensure text wrapping
+		# Create the checkbox texture
+		var checkbox = TextureRect.new()
+		checkbox.texture = checkbox_checked if objective.completed else checkbox_unchecked
+		checkbox.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		checkbox.custom_minimum_size = Vector2(20, 20)
+		container.add_child(checkbox)
+		
+		# Create the text label
+		var label = Label.new()
+		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		label.add_theme_font_size_override("font_size", 16)
 		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		
 		# Format the objective text
-		var status = "✓" if objective.completed else "□"  # Changed to checkbox style
 		var progress = ""
-		
 		if objective.target_count > 1:
 			progress = " (%d/%d)" % [objective.current_count, objective.target_count]
 		
-		label.text = "%s %s%s" % [status, objective.description, progress]
+		label.text = "%s%s" % [objective.description, progress]
 		
 		# Style completed objectives differently
 		if objective.completed:
 			label.add_theme_color_override("font_color", Color(0, 0.8, 0.2, 1))  # Brighter green
+		
+		container.add_child(label)
 
 # Method to show a temporary message on the screen
 func show_temporary_message(message: String, duration: float = 2.0, color: Color = Color.WHITE):

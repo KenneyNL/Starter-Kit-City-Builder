@@ -10,6 +10,9 @@ var nav_region: NavigationRegion3D # Single navigation region for all roads
 # Construction manager for building residential buildings with workers
 var construction_manager: BuildingConstructionManager
 
+# Create construction manager in _ready function
+
+# Structure selection sound effect is now handled in game_manager.gd
 
 @export var selector:Node3D # The 'cursor'
 @export var selector_container:Node3D # Node that holds a preview of the structure
@@ -37,6 +40,7 @@ func _ready():
 	
 	# Setup construction manager
 	construction_manager = BuildingConstructionManager.new()
+	construction_manager.name = "BuildingConstructionManager"  # Set a proper node name
 	add_child(construction_manager)
 	
 	# Connect to the construction completion signal
@@ -45,6 +49,8 @@ func _ready():
 	# Give the construction manager references it needs
 	construction_manager.builder = self
 	construction_manager.nav_region = nav_region
+	
+	# Sound effects now handled in game_manager.gd
 	
 	for structure in structures:
 		
@@ -104,31 +110,24 @@ func is_mouse_over_ui() -> bool:
 	# Get mouse position
 	var mouse_pos = get_viewport().get_mouse_position()
 	
-	# Add diagnostic output
-	print("Mouse position: ", mouse_pos)
-	
 	# Let's try an extremely simple approach - just check coordinates
 	# most HUDs are at top of screen
 	if mouse_pos.y < 100:
 		# Mouse is likely in the HUD area at top of screen
-		print("Mouse in top area (likely HUD)")
 		return true
 	
 	# Get HUD dimensions for debug
 	var hud = get_node_or_null("/root/Main/CanvasLayer/HUD")
 	if hud:
 		var hud_rect = hud.get_global_rect()
-		print("HUD rect: ", hud_rect)
 		
 		# Get HBoxContainer dimensions - this is the actual content area
 		var hbox = hud.get_node_or_null("HBoxContainer")
 		if hbox:
 			var hbox_rect = hbox.get_global_rect()
-			print("HUD HBoxContainer rect: ", hbox_rect)
 			
 			# Simple approach - just check if within actual HUD content area
 			if hbox_rect.has_point(mouse_pos):
-				print("Mouse over HUD content area")
 				return true
 		
 		# Skip the complex recursion for now since it's not working
@@ -137,30 +136,23 @@ func is_mouse_over_ui() -> bool:
 	var mission_panel = get_node_or_null("/root/Main/MissionManager/MissionPanel")
 	if mission_panel and mission_panel.visible:
 		var panel_rect = mission_panel.get_global_rect()
-		print("Mission panel rect: ", panel_rect)
 		if panel_rect.has_point(mouse_pos):
-			print("Mouse over mission panel")
 			return true
 	
 	# Check learning panel too
 	var learning_panel = get_node_or_null("/root/Main/MissionManager/LearningPanel")
 	if learning_panel and learning_panel.visible:
 		var panel_rect = learning_panel.get_global_rect()
-		print("Learning panel rect: ", panel_rect)
 		if panel_rect.has_point(mouse_pos):
-			print("Mouse over learning panel") 
 			return true
 	
 	# Check controls panel
 	var controls_panel = get_node_or_null("/root/Main/CanvasLayer/ControlsPanel")
 	if controls_panel and controls_panel.visible:
 		var panel_rect = controls_panel.get_global_rect()
-		print("Controls panel rect: ", panel_rect)
 		if panel_rect.has_point(mouse_pos):
-			print("Mouse over controls panel")
 			return true
 	
-	print("Mouse not over any UI element")
 	return false
 
 # Retrieve the mesh from a PackedScene, used for dynamically creating a MeshLibrary
@@ -227,6 +219,16 @@ func action_build(gridmap_position):
 			var mission_id = mission_manager.current_mission.id
 			if mission_id == "3" or (mission_id == "1" and is_residential):
 				use_worker_construction = true
+			
+			# Send placement_hint dialog if available and we're on power plant mission
+			if mission_id == "5" and is_power_plant and mission_manager.learning_companion_connected:
+				if mission_manager.current_mission.companion_dialog.has("placement_hint"):
+					var dialog_data = mission_manager.current_mission.companion_dialog["placement_hint"]
+					const JSBridge = preload("res://scripts/javascript_bridge.gd")
+					if JSBridge.has_interface():
+						JSBridge.get_interface().sendCompanionDialog("placement_hint", dialog_data)
+		
+		# Sound effects are handled via game_manager.gd through the structure_placed signal
 		
 		if is_road:
 			# For roads, we'll need to track in our data without using the GridMap
@@ -265,6 +267,9 @@ func action_build(gridmap_position):
 			
 			# Don't place the building immediately - it will be placed when construction completes
 			# We leave gridmap empty for now
+			
+			# For mission 3, don't update objectives immediately - wait for construction to finish
+			# See _update_mission_objective_on_completion in building_construction_manager.gd
 		else:
 			# For non-road structures or not in mission 3, add to the gridmap as usual
 			gridmap.set_cell_item(gridmap_position, index, gridmap.get_orthogonal_index_from_basis(selector.basis))
@@ -293,6 +298,9 @@ func setup_navigation_region():
 		nav_mesh.agent_radius = 0.25
 		
 		add_child(nav_region)
+		
+
+# Sound effects are now handled in game_manager.gd
 
 
 # Rebake navigation mesh to update the navigation data
@@ -303,8 +311,7 @@ func rebake_navigation_mesh():
 	
 	# Bake the navigation mesh for the entire map
 	nav_region.bake_navigation_mesh()
-	print("Navigation mesh rebaked")
-	
+
 # Demolish (remove) a structure
 
 signal structure_removed(structure_index, position)
@@ -340,8 +347,16 @@ func action_demolish(gridmap_position):
 		var current_item = gridmap.get_cell_item(gridmap_position)
 		var is_building = current_item >= 0
 		
+		# Check for building model in the scene as a direct child of builder
+		var building_model_name = "Building_" + str(int(gridmap_position.x)) + "_" + str(int(gridmap_position.z))
+		var has_building_model = has_node(building_model_name)
+		
 		# Store structure index before removal for signaling
 		var structure_index = -1
+		
+		# Clean up any construction site at this position before demolishing
+		if construction_manager and is_building:
+			construction_manager.handle_demolition(gridmap_position)
 		
 		# Remove the appropriate item
 		if is_road:
@@ -384,10 +399,21 @@ func action_demolish(gridmap_position):
 			structure_index = current_item
 			# Remove the building from the gridmap
 			gridmap.set_cell_item(gridmap_position, -1)
+			
+			# Also remove any direct building model in the scene
+			_remove_building_model(gridmap_position)
+			
+			# Check if this was a residential building to remove a resident model
+			if structures[structure_index].type == Structure.StructureType.RESIDENTIAL_BUILDING:
+				_remove_resident_for_building(gridmap_position)
 		
 		# Emit signal that structure was removed
 		if structure_index >= 0:
 			structure_removed.emit(structure_index, gridmap_position)
+			
+			# For mission 3, update mission objective when a residential building is demolished
+			if structures[structure_index].type == Structure.StructureType.RESIDENTIAL_BUILDING:
+				_update_mission_objective_on_demolish()
 			
 # This function is no longer needed since we're using a single NavRegion3D
 # Keeping it for compatibility, but it doesn't do anything now
@@ -425,11 +451,15 @@ func update_structure():
 	var _model = structures[index].model.instantiate()
 	selector_container.add_child(_model)
 	
+	# Get reference to the selector sprite
+	var selector_sprite = selector.get_node("Sprite")
+	
 	# Apply appropriate scaling based on structure type
 	if structures[index].model.resource_path.contains("power_plant"):
 		# Scale power plant model to be much smaller (0.5x)
 		_model.scale = Vector3(0.5, 0.5, 0.5)
-		_model.position.y += 0.0 # No need for Y adjustment with scaling
+		# Center the power plant model within the selector
+		_model.position = Vector3(-3.0, 0.0, 3.0)  # Reset position
 	elif (structures[index].type == Structure.StructureType.RESIDENTIAL_BUILDING
 	   or structures[index].type == Structure.StructureType.ROAD
 	   or structures[index].type == Structure.StructureType.TERRAIN
@@ -440,6 +470,12 @@ func update_structure():
 	else:
 		# Standard positioning for other structures
 		_model.position.y += 0.25
+	
+	# Get the selector scale from the structure resource
+	var scale_factor = structures[index].selector_scale
+	selector_sprite.scale = Vector3(scale_factor, scale_factor, scale_factor)
+		
+	# Sound effects are now handled in game_manager.gd
 	
 func update_cash():
 	cash_display.text = "$" + str(map.cash)
@@ -455,7 +491,6 @@ func _add_road_to_navregion(position: Vector3, structure_index: int):
 	
 	# Check if a road with this name already exists
 	if nav_region.has_node(road_name):
-
 		return
 	
 	# Instantiate the road model - get the actual model based on road type
@@ -501,7 +536,6 @@ func _add_power_plant(position: Vector3, structure_index: int):
 	
 	# Check if a power plant with this name already exists
 	if has_node(power_plant_name):
-	
 		return
 	
 	# Instantiate the power plant model
@@ -520,8 +554,13 @@ func _add_power_plant(position: Vector3, structure_index: int):
 	# Apply rotation from the selector to preserve the rotation the player chose
 	transform.basis = transform.basis * selector.basis
 	
-	# Set position
+	# Set position with offset to center the model at the grid position
 	transform.origin = position
+	
+	# Apply position offset to center the model (matching the preview)
+	# These offsets need to be transformed based on the current rotation
+	var offset = selector.basis * Vector3(0.25, 0, -0.25)
+	transform.origin += offset
 	
 	# Apply the complete transform in one go
 	power_plant_model.transform = transform
@@ -539,7 +578,60 @@ func _remove_power_plant(position: Vector3):
 		power_plant.queue_free()
 		
 	else:
-		print("No power plant found at position ", position)
+		# No power plant found
+		pass
+
+# Function to remove a resident model when a residential building is demolished
+func _remove_resident_for_building(position: Vector3):
+	# First, check if we have a nav region reference
+	if not nav_region and has_node("NavRegion3D"):
+		nav_region = get_node("NavRegion3D")
+	
+	if nav_region:
+		# Look for resident with matching position in the name
+		var resident_name = "Resident_" + str(int(position.x)) + "_" + str(int(position.z))
+		
+		# First try to find by exact name
+		var found = false
+		for child in nav_region.get_children():
+			if child.name.begins_with(resident_name):
+				child.queue_free()
+				found = true
+				
+				# Update the HUD population count
+				var hud = get_node_or_null("/root/Main/CanvasLayer/HUD")
+				if hud:
+					hud.total_population = max(0, hud.total_population - 1)
+					hud.update_hud()
+					hud.population_updated.emit(hud.total_population)
+				
+				break
+				
+		# If not found by exact name, find any resident (as a fallback)
+		if not found:
+			var residents = get_tree().get_nodes_in_group("characters")
+			if residents.size() > 0:
+				# Just remove the first resident we find
+				residents[0].queue_free()
+				
+				# Update the HUD population count
+				var hud = get_node_or_null("/root/Main/CanvasLayer/HUD")
+				if hud:
+					hud.total_population = max(0, hud.total_population - 1)
+					hud.update_hud()
+					hud.population_updated.emit(hud.total_population)
+
+# Function to update mission objectives when residential building is demolished
+func _update_mission_objective_on_demolish():
+	# Get reference to mission manager
+	var mission_manager = get_node_or_null("/root/Main/MissionManager")
+	
+	if mission_manager and mission_manager.current_mission:
+		# Check if we're in mission 3 (build 40 residential buildings)
+		if mission_manager.current_mission.id != "3":
+			# For other missions, use the normal method
+			var mission_id = mission_manager.current_mission.id
+			mission_manager.update_objective_progress(mission_id, MissionObjective.ObjectiveType.BUILD_RESIDENTIAL, -1)
 		
 # Function to remove terrain (grass or trees)
 func _remove_terrain(position: Vector3):
@@ -551,9 +643,71 @@ func _remove_terrain(position: Vector3):
 		# Get the terrain and remove it
 		var terrain = get_node(terrain_name)
 		terrain.queue_free()
-		print("Removed terrain at position ", position)
 	else:
-		print("No terrain found at position ", position)
+		# No terrain found
+		pass
+
+# Function to remove building model from scene
+func _remove_building_model(position: Vector3):
+	# Try multiple possible naming patterns
+	var building_patterns = [
+		"Building_" + str(int(position.x)) + "_" + str(int(position.z)),
+		"building-small-a_" + str(int(position.x)) + "_" + str(int(position.z)),
+		"building-small-b_" + str(int(position.x)) + "_" + str(int(position.z)),
+		"building-small-c_" + str(int(position.x)) + "_" + str(int(position.z)),
+		"building-small-d_" + str(int(position.x)) + "_" + str(int(position.z)),
+		"building-garage_" + str(int(position.x)) + "_" + str(int(position.z))
+	]
+	
+	# Check if we can find the building model with any of the pattern names
+	var found = false
+	for pattern in building_patterns:
+		if has_node(pattern):
+			# Get the building and remove it
+			var building = get_node(pattern)
+			building.queue_free()
+			found = true
+			break
+	
+	# If not found as direct child, try to find by position in navigation region
+	if !found and nav_region:
+		for child in nav_region.get_children():
+			# Skip non-building nodes
+			if !child.name.begins_with("Building") and !child.name.begins_with("building"):
+				continue
+				
+			# Check if this building is at our position (with some tolerance)
+			var pos_diff = (child.global_transform.origin - position).abs()
+			if pos_diff.x < 0.5 and pos_diff.z < 0.5:
+				child.queue_free()
+				found = true
+				break
+	
+	# If still not found, search the entire scene
+	if !found:
+		var main = get_node_or_null("/root/Main")
+		if main:
+			for child in main.get_children():
+				# Skip non-building nodes
+				if !child.name.begins_with("Building") and !child.name.begins_with("building"):
+					continue
+					
+				# Check if this building is at our position (with some tolerance)
+				var pos_diff = (child.global_transform.origin - position).abs()
+				if pos_diff.x < 0.5 and pos_diff.z < 0.5:
+					child.queue_free()
+					found = true
+					break
+	
+	# If STILL not found, try one last approach - scan for gridmap children
+	if !found and gridmap:
+		for child in gridmap.get_children():
+			# Check if this is any model at our position (with some tolerance)
+			var pos_diff = (child.global_transform.origin - position).abs()
+			if pos_diff.x < 0.5 and pos_diff.z < 0.5:
+				child.queue_free()
+				found = true
+				break
 
 # Function to remove a road model from the navigation region
 func _remove_road_from_navregion(position: Vector3):
@@ -569,9 +723,9 @@ func _remove_road_from_navregion(position: Vector3):
 		# Get the road and remove it
 		var road = nav_region.get_node(road_name)
 		road.queue_free()
-		print("Removed road at position ", position, " from NavRegion3D")
 	else:
-		print("No road found at position ", position, " in NavRegion3D")
+		# No road found
+		pass
 		
 # Function to add all existing roads to the navigation region
 func _add_existing_roads_to_navregion():
@@ -585,7 +739,6 @@ func _add_existing_roads_to_navregion():
 			child.queue_free()
 	
 	# Find all road cells in the gridmap
-	print("Finding and adding all existing roads to NavRegion3D...")
 	var added_count = 0
 	
 	# We need to convert any existing roads in the GridMap to our new system
@@ -600,8 +753,6 @@ func _add_existing_roads_to_navregion():
 				gridmap.set_cell_item(cell, -1)
 				added_count += 1
 				
-	print("Added ", added_count, " existing roads to NavRegion3D")
-	
 # Function to move all character NPCs to be children of the navigation region
 func _move_characters_to_navregion():
 	# Make sure we have a navigation region
@@ -635,7 +786,6 @@ func _add_terrain(position: Vector3, structure_index: int):
 	
 	# Check if terrain with this name already exists
 	if has_node(terrain_name):
-
 		return
 	
 	# Instantiate the terrain model
@@ -659,8 +809,6 @@ func _add_terrain(position: Vector3, structure_index: int):
 	
 	# Apply the complete transform in one go
 	terrain_model.transform = transform
-	
-	print("Added terrain at position ", position, " as direct child of builder")
 
 # Callback for when construction is completed
 func _on_construction_completed(position: Vector3):
@@ -684,7 +832,6 @@ func _on_construction_completed(position: Vector3):
 		
 		# Add the completed residential building to the gridmap with the correct rotation
 		gridmap.set_cell_item(position, residential_index, rotation_index)
-		print("Construction completed: added building to gridmap at ", position, " with rotation index ", rotation_index)
 		
 		# Check if we need to spawn a character for mission 1
 		var mission_manager = get_node_or_null("/root/Main/MissionManager")
@@ -695,7 +842,6 @@ func _on_construction_completed(position: Vector3):
 			
 			# Now check if we need to manually handle mission 1 character spawning
 			if mission_manager.current_mission and mission_manager.current_mission.id == "1" and not mission_manager.character_spawned:
-				print("This is the first residential building in mission 1, spawning character")
 				mission_manager.character_spawned = true
 				mission_manager._spawn_character_on_road(position)
 			
@@ -704,7 +850,8 @@ func _on_construction_completed(position: Vector3):
 			# We don't emit the signal anymore to prevent double-counting
 			pass
 	else:
-		print("ERROR: No residential building structure found!")
+		# No residential building structure found
+		pass
 	
 	# Make sure all characters (including newly spawned residents) are children of NavRegion3D
 	_move_characters_to_navregion()
@@ -712,14 +859,15 @@ func _on_construction_completed(position: Vector3):
 	# Make sure the navigation mesh is updated
 	rebake_navigation_mesh()
 	
+	# Note that mission objective updates are now handled in the construction manager
+	# to ensure they only occur after construction is complete
+	
 	
 
 # Saving/load
 
 func action_save():
 	if Input.is_action_just_pressed("save"):
-		print("Saving map...")
-		
 		map.structures.clear()
 		for cell in gridmap.get_used_cells():
 			
@@ -735,8 +883,6 @@ func action_save():
 	
 func action_load():
 	if Input.is_action_just_pressed("load"):
-		print("Loading map...")
-		
 		gridmap.clear()
 		
 		map = ResourceLoader.load("user://map.res")

@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://bqjnp7uypupog"]
 
 [ext_resource type="FontFile" uid="uid://d0cxd77jybrcn" path="res://fonts/lilita_one_regular.ttf" id="1_tnlhn"]
-[ext_resource type="Script" path="res://scripts/controls_panel.gd" id="1_xyuqg"]
+[ext_resource type="Script" uid="uid://bhjbj3n3dak4g" path="res://scripts/controls_panel.gd" id="1_xyuqg"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_f2mso"]
 bg_color = Color(0.145098, 0.172549, 0.231373, 0.941176)

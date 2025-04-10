@@ -1,0 +1,81 @@
+[gd_scene load_steps=3 format=3 uid="uid://ib2t48fgsw62"]
+
+[ext_resource type="FontFile" uid="uid://d0cxd77jybrcn" path="res://fonts/lilita_one_regular.ttf" id="1_ncwjb"]
+[ext_resource type="Script" uid="uid://dsdnejv05yxyb" path="res://scripts/attribution_screen.gd" id="1_qwu4y"]
+
+[node name="AttributionScreen" type="CanvasLayer"]
+script = ExtResource("1_qwu4y")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.145098, 0.172549, 0.231373, 1)
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 100
+theme_override_constants/margin_top = 100
+theme_override_constants/margin_right = 100
+theme_override_constants/margin_bottom = 100
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 30
+
+[node name="TitleLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("1_ncwjb")
+theme_override_font_sizes/font_size = 48
+text = "Attributions"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="AttributionsContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 20
+
+[node name="PowerPlantLabel" type="Label" parent="MarginContainer/VBoxContainer/AttributionsContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "3D Models - \"Power Plant\" (https://skfb.ly/6vZoR) by Romain PERRONE is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/)"
+autowrap_mode = 3
+
+[node name="Kenny" type="Label" parent="MarginContainer/VBoxContainer/AttributionsContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "3D Models - Provided by Kenny.nl (Thanks Kenny)"
+autowrap_mode = 3
+
+[node name="SoundLabel1" type="Label" parent="MarginContainer/VBoxContainer/AttributionsContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "SoundFX - building placing.wav by strange_dragoon -- https://freesound.org/s/271141/ -- License: Attribution 3.0"
+autowrap_mode = 3
+
+[node name="SoundLabel2" type="Label" parent="MarginContainer/VBoxContainer/AttributionsContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "SoundFX -  building construct p2.wav by strange_dragoon -- https://freesound.org/s/271135/ -- License: Attribution 3.0"
+autowrap_mode = 3
+
+[node name="SongLabel" type="Label" parent="MarginContainer/VBoxContainer/AttributionsContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Music - Provided by PaoloArgento - The Best Jazz Club In New Orleans"
+autowrap_mode = 3
+
+[node name="SoundLabel3" type="Label" parent="MarginContainer/VBoxContainer/AttributionsContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "building construct p2.wav by strange_dragoon -- https://freesound.org/s/271135/ -- License: Attribution 3.0"
+autowrap_mode = 3

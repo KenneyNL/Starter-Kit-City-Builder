@@ -1,0 +1,162 @@
+[gd_scene load_steps=7 format=3 uid="uid://b4s46k58ddpyc"]
+
+[ext_resource type="Script" uid="uid://danypf5uo4vob" path="res://scripts/sound_panel.gd" id="1_c6ykp"]
+[ext_resource type="FontFile" uid="uid://d0cxd77jybrcn" path="res://fonts/lilita_one_regular.ttf" id="2_kpgjp"]
+[ext_resource type="Texture2D" uid="uid://hx3maksi7ma" path="res://sprites/unmuted.png" id="3_c3hj5"]
+[ext_resource type="Texture2D" uid="uid://djxd33vvtr58p" path="res://sprites/muted.png" id="4_jdlh2"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u5w8t"]
+bg_color = Color(0.145098, 0.172549, 0.231373, 0.941176)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.356863, 0.670588, 0.768627, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_size = 5
+shadow_offset = Vector2(2, 2)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wg3ha"]
+bg_color = Color(0.356863, 0.670588, 0.768627, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="SoundPanel" type="PanelContainer"]
+process_mode = 3
+#Processevenwhenthegameispausedanchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -175.0
+offset_right = 200.0
+offset_bottom = 175.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_u5w8t")
+script = ExtResource("1_c6ykp")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 25
+theme_override_constants/margin_top = 25
+theme_override_constants/margin_right = 25
+theme_override_constants/margin_bottom = 25
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="TitleLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_kpgjp")
+theme_override_font_sizes/font_size = 32
+text = "Sound Settings"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_styles/separator = SubResource("StyleBoxFlat_wg3ha")
+
+[node name="MusicSection" type="VBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="MusicTitle" type="Label" parent="MarginContainer/VBoxContainer/MusicSection"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Music Volume"
+
+[node name="MusicControls" type="HBoxContainer" parent="MarginContainer/VBoxContainer/MusicSection"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="MusicMuteButton" type="TextureButton" parent="MarginContainer/VBoxContainer/MusicSection/MusicControls"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+size_flags_vertical = 4
+toggle_mode = true
+texture_normal = ExtResource("3_c3hj5")
+texture_pressed = ExtResource("4_jdlh2")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="MusicSlider" type="HSlider" parent="MarginContainer/VBoxContainer/MusicSection/MusicControls"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.01
+value = 0.8
+
+[node name="MusicValueLabel" type="Label" parent="MarginContainer/VBoxContainer/MusicSection/MusicControls"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "80%"
+
+[node name="HSeparator2" type="HSeparator" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="SFXSection" type="VBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="SFXTitle" type="Label" parent="MarginContainer/VBoxContainer/SFXSection"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Sound Effects Volume"
+
+[node name="SFXControls" type="HBoxContainer" parent="MarginContainer/VBoxContainer/SFXSection"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="SFXMuteButton" type="TextureButton" parent="MarginContainer/VBoxContainer/SFXSection/SFXControls"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+size_flags_vertical = 4
+toggle_mode = true
+texture_normal = ExtResource("3_c3hj5")
+texture_pressed = ExtResource("4_jdlh2")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="SFXSlider" type="HSlider" parent="MarginContainer/VBoxContainer/SFXSection/SFXControls"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.01
+value = 0.8
+
+[node name="SFXValueLabel" type="Label" parent="MarginContainer/VBoxContainer/SFXSection/SFXControls"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "80%"
+
+[node name="HSeparator3" type="HSeparator" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="CloseButtonContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="CloseButton" type="Button" parent="MarginContainer/VBoxContainer/CloseButtonContainer"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_kpgjp")
+theme_override_font_sizes/font_size = 20
+text = "Close"
+
+[connection signal="toggled" from="MarginContainer/VBoxContainer/MusicSection/MusicControls/MusicMuteButton" to="." method="_on_music_mute_button_toggled"]
+[connection signal="value_changed" from="MarginContainer/VBoxContainer/MusicSection/MusicControls/MusicSlider" to="." method="_on_music_slider_value_changed"]
+[connection signal="toggled" from="MarginContainer/VBoxContainer/SFXSection/SFXControls/SFXMuteButton" to="." method="_on_sfx_mute_button_toggled"]
+[connection signal="value_changed" from="MarginContainer/VBoxContainer/SFXSection/SFXControls/SFXSlider" to="." method="_on_sfx_slider_value_changed"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/CloseButtonContainer/CloseButton" to="." method="_on_close_button_pressed"]

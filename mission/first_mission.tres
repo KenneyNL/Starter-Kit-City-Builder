@@ -40,3 +40,37 @@ feedback_text = ""
 incorrect_feedback = ""
 company_data = ""
 power_math_content = ""
+num_of_user_inputs = 1
+input_labels = Array[String]([])
+companion_dialog = {
+"correct_answer": {
+"animation": "happy",
+"duration": 5000,
+"text": ["Great job! That's the right answer!", "Perfect! You got it right!"]
+},
+"incorrect_answer": {
+"animation": "sad",
+"duration": 5000,
+"text": ["Hmm, that doesn't look right. Let's try again.", "Not quite right. Don't worry, you can try again!"]
+},
+"mission_completed": {
+"animation": "happy",
+"duration": 6000,
+"text": ["You've completed your first mission! Great job building your first road and residential building!"]
+},
+"mission_started": {
+"animation": "excited",
+"duration": 6000,
+"text": ["Welcome to Stem City! I'm your learning companion. Let's build a city together!", "Time to start our adventure in Stem City! I'll help you build your first city."]
+},
+"objective_completed_2": {
+"animation": "happy",
+"duration": 5000,
+"text": ["You built a road! Now your citizens can move around the city.", "Nice work on that road! Roads help connect different parts of your city."]
+},
+"objective_completed_3": {
+"animation": "excited",
+"duration": 5000,
+"text": ["Amazing! You built your first residential building where people can live.", "You just built a home for your city residents! The population is growing."]
+}
+}

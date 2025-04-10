@@ -4,8 +4,10 @@ signal completed
 signal panel_opened
 signal panel_closed
 
-# Only store user_input and submit_button variables for signal connections
-var user_input
+# Store variables for signal connections
+var user_input  # For single input (backward compatibility)
+var user_inputs = []  # Array for multiple inputs
+var input_labels = []  # Array for input labels
 var submit_button
 
 var mission: MissionData
@@ -25,6 +27,10 @@ func _ready():
 	# Only get references needed for signal connections
 	user_input = get_node_or_null("PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent/UserInputContainer/UserInput")
 	submit_button = get_node_or_null("PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/SubmitButtonContainer/SubmitButton")
+	
+	# Clear the user inputs array
+	user_inputs = []
+	input_labels = []
 	
 	# Connect button signals if the button exists
 	if submit_button != null:
@@ -54,9 +60,13 @@ func show_learning_panel(mission_data: MissionData):
 		# Default answer based on mission type
 		correct_answer = "1" if not mission.power_math_content.is_empty() else "A"
 	
-	# Set up user input placeholder
-	if user_input:
-		user_input.placeholder_text = mission.question_text if not mission.question_text.is_empty() else "Enter your answer"
+	# Set up user input fields based on mission data
+	if mission.num_of_user_inputs > 1:
+		_setup_multiple_user_inputs()
+	else:
+		# Traditional single input
+		if user_input:
+			user_input.placeholder_text = mission.question_text if not mission.question_text.is_empty() else "Enter your answer"
 	
 	# Hide the HUD when learning panel is shown
 	var hud = get_node_or_null("/root/Main/CanvasLayer/HUD")
@@ -103,23 +113,153 @@ func _disable_background_interaction():
 	
 	print("Background interaction disabled")
 
+# Function to create multiple user input fields
+func _setup_multiple_user_inputs():
+	# Clear any existing user inputs
+	user_inputs = []
+	input_labels = []
+	
+	# Get the container where inputs should be added
+	var user_input_container = get_node_or_null("PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent/UserInputContainer")
+	if not user_input_container:
+		push_error("User input container not found")
+		return
+	
+	# If there's an existing single input, hide it
+	if user_input and user_input.get_parent() == user_input_container:
+		user_input.visible = false
+	
+	# Create a centering container for better alignment
+	var center_container = CenterContainer.new()
+	center_container.name = "InputCenterContainer"
+	center_container.size_flags_horizontal = Control.SIZE_FILL
+	user_input_container.add_child(center_container)
+	
+	# Add margin around the grid
+	var margin_container = MarginContainer.new()
+	margin_container.name = "InputMarginContainer"
+	margin_container.add_theme_constant_override("margin_top", 10)
+	margin_container.add_theme_constant_override("margin_bottom", 10)
+	center_container.add_child(margin_container)
+	
+	# Create a grid container for inputs
+	var grid = GridContainer.new()
+	grid.name = "MultiInputGrid"
+	grid.columns = 2  # Label and input in each row
+	grid.size_flags_horizontal = Control.SIZE_FILL
+	grid.add_theme_constant_override("h_separation", 15)  # Add horizontal spacing between columns
+	grid.add_theme_constant_override("v_separation", 10)  # Add vertical spacing between rows
+	margin_container.add_child(grid)
+	
+	# Create each input field
+	for i in range(mission.num_of_user_inputs):
+		# Create label
+		var label = Label.new()
+		label.name = "InputLabel" + str(i)
+		label.text = mission.input_labels[i] if i < mission.input_labels.size() else "Input " + str(i+1) + ":"
+		label.size_flags_horizontal = Control.SIZE_EXPAND
+		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT  # Right-align text
+		
+		# Set larger font size
+		var font_size = 26
+		label.add_theme_font_size_override("font_size", font_size)
+		
+		# Add right margin for better spacing
+		var style = StyleBoxEmpty.new()
+		style.content_margin_right = 10  # Add 10 pixels of right margin
+		label.add_theme_stylebox_override("normal", style)
+		
+		grid.add_child(label)
+		input_labels.append(label)
+		
+		# Create input field
+		var input_field = LineEdit.new()
+		input_field.name = "UserInput" + str(i)
+		input_field.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		input_field.placeholder_text = "Enter value"
+		input_field.custom_minimum_size.x = 150  # Increase minimum width
+		input_field.custom_minimum_size.y = 40   # Set height for the input field
+		
+		# Style the input field
+		input_field.alignment = HORIZONTAL_ALIGNMENT_LEFT  # Left-align text inside the field
+		input_field.add_theme_font_size_override("font_size", 26)  # Match label font size
+		
+		# Connect text submitted signal
+		input_field.text_submitted.connect(_on_user_input_text_submitted)
+		
+		grid.add_child(input_field)
+		user_inputs.append(input_field)
+	
+	# Add spacing after the grid
+	var spacer = Control.new()
+	spacer.name = "InputSpacer"
+	spacer.custom_minimum_size.y = 20
+	user_input_container.add_child(spacer)
+	
+	# Add a hint button below the inputs
+	var hint_button_container = HBoxContainer.new()
+	hint_button_container.name = "HintButtonContainer"
+	hint_button_container.size_flags_horizontal = Control.SIZE_FILL
+	hint_button_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	user_input_container.add_child(hint_button_container)
+	
+	var hint_button = Button.new()
+	hint_button.name = "HintButton"
+	hint_button.text = "Need a Hint?"
+	hint_button.custom_minimum_size = Vector2(200, 40)
+	
+	# Style the hint button
+	var button_style = StyleBoxFlat.new()
+	button_style.bg_color = Color(0.2, 0.2, 0.3, 0.8)
+	button_style.border_width_left = 2
+	button_style.border_width_top = 2
+	button_style.border_width_right = 2
+	button_style.border_width_bottom = 2
+	button_style.border_color = Color(0.376, 0.760, 0.658, 0.5)  # Teal border
+	button_style.corner_radius_top_left = 5
+	button_style.corner_radius_top_right = 5
+	button_style.corner_radius_bottom_right = 5
+	button_style.corner_radius_bottom_left = 5
+	
+	hint_button.add_theme_stylebox_override("normal", button_style)
+	hint_button.add_theme_font_size_override("font_size", 20)
+	hint_button.pressed.connect(_on_hint_button_pressed)
+	
+	hint_button_container.add_child(hint_button)
+
 # Reset the panel to a clean state
 func _reset_panel():
 	# Reset answer state
 	is_answer_correct = false
 	
-	# Clear text inputs
+	# Clear single input if it exists
 	if user_input:
 		user_input.text = ""
+	
+	# Clear multiple inputs if they exist
+	for input in user_inputs:
+		if input:
+			input.text = ""
 	
 	# Hide feedback label
 	var feedback_label = get_node_or_null("PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent/UserInputContainer/FeedbackLabel")
 	if feedback_label:
 		feedback_label.visible = false
 	
-	# Clean up any TopMargin that might have been added
+	# Clean up any added UI elements
 	var user_input_container = get_node_or_null("PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent/UserInputContainer")
 	if user_input_container:
+		# Clean up the input center container and all its children
+		var input_center_container = user_input_container.get_node_or_null("InputCenterContainer")
+		if input_center_container:
+			input_center_container.queue_free()
+			
+		# Clean up input spacer if it exists
+		var input_spacer = user_input_container.get_node_or_null("InputSpacer")
+		if input_spacer:
+			input_spacer.queue_free()
+			
+		# Clean up any TopMargin that might have been added
 		var top_margin = user_input_container.get_node_or_null("TopMargin")
 		if top_margin:
 			top_margin.queue_free()
@@ -127,6 +267,14 @@ func _reset_panel():
 		# Reset custom sizing
 		user_input_container.custom_minimum_size.y = 0
 		user_input_container.size_flags_vertical = Control.SIZE_FILL
+		
+		# Show the default input field if it exists
+		if user_input and user_input.get_parent() == user_input_container:
+			user_input.visible = true
+			
+	# Clear the user inputs arrays
+	user_inputs = []
+	input_labels = []
 	
 	# Reset submit button
 	if submit_button:
@@ -166,6 +314,13 @@ func _setup_traditional_mode():
 	# Set up mission-specific content for construction or power mission
 	_setup_mission_specific_content()
 	
+	# Send question_shown dialog to learning companion if available
+	if mission.companion_dialog.has("question_shown"):
+		var dialog_data = mission.companion_dialog["question_shown"]
+		const JSBridge = preload("res://scripts/javascript_bridge.gd")
+		if JSBridge.has_interface():
+			JSBridge.get_interface().sendCompanionDialog("question_shown", dialog_data)
+	
 	print("Setup traditional mode complete")
 
 # Set up mission-specific content based on the mission type
@@ -185,7 +340,7 @@ func _setup_mission_specific_content():
 func _clear_existing_content():
 	# Find the main containers
 	var graph_center_container = get_node_or_null("PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent/GraphContainer/GraphCenterContainer")
-	var company_data_container = get_node_or_null("PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent/GraphContainer/CompanyDataContainer")
+	var question_container = get_node_or_null("PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent/GraphContainer/CompanyDataContainer")
 	
 	# Clear power math content from the graph container
 	if graph_center_container:
@@ -193,12 +348,12 @@ func _clear_existing_content():
 		if power_math_label:
 			power_math_label.queue_free()
 	
-	# Reset company data container
-	if company_data_container:
-		company_data_container.visible = false
-		var company_data_label = company_data_container.get_node_or_null("CompanyDataLabel")
-		if company_data_label:
-			company_data_label.text = ""
+	# Reset the container that will hold our question text (previously used for company data)
+	if question_container:
+		question_container.visible = false
+		var text_label = question_container.get_node_or_null("CompanyDataLabel")
+		if text_label:
+			text_label.text = ""
 
 # Set up construction company mission content
 func _setup_construction_mission():
@@ -251,85 +406,26 @@ func _setup_construction_mission():
 				graph_image.visible = false
 				print("Failed to load graph image")
 	
-	# 2. Set company data
+	# 2. Set question text instead of company data
 	var company_data_container = get_node_or_null("PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent/GraphContainer/CompanyDataContainer")
 	if company_data_container:
 		company_data_container.visible = true
 		
-		# Check if we need to convert the company data to a horizontal layout
+		# Get the label where we'll display the question text
 		var company_data_label = company_data_container.get_node_or_null("CompanyDataLabel")
 		if company_data_label:
-			if mission.company_data.is_empty():
-				company_data_label.text = "[center][color=#e06666][font_size=18]No company data available.[/font_size][/color][/center]"
-			else:
-				# Split the original data to create a horizontal layout
-				var data_text = mission.company_data
-				
-				# Check if we need to reformat to save vertical space
-				if graph_image and graph_image.visible and graph_image.custom_minimum_size.y > 400:
-					print("Graph is large, reformatting company data to horizontal layout")
-					
-					# Parse and reformat the company data to be more compact
-					# This assumes the data has a typical format with company names and bullet points
-					var lines = data_text.split("\n")
-					var company_a_name = ""
-					var company_a_data = []
-					var company_b_name = ""
-					var company_b_data = []
-					var current_company = -1  # 0 for A, 1 for B
-					
-					# Parse the data by line
-					for line in lines:
-						line = line.strip_edges()
-						if line == "" or line.length() == 0:
-							continue
-							
-						if "[color=#60c2a8]" in line or "Company A:" in line:
-							# Found Company A header
-							company_a_name = line
-							current_company = 0
-						elif "[color=#e06666]" in line or "Company B:" in line:
-							# Found Company B header
-							company_b_name = line
-							current_company = 1
-						elif line.begins_with("•") or line.begins_with("-") or line.begins_with("*"):
-							# This is a data point
-							if current_company == 0:
-								company_a_data.append(line)
-							elif current_company == 1:
-								company_b_data.append(line)
-						elif "Enter A or B" in line or "If you need" in line:
-							# This is the question part - add to both
-							company_a_data.append(line)
-							company_b_data.append("")
-						elif "Hint:" in line:
-							# This is the hint - add to both
-							company_a_data.append(line)
-							company_b_data.append("")
-					
-					# Create a horizontal layout with two columns
-					var formatted_text = "[center]\n"
-					
-					# Add Company A
-					formatted_text += "[color=#ce5371][b]" + (company_a_name.replace("[b]", "").replace("[/b]", "").replace("[color=#60c2a8]", "").replace("[/color]", "")) + "[/b][/color]\n"
-					for point in company_a_data:
-						formatted_text += point + "\n"
-						
-					formatted_text += "\n"
-					
-					# Add Company B
-					formatted_text += "[color=#3182c0][b]" + (company_b_name.replace("[b]", "").replace("[/b]", "").replace("[color=#e06666]", "").replace("[/color]", "")) + "[/b][/color]\n"
-					for point in company_b_data:
-						formatted_text += point + "\n"
-						
-					formatted_text += "[/center]"
-					
-					# Set the formatted text
-					company_data_label.text = formatted_text
-					company_data_label.custom_minimum_size.y = 140  # Reduce height for horizontal layout
-				else:
-					# Use original data format
-					company_data_label.text = data_text
+			# Create a formatted question text
+			var formatted_text = "[center]\n"
+			
+			# Add the question text in a centered, clear format
+			if not mission.question_text.is_empty():
+				formatted_text += "[color=#dddddd][font_size=26]" + mission.question_text + "[/font_size][/color]"
+			
+			formatted_text += "\n[/center]"
+			
+			# Set the formatted text
+			company_data_label.text = formatted_text
+			company_data_label.custom_minimum_size.y = 80  # Reduce height for just question text
 					
 
 # Set up power math mission content
@@ -449,12 +545,25 @@ func _check_answer():
 		push_error("Mission is null in _check_answer")
 		return
 	
-	# Make sure we have a user input field
-	if not user_input:
-		push_error("Cannot check answer: user_input is null")
+	var user_answer = ""
+	
+	# Handle multiple inputs if present
+	if mission.num_of_user_inputs > 1 and not user_inputs.is_empty():
+		var answers = []
+		for input in user_inputs:
+			if input:
+				answers.append(input.text.strip_edges())
+		user_answer = ",".join(answers)
+	# Fall back to single input
+	elif user_input:
+		user_answer = user_input.text.strip_edges()
+	else:
+		push_error("Cannot check answer: no user input fields available")
 		return
 	
-	var user_answer = user_input.text.strip_edges().to_upper()  # Convert to uppercase for case-insensitive comparison
+	# Convert to uppercase for case-insensitive comparison when appropriate
+	if not "," in correct_answer:  # Don't uppercase comma-separated values
+		user_answer = user_answer.to_upper()
 	
 	# Get the feedback label
 	var feedback_label = get_node_or_null("PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent/UserInputContainer/FeedbackLabel")
@@ -476,6 +585,13 @@ func _check_answer():
 		
 		feedback_label.add_theme_color_override("font_color", Color(0, 0.7, 0.2))
 		
+		# Send correct answer dialog to learning companion if available
+		if mission.companion_dialog.has("correct_answer"):
+			var dialog_data = mission.companion_dialog["correct_answer"]
+			const JSBridge = preload("res://scripts/javascript_bridge.gd")
+			if JSBridge.has_interface():
+				JSBridge.get_interface().sendCompanionDialog("correct_answer", dialog_data)
+		
 		# Change submit button to "Complete" button
 		if submit_button:
 			submit_button.text = "COMPLETE"
@@ -494,6 +610,13 @@ func _check_answer():
 			feedback_label.text = "Not quite right. Please try again."
 		
 		feedback_label.add_theme_color_override("font_color", Color(0.9, 0.2, 0.2))
+		
+		# Send incorrect answer dialog to learning companion if available
+		if mission.companion_dialog.has("incorrect_answer"):
+			var dialog_data = mission.companion_dialog["incorrect_answer"]
+			const JSBridge = preload("res://scripts/javascript_bridge.gd")
+			if JSBridge.has_interface():
+				JSBridge.get_interface().sendCompanionDialog("incorrect_answer", dialog_data)
 
 func _on_complete_mission():
 	if is_answer_correct:
@@ -507,3 +630,33 @@ func _on_complete_mission():
 		
 		# Emit signal
 		completed.emit()
+
+func _on_hint_button_pressed():
+	print("Hint button pressed")
+	
+	# First hint request
+	if mission.companion_dialog.has("hint_request"):
+		var dialog_data = mission.companion_dialog["hint_request"]
+		const JSBridge = preload("res://scripts/javascript_bridge.gd")
+		if JSBridge.has_interface():
+			JSBridge.get_interface().sendCompanionDialog("hint_request", dialog_data)
+	
+	# Additional hint if available and first hint was already shown
+	# We'll use a timer to ensure there's a delay between hints
+	var second_hint_timer = Timer.new()
+	second_hint_timer.wait_time = 6.0  # Wait 6 seconds before showing second hint
+	second_hint_timer.one_shot = true
+	second_hint_timer.autostart = true
+	add_child(second_hint_timer)
+	
+	# Connect the timeout signal
+	second_hint_timer.timeout.connect(func():
+		if mission.companion_dialog.has("hint_second"):
+			var dialog_data = mission.companion_dialog["hint_second"]
+			const JSBridge = preload("res://scripts/javascript_bridge.gd")
+			if JSBridge.has_interface():
+				JSBridge.get_interface().sendCompanionDialog("hint_second", dialog_data)
+		
+		# Clean up the timer
+		second_hint_timer.queue_free()
+	)

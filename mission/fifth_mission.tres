@@ -31,3 +31,37 @@ feedback_text = ""
 incorrect_feedback = ""
 company_data = ""
 power_math_content = ""
+num_of_user_inputs = 1
+input_labels = Array[String]([])
+companion_dialog = {
+"building_selected": {
+"animation": "happy",
+"duration": 5000,
+"text": "Great choice! The power plant will supply all the energy our residents need."
+},
+"hint_request": {
+"animation": "thinking",
+"duration": 5000,
+"text": "Click on the power plant in your building menu and then place it in an open area of your city."
+},
+"mission_completed": {
+"animation": "celebration",
+"duration": 5000,
+"text": "Congratulations! Your city now has power for all residents. You've learned how to use systems of equations to solve real-world problems!"
+},
+"mission_started": {
+"animation": "greeting",
+"duration": 5000,
+"text": "Time to power up our city! Based on our calculations, we need to build a power plant to provide electricity to all 40 houses."
+},
+"placement_hint": {
+"animation": "thinking",
+"duration": 5000,
+"text": "Try to place the power plant away from residential areas but close enough to supply power efficiently."
+},
+"placement_success": {
+"animation": "excited",
+"duration": 5000,
+"text": "Perfect placement! Now the power plant can distribute electricity to all the houses in your city."
+}
+}

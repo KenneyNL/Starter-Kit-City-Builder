@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="Structure" load_steps=3 format=3 uid="uid://bh65eqgid4kxy"]
 
 [ext_resource type="PackedScene" uid="uid://m74mvao50wnm" path="res://models/building-small-c.glb" id="1_6yyww"]
-[ext_resource type="Script" path="res://scripts/structure.gd" id="2_rkiq0"]
+[ext_resource type="Script" uid="uid://smbpvh2nwds4" path="res://scripts/structure.gd" id="2_rkiq0"]
 
 [resource]
 script = ExtResource("2_rkiq0")
@@ -11,3 +11,4 @@ price = 70
 population_count = 1
 kW_usage = 1.0
 kW_production = 0.0
+selector_scale = 2.8

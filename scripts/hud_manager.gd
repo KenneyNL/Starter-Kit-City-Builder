@@ -17,6 +17,7 @@ var electricity_indicator: ColorRect
 var population_tooltip: Control
 var electricity_tooltip: Control
 var controls_panel: PanelContainer
+var sound_panel: PanelContainer
 
 func _ready():
 	# Connect to signals from the builder
@@ -64,9 +65,6 @@ func _on_structure_placed(structure_index, position):
 	
 	var structure = builder.structures[structure_index]
 	
-	# Debug info
-	print("Structure placed: " + str(structure.type) + " with population: " + str(structure.population_count))
-	
 	# Only update population for non-residential buildings or if we're NOT in the construction mission
 	var is_residential = structure.type == Structure.StructureType.RESIDENTIAL_BUILDING
 	var mission_manager = get_node_or_null("/root/Main/MissionManager")
@@ -82,7 +80,6 @@ func _on_structure_placed(structure_index, position):
 	# Always update electricity usage/production
 	total_kW_usage += structure.kW_usage
 	total_kW_production += structure.kW_production
-	print("Energy updated - Usage: " + str(total_kW_usage) + " kW, Production: " + str(total_kW_production) + " kW")
 	
 	# Update HUD
 	update_hud()
@@ -98,13 +95,24 @@ func _on_structure_removed(structure_index, position):
 	
 	var structure = builder.structures[structure_index]
 	
-	# Update population
-	total_population = max(0, total_population - structure.population_count)
+	# Update population (but only for non-residential buildings in mission 3)
+	# For residential buildings in mission 3, we handle population separately in builder._remove_resident_for_building
+	var skip_population_update = false
+	var mission_manager = get_node_or_null("/root/Main/MissionManager")
+	
+	if mission_manager and mission_manager.current_mission:
+		if mission_manager.current_mission.id == "3" and structure.type == Structure.StructureType.RESIDENTIAL_BUILDING:
+			# Only update population for one resident, since we're removing them one by one
+			# We don't do total reset based on structure.population_count
+			skip_population_update = true
+			# We decrement by 1 in builder._remove_resident_for_building instead
+			
+	if !skip_population_update:
+		total_population = max(0, total_population - structure.population_count)
 	
 	# Update electricity
 	total_kW_usage = max(0, total_kW_usage - structure.kW_usage)
 	total_kW_production = max(0, total_kW_production - structure.kW_production)
-	print("Energy updated after removal - Usage: " + str(total_kW_usage) + " kW, Production: " + str(total_kW_production) + " kW")
 	
 	# Update HUD
 	update_hud()
@@ -152,7 +160,6 @@ func update_hud():
 		# Update the color of the indicator rectangle
 		if electricity_indicator:
 			electricity_indicator.color = indicator_color
-			print("Electricity indicator updated - Color: " + str(indicator_color))
 
 # Tooltip handling
 func _on_population_icon_mouse_entered():
@@ -171,6 +178,14 @@ func _on_electricity_icon_mouse_exited():
 	if electricity_tooltip:
 		electricity_tooltip.visible = false
 		
+# Called when the sound button is pressed
+func _on_sound_button_pressed():
+	# Consume the event to prevent click-through to the world
+	get_viewport().set_input_as_handled()
+	
+	if sound_panel:
+		sound_panel.show_panel()
+
 # Called when the help button is pressed
 func _on_help_button_pressed():
 	# Consume the event to prevent click-through to the world

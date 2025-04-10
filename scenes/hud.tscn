@@ -1,11 +1,12 @@
-[gd_scene load_steps=9 format=3 uid="uid://cgk66f6rg03mj"]
+[gd_scene load_steps=10 format=3 uid="uid://cgk66f6rg03mj"]
 
-[ext_resource type="Script" path="res://scripts/hud_manager.gd" id="1_6vdxc"]
+[ext_resource type="Script" uid="uid://bp75qrvcc3at4" path="res://scripts/hud_manager.gd" id="1_6vdxc"]
 [ext_resource type="Texture2D" uid="uid://hendpftbt4iw" path="res://sprites/population_icon.png" id="2_28oy1"]
 [ext_resource type="Texture2D" uid="uid://jk3mremfu7lm" path="res://sprites/electricity_icon.png" id="3_2u5bk"]
 [ext_resource type="FontFile" uid="uid://d0cxd77jybrcn" path="res://fonts/lilita_one_regular.ttf" id="4_qfmf5"]
 [ext_resource type="Texture2D" uid="uid://bng0d1sou7c8a" path="res://sprites/coin.png" id="5_vd1bj"]
 [ext_resource type="Texture2D" uid="uid://cgpwknjrqnuae" path="res://sprites/help_icon.png" id="6_i1y88"]
+[ext_resource type="Texture2D" uid="uid://hx3maksi7ma" path="res://sprites/unmuted.png" id="7_80m3c"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_q176i"]
 font = ExtResource("4_qfmf5")
@@ -119,6 +120,25 @@ color = Color(1, 0, 0, 1)
 layout_mode = 2
 theme_override_constants/separation = 10
 
+[node name="SoundItem" type="HBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 8
+
+[node name="SoundButton" type="TextureButton" parent="HBoxContainer/SoundItem"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 0
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource("7_80m3c")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="Separator4" type="VSeparator" parent="HBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
 [node name="HelpItem" type="HBoxContainer" parent="HBoxContainer"]
 layout_mode = 2
 mouse_filter = 0
@@ -188,4 +208,5 @@ autowrap_mode = 3
 [connection signal="mouse_exited" from="HBoxContainer/PopulationItem/PopulationIcon" to="." method="_on_population_icon_mouse_exited"]
 [connection signal="mouse_entered" from="HBoxContainer/ElectricityItem/ElectricityIcon" to="." method="_on_electricity_icon_mouse_entered"]
 [connection signal="mouse_exited" from="HBoxContainer/ElectricityItem/ElectricityIcon" to="." method="_on_electricity_icon_mouse_exited"]
+[connection signal="pressed" from="HBoxContainer/SoundItem/SoundButton" to="." method="_on_sound_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/HelpItem/HelpButton" to="." method="_on_help_button_pressed"]
