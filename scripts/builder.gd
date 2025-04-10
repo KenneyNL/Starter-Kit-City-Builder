@@ -72,6 +72,18 @@ func _ready():
 		
 	gridmap.mesh_library = mesh_library
 	
+	# Ensure we start with an unlocked structure
+	var found_unlocked = false
+	for i in range(structures.size()):
+		if "unlocked" in structures[i] and structures[i].unlocked:
+			index = i
+			found_unlocked = true
+			print("Starting with unlocked structure: " + structures[i].model.resource_path)
+			break
+	
+	if not found_unlocked:
+		print("WARNING: No unlocked structures found at start!")
+	
 	update_structure()
 	update_cash()
 
@@ -200,6 +212,11 @@ func action_build(gridmap_position):
 		# Check if the mouse is over any UI elements before building
 		if is_mouse_over_ui():
 			return
+			
+		# Check if the current structure is unlocked before allowing placement
+		if "unlocked" in structures[index] and not structures[index].unlocked:
+			print("Cannot build locked structure: " + structures[index].model.resource_path)
+			return
 		
 		var previous_tile = gridmap.get_cell_item(gridmap_position)
 		
@@ -213,21 +230,8 @@ func action_build(gridmap_position):
 		var is_terrain = structures[index].type == Structure.StructureType.TERRAIN
 		
 		# Check if we're in mission 3 (when we should use construction workers)
-		var use_worker_construction = false
+		var use_worker_construction = true
 		var mission_manager = get_node_or_null("/root/Main/MissionManager")
-		if mission_manager and mission_manager.current_mission:
-			var mission_id = mission_manager.current_mission.id
-			if mission_id == "3" or (mission_id == "1" and is_residential):
-				use_worker_construction = true
-			
-			# Send placement_hint dialog if available and we're on power plant mission
-			if mission_id == "5" and is_power_plant and mission_manager.learning_companion_connected:
-				if mission_manager.current_mission.companion_dialog.has("placement_hint"):
-					var dialog_data = mission_manager.current_mission.companion_dialog["placement_hint"]
-					const JSBridge = preload("res://scripts/javascript_bridge.gd")
-					if JSBridge.has_interface():
-						JSBridge.get_interface().sendCompanionDialog("placement_hint", dialog_data)
-		
 		# Sound effects are handled via game_manager.gd through the structure_placed signal
 		
 		if is_road:
@@ -433,15 +437,42 @@ func action_rotate():
 
 func action_structure_toggle():
 	if Input.is_action_just_pressed("structure_next"):
-		index = wrap(index + 1, 0, structures.size())
+		# Find the next unlocked structure
+		var next_index = index
+		var tried_indices = []
+		
+		while tried_indices.size() < structures.size():
+			next_index = wrap(next_index + 1, 0, structures.size())
+			if tried_indices.has(next_index):
+				break  # We've already tried this index, avoid infinite loop
+			
+			tried_indices.append(next_index)
+			
+			# Check if this structure is unlocked
+			if "unlocked" in structures[next_index] and structures[next_index].unlocked:
+				index = next_index
+				break
 	
 	if Input.is_action_just_pressed("structure_previous"):
-		index = wrap(index - 1, 0, structures.size())
+		# Find the previous unlocked structure
+		var prev_index = index
+		var tried_indices = []
+		
+		while tried_indices.size() < structures.size():
+			prev_index = wrap(prev_index - 1, 0, structures.size())
+			if tried_indices.has(prev_index):
+				break  # We've already tried this index, avoid infinite loop
+			
+			tried_indices.append(prev_index)
+			
+			# Check if this structure is unlocked
+			if "unlocked" in structures[prev_index] and structures[prev_index].unlocked:
+				index = prev_index
+				break
 
 	update_structure()
 
 # Update the structure visual in the 'cursor'
-
 func update_structure():
 	# Clear previous structure preview in selector
 	for n in selector_container.get_children():

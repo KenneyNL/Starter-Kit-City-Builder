@@ -1,6 +1,6 @@
 extends Control
 
-signal completed
+signal completed(mission)
 signal panel_opened
 signal panel_closed
 
@@ -646,8 +646,8 @@ func _on_complete_mission():
 		# Hide the panel
 		hide_learning_panel()
 		
-		# Emit signal
-		completed.emit()
+		# Emit signal with mission as argument
+		completed.emit(mission)
 
 func _on_hint_button_pressed():
 	print("Hint button pressed")

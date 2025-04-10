@@ -23,6 +23,10 @@ var active_missions: Dictionary = {}  # mission_id: MissionData
 var character_spawned: bool = false
 var learning_companion_connected: bool = false
 
+# Panel state tracking
+var is_unlocked_panel_showing = false
+var delayed_mission_start_queue = []  # Queue of missions to start after unlocked panel closes
+
 # Mission skip variables
 var skip_key_presses: int = 0
 var last_skip_press_time: float = 0
@@ -104,7 +108,54 @@ func _ready():
 	connection_timer.timeout.connect(_force_learning_companion_connection)
 	print("Created timer to force learning companion connection in 3 seconds")
 	
-	# Load third mission if not already in the list
+	# Load the sequence of missions
+	# Load first mission (building a road)
+	var first_mission = load("res://mission/first_mission.tres")
+	if first_mission:
+		var found = false
+		for mission in missions:
+			if mission.id == "1":
+				found = true
+				break
+		
+		if not found:
+			missions.append(first_mission)
+	
+	# Load second mission (building a residential building)
+	var second_mission = load("res://mission/second_mission.tres")
+	if second_mission:
+		var found = false
+		for mission in missions:
+			if mission.id == "2":
+				found = true
+				break
+		
+		if not found:
+			missions.append(second_mission)
+		
+		# Set next_mission_id for first mission to point to second mission
+		for mission in missions:
+			if mission.id == "1":
+				mission.next_mission_id = "2"
+	
+	# Load learning mission (construction company comparison)
+	var learning_mission = load("res://mission/learning_mission.tres")
+	if learning_mission:
+		var found = false
+		for mission in missions:
+			if mission.id == "3a":
+				found = true
+				break
+		
+		if not found:
+			missions.append(learning_mission)
+		
+		# Set next_mission_id for second mission to point to learning mission
+		for mission in missions:
+			if mission.id == "2":
+				mission.next_mission_id = "3a"
+				
+	# Load third mission (city expansion)
 	var third_mission = load("res://mission/third_mission.tres")
 	if third_mission:
 		var found = false
@@ -116,9 +167,9 @@ func _ready():
 		if not found:
 			missions.append(third_mission)
 		
-		# Set next_mission_id for second mission to point to third mission
+		# Set next_mission_id for learning mission to point to third mission
 		for mission in missions:
-			if mission.id == "2":
+			if mission.id == "3a":
 				mission.next_mission_id = "3"
 	
 	# Load fourth mission if not already in the list
@@ -242,6 +293,12 @@ func start_mission(mission: MissionData):
 	# Check that the mission data is valid
 	if mission == null:
 		push_error("Null mission data provided to start_mission")
+		return
+	
+	# If the unlocked items panel is currently showing, queue this mission to start later
+	if is_unlocked_panel_showing:
+		print("Unlocked items panel is showing, queueing mission start: " + mission.id)
+		delayed_mission_start_queue.append(mission)
 		return
 		
 	current_mission = mission
@@ -467,6 +524,44 @@ func check_objective_completion(mission_id, objective_type):
 			return objective.completed
 	
 	return false
+	
+# Function to reset an objective's count to a specific value
+func reset_objective_count(objective_type, new_count):
+	if not current_mission:
+		print("ERROR: No current mission to reset objective count for")
+		return
+		
+	var mission_id = current_mission.id
+	if not active_missions.has(mission_id):
+		print("ERROR: Current mission ID " + mission_id + " not found in active_missions!")
+		return
+		
+	var mission = active_missions[mission_id]
+	for objective in mission.objectives:
+		if objective.type == objective_type:
+			print("Resetting objective count for type " + str(objective_type) + " from " + str(objective.current_count) + " to " + str(new_count))
+			objective.current_count = new_count
+			
+			# Update completion status based on new count
+			objective.completed = objective.current_count >= objective.target_count
+			
+			# If newly completed, emit signal
+			if objective.completed and objective.current_count >= objective.target_count:
+				objective_completed.emit(objective)
+				
+				# Send dialog event if available
+				var dialog_key = "objective_completed_" + str(objective.type)
+				_send_companion_dialog(dialog_key, mission)
+			
+			# Update UI
+			update_mission_ui()
+			
+			# Emit progress signal for objective
+			objective_progress.emit(objective, objective.current_count)
+			
+			# Check if the mission is complete
+			check_mission_completion(mission_id)
+			break
 
 func check_mission_completion(mission_id):
 	if not active_missions.has(mission_id):
@@ -573,18 +668,20 @@ func _on_learning_panel_closed():
 	
 func _on_learning_completed(mission):
 	if mission:
+		print("Learning completed for mission: " + mission.id)
 		# If the mission has a learning objective, mark it as completed
 		for objective in mission.objectives:
 			if objective.type == MissionObjective.ObjectiveType.LEARNING:
-				objective.current_count = 1  # Mark as done
+				objective.current_count = objective.target_count  # Set to target count
 				objective.completed = true
 				objective_completed.emit(objective)
 				
 				# Update the UI
 				update_mission_ui()
 				
-				# Check if the mission is now complete
-				check_mission_completion(mission.id)
+				# Explicitly complete the mission after a short delay
+				await get_tree().create_timer(1.0).timeout
+				complete_mission(mission.id)
 				break
 				
 	# Set a callback to dismiss learning panel if needed
@@ -644,58 +741,38 @@ func _skip_current_mission():
 	else:
 		print("No current mission to skip")
 
-# Functions for communication with learning companion
-func _on_game_started_for_companion():
-	if learning_companion_connected and JSBridge.has_interface():
-		print("Sending gameStarted event to learning companion")
-		JSBridge.get_interface().sendGameStarted()
-
-func _on_mission_started_for_companion(mission):
-	if learning_companion_connected and JSBridge.has_interface():
-		print("Sending missionStarted event to learning companion for mission: " + mission.id)
+# Called when the unlocked panel is shown - used for additional state tracking
+func _on_unlocked_panel_shown():
+	# Update panel state
+	is_unlocked_panel_showing = true
+	
+	# This ensures that learning panels won't appear while this panel is visible
+	if learning_panel and learning_panel.visible:
+		learning_panel.hide_learning_panel()
+	
+	if fullscreen_learning_panel and fullscreen_learning_panel.visible:
+		fullscreen_learning_panel.hide_fullscreen_panel()
 		
-		# Only send dialog if it exists
-		if mission.companion_dialog.has("mission_started"):
-			var dialog_data = mission.companion_dialog["mission_started"]
-			JSBridge.get_interface().sendCompanionDialog("mission_started", dialog_data)
+	print("Unlocked panel shown, game paused")
 
-func _on_mission_completed_for_companion(mission):
-	if learning_companion_connected and JSBridge.has_interface():
-		print("Sending missionCompleted event to learning companion for mission: " + mission.id)
+# Helper function to process any delayed mission starts after panel closes
+func _process_delayed_mission_starts():
+	if delayed_mission_start_queue.size() > 0:
+		print("Processing " + str(delayed_mission_start_queue.size()) + " delayed mission starts")
 		
-		# Only send dialog if it exists
-		if mission.companion_dialog.has("mission_completed"):
-			var dialog_data = mission.companion_dialog["mission_completed"]
-			JSBridge.get_interface().sendCompanionDialog("mission_completed", dialog_data)
-
-func _on_all_missions_completed_for_companion():
-	if learning_companion_connected and JSBridge.has_interface():
-		print("Sending allMissionsCompleted event to learning companion")
-		JSBridge.get_interface().sendAllMissionsCompleted()
-
-# Helper function to send dialog to the companion
-func _send_companion_dialog(dialog_key, mission):
-	if learning_companion_connected and JSBridge.has_interface() and mission.companion_dialog.has(dialog_key):
-		var dialog_data = mission.companion_dialog[dialog_key]
-		JSBridge.get_interface().sendCompanionDialog(dialog_key, dialog_data)
-		return true
-	return false
-
-# Fallback to force a connection if the normal method doesn't work
-func _force_learning_companion_connection():
-	if not learning_companion_connected and JSBridge.has_interface():
-		print("Forcing learning companion connection")
-		learning_companion_connected = true
+		# Get the first mission in the queue
+		var next_mission = delayed_mission_start_queue.pop_front()
 		
-		# Connect signals
-		game_started.connect(_on_game_started_for_companion)
-		mission_started.connect(_on_mission_started_for_companion)
-		mission_completed.connect(_on_mission_completed_for_companion)
-		all_missions_completed.connect(_on_all_missions_completed_for_companion)
+		# Clear the rest of the queue - we only start the next mission
+		# This prevents multiple mission starts if there were more queued
+		delayed_mission_start_queue.clear()
 		
-		# Send initial event if we've already started
-		if current_mission:
-			_on_mission_started_for_companion(current_mission)
+		# Start the mission
+		if next_mission:
+			print("Starting delayed mission: " + next_mission.id)
+			# Use a short delay to ensure the UI is fully updated
+			await get_tree().create_timer(0.5).timeout
+			start_mission(next_mission)
 
 # Function to spawn a character at a residential building
 func _spawn_character_on_road(building_position: Vector3):
@@ -1042,15 +1119,32 @@ func _handle_structure_unlocking(mission):
 			found_unlocked = true
 			break
 			
-	# If no structures are unlocked, unlock a basic one
+	# If no structures are unlocked, unlock ONLY the road for the first mission
 	if not found_unlocked and builder.structures.size() > 0:
-		var structure = builder.structures[0]
-		if "unlocked" in structure:
-			structure.unlocked = true
-			builder.index = 0
+		# Find and unlock only the straight road structure
+		var road_index = -1
+		for i in range(builder.structures.size()):
+			var structure = builder.structures[i]
+			if structure.model and structure.model.resource_path.contains("road-straight"):
+				if "unlocked" in structure:
+					structure.unlocked = true
+					road_index = i
+					print("Unlocked initial road structure: " + structure.model.resource_path)
+					break
+					
+		# Set builder to use the road as the initial structure
+		if road_index >= 0:
+			builder.index = road_index
 			builder.update_structure()
 		else:
-			print("WARNING: First structure doesn't have an 'unlocked' property")
+			# Fallback to first structure if road not found
+			var structure = builder.structures[0]
+			if "unlocked" in structure:
+				structure.unlocked = true
+				builder.index = 0
+				builder.update_structure()
+			else:
+				print("WARNING: First structure doesn't have an 'unlocked' property")
 	
 	# Show the unlocked items panel if we unlocked anything
 	print("Unlocked " + str(unlocked_structures.size()) + " structures in total")
@@ -1081,6 +1175,9 @@ func _handle_structure_unlocking(mission):
 # Shows a panel with the newly unlocked items
 func _show_unlocked_items_panel(unlocked_structures):
 	print("Showing unlocked items panel with " + str(unlocked_structures.size()) + " structures")
+	
+	# Set panel state to showing - prevents mission starts while panel is visible
+	is_unlocked_panel_showing = true
 	
 	# Check if there's already an unlocked items panel in the scene and remove it
 	var existing_panels = []
@@ -1143,11 +1240,19 @@ func _show_unlocked_items_panel(unlocked_structures):
 		# Connect the closed signal
 		unlocked_panel.closed.connect(func():
 			print("Unlocked panel was closed")
+			# Reset the panel showing state
+			is_unlocked_panel_showing = false
+			
 			# Make sure the game is unpaused
 			get_tree().paused = false
+			
+			# Process any delayed mission starts
+			_process_delayed_mission_starts()
 		)
 	else:
 		push_error("Could not load unlocked_items_panel scene")
+		# Even if we couldn't load the panel, make sure to reset the state
+		is_unlocked_panel_showing = false
 	
 # Public function to show all unlocked structures when requested
 func show_unlocked_structures_panel():
@@ -1159,6 +1264,61 @@ func show_unlocked_structures_panel():
 	for structure in builder.structures:
 		if "unlocked" in structure and structure.unlocked:
 			all_unlocked.append(structure)
-			
+		
 	print("Showing panel with all " + str(all_unlocked.size()) + " unlocked structures")
+	# Pause the game when showing the panel
+	get_tree().paused = true
 	_show_unlocked_items_panel(all_unlocked)
+
+# Functions for communication with learning companion
+func _on_game_started_for_companion():
+	if learning_companion_connected and JSBridge.has_interface():
+		print("Sending gameStarted event to learning companion")
+		JSBridge.get_interface().sendGameStarted()
+
+func _on_mission_started_for_companion(mission):
+	if learning_companion_connected and JSBridge.has_interface():
+		print("Sending missionStarted event to learning companion for mission: " + mission.id)
+		
+		# Only send dialog if it exists
+		if mission.companion_dialog.has("mission_started"):
+			var dialog_data = mission.companion_dialog["mission_started"]
+			JSBridge.get_interface().sendCompanionDialog("mission_started", dialog_data)
+
+func _on_mission_completed_for_companion(mission):
+	if learning_companion_connected and JSBridge.has_interface():
+		print("Sending missionCompleted event to learning companion for mission: " + mission.id)
+		
+		# Only send dialog if it exists
+		if mission.companion_dialog.has("mission_completed"):
+			var dialog_data = mission.companion_dialog["mission_completed"]
+			JSBridge.get_interface().sendCompanionDialog("mission_completed", dialog_data)
+
+func _on_all_missions_completed_for_companion():
+	if learning_companion_connected and JSBridge.has_interface():
+		print("Sending allMissionsCompleted event to learning companion")
+		JSBridge.get_interface().sendAllMissionsCompleted()
+
+# Helper function to send dialog to the companion
+func _send_companion_dialog(dialog_key, mission):
+	if learning_companion_connected and JSBridge.has_interface() and mission.companion_dialog.has(dialog_key):
+		var dialog_data = mission.companion_dialog[dialog_key]
+		JSBridge.get_interface().sendCompanionDialog(dialog_key, dialog_data)
+		return true
+	return false
+
+# Fallback to force a connection if the normal method doesn't work
+func _force_learning_companion_connection():
+	if not learning_companion_connected and JSBridge.has_interface():
+		print("Forcing learning companion connection")
+		learning_companion_connected = true
+		
+		# Connect signals
+		game_started.connect(_on_game_started_for_companion)
+		mission_started.connect(_on_mission_started_for_companion)
+		mission_completed.connect(_on_mission_completed_for_companion)
+		all_missions_completed.connect(_on_all_missions_completed_for_companion)
+		
+		# Send initial event if we've already started
+		if current_mission:
+			_on_mission_started_for_companion(current_mission)

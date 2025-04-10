@@ -1,4 +1,4 @@
-[gd_scene load_steps=27 format=3 uid="uid://vgwrcfy1qawf"]
+[gd_scene load_steps=22 format=3 uid="uid://vgwrcfy1qawf"]
 
 [ext_resource type="Script" path="res://scripts/builder.gd" id="1_jybm7"]
 [ext_resource type="Environment" uid="uid://jbptgqvstei3" path="res://scenes/main-environment.tres" id="1_yndf3"]
@@ -6,16 +6,11 @@
 [ext_resource type="Resource" uid="uid://dv14kkhb6umkv" path="res://structures/road-straight.tres" id="2_bwyku"]
 [ext_resource type="Texture2D" uid="uid://cbk07cxgshg26" path="res://sprites/selector.png" id="4_wr1wv"]
 [ext_resource type="Resource" uid="uid://cntgl86ianngh" path="res://structures/building-small-a.tres" id="5_v5o2m"]
+[ext_resource type="Resource" uid="uid://ccb475jeg7ym5" path="res://structures/grass-trees.tres" id="6_fwsy4"]
 [ext_resource type="Script" path="res://scripts/view.gd" id="8_yovpv"]
 [ext_resource type="Script" path="res://scripts/mission/mission_manager.gd" id="10_oe3re"]
-[ext_resource type="Script" path="res://scripts/mission/mission_data.gd" id="11_msovb"]
-[ext_resource type="Resource" uid="uid://x5h4xutbldq3" path="res://mission/first_mission.tres" id="12_ms7i7"]
-[ext_resource type="Resource" uid="uid://cjr36hqnmyn0x" path="res://mission/second_mission.tres" id="13_s13s0"]
 [ext_resource type="Script" path="res://scripts/mission/mission_ui.gd" id="13_xvw5w"]
-[ext_resource type="Resource" uid="uid://dykbopx8n3c3v" path="res://mission/third_mission.tres" id="14_bnke0"]
 [ext_resource type="Script" path="res://scripts/mission/learning_panel.gd" id="14_q2ymb"]
-[ext_resource type="Resource" uid="uid://bho4qh41asyk1" path="res://mission/fourth_mission.tres" id="15_plrw2"]
-[ext_resource type="Resource" uid="uid://p3xwn2mp6bm6" path="res://mission/fifth_mission.tres" id="16_5fmk3"]
 [ext_resource type="FontFile" uid="uid://d0cxd77jybrcn" path="res://fonts/lilita_one_regular.ttf" id="17_vlub6"]
 [ext_resource type="PackedScene" uid="uid://b4gkfwf4i3ydl" path="res://scenes/character.tscn" id="18_8lrh8"]
 [ext_resource type="PackedScene" uid="uid://cgk66f6rg03mj" path="res://scenes/hud.tscn" id="18_hud"]
@@ -80,7 +75,7 @@ script = ExtResource("20_game_manager")
 
 [node name="Builder" type="Node3D" parent="." node_paths=PackedStringArray("selector", "selector_container", "view_camera", "gridmap", "cash_display")]
 script = ExtResource("1_jybm7")
-structures = Array[ExtResource("2_54v6r")]([ExtResource("2_bwyku"), ExtResource("5_v5o2m")])
+structures = Array[ExtResource("2_54v6r")]([ExtResource("2_bwyku"), ExtResource("5_v5o2m"), ExtResource("6_fwsy4")])
 selector = NodePath("Selector")
 selector_container = NodePath("Selector/Container")
 view_camera = NodePath("../View/Camera")
@@ -126,7 +121,7 @@ anchors_preset = 8
 
 [node name="MissionManager" type="Node" parent="." node_paths=PackedStringArray("mission_ui", "builder")]
 script = ExtResource("10_oe3re")
-missions = Array[ExtResource("11_msovb")]([ExtResource("12_ms7i7"), ExtResource("13_s13s0"), ExtResource("14_bnke0"), ExtResource("15_plrw2"), ExtResource("16_5fmk3")])
+missions = null
 mission_ui = NodePath("MissionPanel")
 builder = NodePath("../Builder")
 character_scene = ExtResource("18_8lrh8")

@@ -141,11 +141,23 @@ func _spawn_worker_for_construction(target_position: Vector3):
 	var road_position = _find_nearest_road(target_position)
 	
 	if road_position == Vector3.ZERO:
+		print("ERROR: No road found for worker spawn at target position: ", target_position)
+		# Force completion immediately without worker since we can't spawn one
+		var timer = get_tree().create_timer(0.5)
+		timer.timeout.connect(func(): _complete_construction(target_position))
 		return
 		
+	print("DEBUG: Spawning worker at road position: ", road_position, " for target: ", target_position)
 	# Create the worker
 	var worker = _create_worker(road_position, target_position)
 	
+	if worker == null:
+		print("ERROR: Failed to create worker for construction at: ", target_position)
+		# Force completion immediately without worker
+		var timer = get_tree().create_timer(0.5)
+		timer.timeout.connect(func(): _complete_construction(target_position))
+		return
+		
 	# Store in the construction site data
 	construction_sites[target_position]["worker"] = worker
 
