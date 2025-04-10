@@ -32,6 +32,12 @@ animation/remove_immutable_tracks=true
 animation/import_rest_as_RESET=false
 import_script/path=""
 _subresources={
+"materials": {
+"colormap": {
+"use_external/enabled": true,
+"use_external/path": "res://models/Materials/colormap_mat.tres"
+}
+},
 "meshes": {
 "road-straight_road-straight": {
 "generate/lightmap_uv": 0,
