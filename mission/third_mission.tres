@@ -65,3 +65,4 @@ companion_dialog = {
 "text": "Welcome to the City Expansion Project! We need to build 40 residential buildings using our construction workers."
 }
 }
+unlocked_items = Array[String](["res://models/building-small-c.glb", "res://models/road-intersection.glb", "res://models/grass-trees.glb"])

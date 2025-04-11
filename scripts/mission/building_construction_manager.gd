@@ -1,6 +1,7 @@
 extends Node
 class_name BuildingConstructionManager
 
+# Signals
 signal construction_completed(position)
 signal worker_construction_started
 signal worker_construction_ended
@@ -9,6 +10,7 @@ const CONSTRUCTION_TIME = 10.0 # seconds to build a building
 
 # References to necessary scenes and resources
 var worker_scene: PackedScene
+var hud_manager: Node
 var nav_region: NavigationRegion3D
 var builder: Node3D
 var building_plot_scene: PackedScene
@@ -20,6 +22,7 @@ var construction_sites = {}  # position (Vector3) -> construction data (dict)
 func _ready():
 	# Load the worker character scene - add more fallbacks to ensure we get a valid model
 	worker_scene = load("res://people/character-male-a.glb")
+	hud_manager = get_node_or_null("/root/Main/CanvasLayer/HUD")
 	if not worker_scene:
 		worker_scene = load("res://people/character-female-a.glb")
 	if not worker_scene:
@@ -141,11 +144,23 @@ func _spawn_worker_for_construction(target_position: Vector3):
 	var road_position = _find_nearest_road(target_position)
 	
 	if road_position == Vector3.ZERO:
+		print("ERROR: No road found for worker spawn at target position: ", target_position)
+		# Force completion immediately without worker since we can't spawn one
+		var timer = get_tree().create_timer(0.5)
+		timer.timeout.connect(func(): _complete_construction(target_position))
 		return
 		
+	print("DEBUG: Spawning worker at road position: ", road_position, " for target: ", target_position)
 	# Create the worker
 	var worker = _create_worker(road_position, target_position)
 	
+	if worker == null:
+		print("ERROR: Failed to create worker for construction at: ", target_position)
+		# Force completion immediately without worker
+		var timer = get_tree().create_timer(0.5)
+		timer.timeout.connect(func(): _complete_construction(target_position))
+		return
+		
 	# Store in the construction site data
 	construction_sites[target_position]["worker"] = worker
 
@@ -244,7 +259,12 @@ func _on_worker_construction_started():
 func _on_worker_construction_ended():
 	# Forward the signal for mission managers/other systems that need it
 	worker_construction_ended.emit()
+func _on_update_population(count: int):
+			hud_manager.population_updated.emit(count)
+	
 
+
+	
 # Complete construction at a position
 func _complete_construction(position: Vector3):
 	if not position in construction_sites:
@@ -320,9 +340,10 @@ func _complete_construction(position: Vector3):
 		var structure = builder.structures[site["structure_index"]]
 		
 		if structure.type == Structure.StructureType.RESIDENTIAL_BUILDING and structure.population_count > 0:
-			hud.total_population += structure.population_count
-			hud.update_hud()
-			hud.population_updated.emit(hud.total_population)
+			_on_update_population(structure.population_count)
+#			hud.total_population += structure.population_count
+#			hud.update_hud()
+#			hud.population_updated.emit(hud.total_population)
 	
 	# Emit completion signal
 	construction_completed.emit(position)
@@ -412,7 +433,9 @@ func _place_final_building(position: Vector3, structure_index: int):
 				if JSBridge.has_interface() and mission.companion_dialog.has("placement_success"):
 					var dialog_data = mission.companion_dialog["placement_success"]
 					JSBridge.get_interface().sendCompanionDialog("placement_success", dialog_data)
-
+			
+				
+			
 # Make a model semi-transparent with outline effect
 func _make_model_transparent(model: Node3D, alpha: float):
 	# Find all mesh instances

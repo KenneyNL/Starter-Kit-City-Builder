@@ -3,32 +3,32 @@
 [ext_resource type="Script" path="res://scripts/mission/mission_objective.gd" id="1_dhx01"]
 [ext_resource type="Script" path="res://scripts/mission/mission_data.gd" id="2_mum3p"]
 
-[sub_resource type="Resource" id="Resource_c06be"]
+[sub_resource type="Resource" id="Resource_7c02e"]
 script = ExtResource("1_dhx01")
-type = 7
+type = 3
 target_count = 1
 current_count = 0
-description = "Compare two construction companies and determine which one is more efficient for building 40 houses in a week."
+description = "Build a residential building"
 structure_index = -1
 completed = false
 
 [resource]
 script = ExtResource("2_mum3p")
 id = "2"
-title = "Compare Construction Companies"
-description = ""
-objectives = Array[ExtResource("1_dhx01")]([SubResource("Resource_c06be")])
+title = "Building Homes"
+description = "Now that we have a road, let's build a residential building for our citizens!"
+objectives = Array[ExtResource("1_dhx01")]([SubResource("Resource_7c02e")])
 rewards = {
-"cash": 0
+"cash": 250
 }
-next_mission_id = ""
-graph_path = "res://images/mission_2.png"
+next_mission_id = "3"
+graph_path = ""
 full_screen_path = ""
-intro_text = "Your city is rapidly growing, and you need to build houses to accommodate new residents! Two different construction companies offer to help. Study the company data below, find the unit rates (houses per worker), and determine which company would require fewer workers to build 40 houses in a week. Which company requires fewer workers to build 40 houses in a week? (A or B)"
+intro_text = "Great job on the road! Now let's build a residential building where our citizens can live."
 question_text = ""
-correct_answer = "A"
-feedback_text = "Correct! Company A (City Builders Inc.) would require fewer workers to build 40 houses. Company A builds at a rate of 4 houses per worker per week, while Company B builds at a rate of 3 houses per worker per week. For 40 houses, Company A needs 10 workers while Company B needs about 13.33 workers."
-incorrect_feedback = "Not quite right. Look carefully at the data for both companies. Compare their rates: Company A builds 4 houses per worker per week, while Company B builds 3 houses per worker per week. Calculate how many workers each would need for 40 houses."
+correct_answer = ""
+feedback_text = ""
+incorrect_feedback = ""
 company_data = ""
 power_math_content = ""
 num_of_user_inputs = 1
@@ -37,26 +37,27 @@ companion_dialog = {
 "correct_answer": {
 "animation": "happy",
 "duration": 5000,
-"text": ["Perfect! Company A is more efficient because each worker builds more houses per week.", "Exactly right! You found the company that can build the houses with fewer workers."]
+"text": ["Great job! That's the right answer!", "Perfect! You got it right!"]
 },
 "incorrect_answer": {
 "animation": "sad",
 "duration": 5000,
-"text": ["Let's think about this differently. Look at how many houses each worker can build per week and calculate from there.", "Not quite right. Check the rates carefully: how many houses can one worker build in a week for each company?"]
+"text": ["Hmm, that doesn't look right. Let's try again.", "Not quite right. Don't worry, you can try again!"]
 },
 "mission_completed": {
 "animation": "happy",
 "duration": 6000,
-"text": "Great job selecting the most efficient construction company! Your city will grow faster now."
+"text": ["You've completed your second mission! Great job building your first residential building!"]
 },
 "mission_started": {
 "animation": "excited",
 "duration": 6000,
-"text": ["It's time to expand our city! We need to choose the most efficient construction company.", "We have two construction companies offering their services. Let's analyze which one is better!"]
+"text": ["Now it's time to build homes for our citizens!", "Let's add a residential building to our city!"]
 },
-"objective_completed_7": {
-"animation": "happy",
+"objective_completed_3": {
+"animation": "excited",
 "duration": 5000,
-"text": ["You've solved the construction company problem! That's good mathematical thinking.", "You've made a wise decision based on the data. That's how city planners work!"]
+"text": ["Amazing! You built your first residential building where people can live.", "You just built a home for your city residents! The population is growing."]
 }
 }
+unlocked_items = Array[String](["res://models/grass-trees.glb", "res://models/grass.glb"])
