@@ -19,6 +19,7 @@ var construction_manager: BuildingConstructionManager
 @export var view_camera:Camera3D # Used for raycasting mouse
 @export var gridmap:GridMap
 @export var cash_display:Label # Reference to cash label in HUD
+var hud_manager: Node
 
 var plane:Plane # Used for raycasting mouse
 var disabled: bool = false # Used to disable building functionality
@@ -29,6 +30,7 @@ func _ready():
 	
 	map = DataMap.new()
 	plane = Plane(Vector3.UP, Vector3.ZERO)
+	hud_manager = get_node_or_null("/root/Main/CanvasLayer/HUD")
 	
 	# Create new MeshLibrary dynamically, can also be done in the editor
 	# See: https://docs.godotengine.org/en/stable/tutorials/3d/using_gridmaps.html
@@ -648,10 +650,9 @@ func _remove_resident_for_building(position: Vector3):
 				# Update the HUD population count
 				var hud = get_node_or_null("/root/Main/CanvasLayer/HUD")
 				if hud:
-					hud.total_population = max(0, hud.total_population - 1)
-					hud.update_hud()
-					hud.population_updated.emit(hud.total_population)
-
+					_on_update_population(-1)
+func _on_update_population(count: int):
+	hud_manager.population_updated.emit(count)
 # Function to update mission objectives when residential building is demolished
 func _update_mission_objective_on_demolish():
 	# Get reference to mission manager

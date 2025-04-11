@@ -641,20 +641,20 @@ func _on_structure_placed(structure_index, position):
 				hud.total_power += power_produced
 				hud.update_hud()
 				
-	# Check for residential building placement to update population
-	if structure.type == Structure.StructureType.RESIDENTIAL_BUILDING:
-		# This should increase the city's population
-		var population_added = structure.population_count
-		if population_added > 0:
-			# Get the HUD if available
-			var hud = get_node_or_null("/root/Main/CanvasLayer/HUD")
-			if hud:
-				# Update the population display
-				hud.total_population += population_added
-				hud.update_hud()
-				
-				# Emit signal for population update
-				hud.population_updated.emit(hud.total_population)
+#	# Check for residential building placement to update population
+#	if structure.type == Structure.StructureType.RESIDENTIAL_BUILDING:
+#		# This should increase the city's population
+#		var population_added = structure.population_count
+#		if population_added > 0:
+#			# Get the HUD if available
+#			var hud = get_node_or_null("/root/Main/CanvasLayer/HUD")
+#			if hud:
+#				# Update the population display
+#				hud.total_population += population_added
+#				hud.update_hud()
+#				
+#				# Emit signal for population update
+#				hud.population_updated.emit(hud.total_population)
 
 # Only used for mission 3, to disable builder functionality during the companion dialog
 func _on_learning_panel_opened():
