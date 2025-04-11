@@ -35,10 +35,10 @@ func _on_structure_removed(structure_index, position):
 
 # Called when construction is completed
 func _on_construction_completed(position):
-	update_mission_3_count()
+	update_mission_4_count()
 
 # Updates the mission 3 objective count based on actual residential buildings
-func update_mission_3_count():
+func update_mission_4_count():					
 	# Find the mission manager
 	var mission_manager = get_node_or_null("/root/Main/MissionManager")
 	if not mission_manager:

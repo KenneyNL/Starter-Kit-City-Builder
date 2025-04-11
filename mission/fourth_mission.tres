@@ -5,80 +5,64 @@
 
 [sub_resource type="Resource" id="Resource_c06be"]
 script = ExtResource("1_dhx01")
-type = 7
-target_count = 1
+type = 3
+target_count = 40
 current_count = 0
-description = "Calculate how many power plants are needed to supply electricity to 40 houses."
+description = "Build 40 residential buildings with construction workers"
 structure_index = -1
 completed = false
 
 [resource]
 script = ExtResource("2_mum3p")
-id = "4"
-title = "Residential Energy Usage"
-description = ""
+id = "3"
+title = "City Expansion Project"
+description = "Your city needs to grow! Build 40 residential buildings using your team of construction workers. Watch as they construct each building from the ground up!"
 objectives = Array[ExtResource("1_dhx01")]([SubResource("Resource_c06be")])
 rewards = {
 "cash": 0
 }
-next_mission_id = "5"
+next_mission_id = ""
 graph_path = ""
 full_screen_path = ""
-intro_text = "A neighborhood is calculating energy usage from gaming consoles and TVs.
-At House A, they ran 2 gaming consoles and 3 TVs and used a total of 660 kilowatt-hours (kWh) of electricity.
-At House B, they ran 4 gaming consoles and 1 TV and used 760 kWh of electricity."
+intro_text = "Your city is expanding rapidly! Now that you've learned which construction company is more efficient, it's time to put them to work."
 question_text = ""
-correct_answer = "150,70"
-feedback_text = "Correct! You've accurately calculated that gaming consoles use 150 kWh and TVs use 70 kWh. Using a system of equations: 2x + 3y = 660 and 4x + y = 760, you can solve by substitution to find x = 150 and y = 70."
-incorrect_feedback = "Not quite right. Try setting up a system of equations:
-- House A: 2 gaming consoles + 3 TVs = 660 kWh
-- House B: 4 gaming consoles + 1 TV = 760 kWh
-Let x be the kWh for gaming consoles and y be the kWh for TVs.
-So we have: 2x + 3y = 660 and 4x + y = 760
-Solve for y in the second equation: y = 760 - 4x
-Substitute into the first equation: 2x + 3(760 - 4x) = 660
-Simplify: 2x + 2280 - 12x = 660
-Solve: -10x = -1620
-Therefore: x = 150 and y = 70"
+correct_answer = ""
+feedback_text = ""
+incorrect_feedback = ""
 company_data = ""
 power_math_content = ""
-num_of_user_inputs = 2
-input_labels = Array[String](["Gaming Consoles", "TVs"])
+num_of_user_inputs = 1
+input_labels = Array[String]([])
 companion_dialog = {
-"correct_answer": {
-"animation": "celebration",
-"duration": 5000,
-"text": "Excellent work! You correctly determined that gaming consoles use 150 kWh and TVs use 70 kWh."
-},
 "hint_request": {
 "animation": "thinking",
 "duration": 5000,
-"text": "Try setting up two equations: 2x + 3y = 660 for House A and 4x + y = 760 for House B, where x is the energy used by consoles and y is the energy used by TVs."
-},
-"hint_second": {
-"animation": "thinking",
-"duration": 5000,
-"text": "You can solve this by substitution. Rearrange the second equation to find y = 760 - 4x, then substitute this into the first equation."
-},
-"incorrect_answer": {
-"animation": "sad",
-"duration": 5000,
-"text": "Not quite right. Let's try setting up the equations again. Remember, we have 2 consoles and 3 TVs using 660 kWh at House A, and 4 consoles and 1 TV using 760 kWh at House B."
+"text": "Try placing the construction workers near where you want to build. They'll automatically start constructing buildings!"
 },
 "mission_completed": {
+"animation": "celebration",
+"duration": 5000,
+"text": "Amazing job! You've successfully built all 40 residential buildings. The city looks fantastic!"
+},
+"mission_progress_25": {
 "animation": "happy",
 "duration": 5000,
-"text": "Now that we know the energy usage, we can plan our city's power needs much better. Well done!"
+"text": "Great progress! You've completed 25% of the buildings. Keep it up!"
+},
+"mission_progress_50": {
+"animation": "excited",
+"duration": 5000,
+"text": "Halfway there! The city is really taking shape now."
+},
+"mission_progress_75": {
+"animation": "excited",
+"duration": 5000,
+"text": "Almost there! Just a few more buildings to go."
 },
 "mission_started": {
 "animation": "greeting",
 "duration": 5000,
-"text": "Let's tackle a challenging energy problem! We need to figure out how much electricity gaming consoles and TVs use."
-},
-"question_shown": {
-"animation": "thinking",
-"duration": 5000,
-"text": "This is a system of equations problem. We have two houses with different combinations of gaming consoles and TVs."
+"text": "Welcome to the City Expansion Project! We need to build 40 residential buildings using our construction workers."
 }
 }
-unlocked_items = Array[String](["res://models/power_plant-coal.glb", "res://models/power_plant-solar.glb"])
+unlocked_items = Array[String](["res://models/building-small-c.glb", "res://models/road-intersection.glb", "res://models/grass-trees.glb"])

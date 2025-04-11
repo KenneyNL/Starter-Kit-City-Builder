@@ -1,68 +1,84 @@
 [gd_resource type="Resource" script_class="MissionData" load_steps=4 format=3 uid="uid://p3xwn2mp6bm6"]
 
-[ext_resource type="Script" path="res://scripts/mission/mission_objective.gd" id="1_nxtw6"]
-[ext_resource type="Script" path="res://scripts/mission/mission_data.gd" id="2_83mjp"]
+[ext_resource type="Script" path="res://scripts/mission/mission_objective.gd" id="1_dhx01"]
+[ext_resource type="Script" path="res://scripts/mission/mission_data.gd" id="2_mum3p"]
 
-[sub_resource type="Resource" id="Resource_power_plant"]
-script = ExtResource("1_nxtw6")
-type = 1
+[sub_resource type="Resource" id="Resource_c06be"]
+script = ExtResource("1_dhx01")
+type = 7
 target_count = 1
 current_count = 0
-description = "Build a power plant to provide electricity to your city"
-structure_index = 7
+description = "Calculate how many power plants are needed to supply electricity to 40 houses."
+structure_index = -1
 completed = false
 
 [resource]
-script = ExtResource("2_83mjp")
-id = "5"
-title = "Powering Your City"
-description = "Now that you've calculated how many power plants you need, it's time to build one to power your growing city of 40 houses."
-objectives = Array[ExtResource("1_nxtw6")]([SubResource("Resource_power_plant")])
+script = ExtResource("2_mum3p")
+id = "4"
+title = "Residential Energy Usage"
+description = ""
+objectives = Array[ExtResource("1_dhx01")]([SubResource("Resource_c06be")])
 rewards = {
-"cash": 1000
+"cash": 0
 }
-next_mission_id = ""
+next_mission_id = "5"
 graph_path = ""
 full_screen_path = ""
-intro_text = "Your calculations showed that one power plant will be sufficient to power all 40 houses in your city. Let's build that power plant now to keep your residents happy!"
+intro_text = "A neighborhood is calculating energy usage from gaming consoles and TVs.
+At House A, they ran 2 gaming consoles and 3 TVs and used a total of 660 kilowatt-hours (kWh) of electricity.
+At House B, they ran 4 gaming consoles and 1 TV and used 760 kWh of electricity."
 question_text = ""
-correct_answer = ""
-feedback_text = ""
-incorrect_feedback = ""
+correct_answer = "150,70"
+feedback_text = "Correct! You've accurately calculated that gaming consoles use 150 kWh and TVs use 70 kWh. Using a system of equations: 2x + 3y = 660 and 4x + y = 760, you can solve by substitution to find x = 150 and y = 70."
+incorrect_feedback = "Not quite right. Try setting up a system of equations:
+- House A: 2 gaming consoles + 3 TVs = 660 kWh
+- House B: 4 gaming consoles + 1 TV = 760 kWh
+Let x be the kWh for gaming consoles and y be the kWh for TVs.
+So we have: 2x + 3y = 660 and 4x + y = 760
+Solve for y in the second equation: y = 760 - 4x
+Substitute into the first equation: 2x + 3(760 - 4x) = 660
+Simplify: 2x + 2280 - 12x = 660
+Solve: -10x = -1620
+Therefore: x = 150 and y = 70"
 company_data = ""
 power_math_content = ""
-num_of_user_inputs = 1
-input_labels = Array[String]([])
+num_of_user_inputs = 2
+input_labels = Array[String](["Gaming Consoles", "TVs"])
 companion_dialog = {
-"building_selected": {
-"animation": "happy",
+"correct_answer": {
+"animation": "celebration",
 "duration": 5000,
-"text": "Great choice! The power plant will supply all the energy our residents need."
+"text": "Excellent work! You correctly determined that gaming consoles use 150 kWh and TVs use 70 kWh."
 },
 "hint_request": {
 "animation": "thinking",
 "duration": 5000,
-"text": "Click on the power plant in your building menu and then place it in an open area of your city."
+"text": "Try setting up two equations: 2x + 3y = 660 for House A and 4x + y = 760 for House B, where x is the energy used by consoles and y is the energy used by TVs."
+},
+"hint_second": {
+"animation": "thinking",
+"duration": 5000,
+"text": "You can solve this by substitution. Rearrange the second equation to find y = 760 - 4x, then substitute this into the first equation."
+},
+"incorrect_answer": {
+"animation": "sad",
+"duration": 5000,
+"text": "Not quite right. Let's try setting up the equations again. Remember, we have 2 consoles and 3 TVs using 660 kWh at House A, and 4 consoles and 1 TV using 760 kWh at House B."
 },
 "mission_completed": {
-"animation": "celebration",
+"animation": "happy",
 "duration": 5000,
-"text": "Congratulations! Your city now has power for all residents. You've learned how to use systems of equations to solve real-world problems!"
+"text": "Now that we know the energy usage, we can plan our city's power needs much better. Well done!"
 },
 "mission_started": {
 "animation": "greeting",
 "duration": 5000,
-"text": "Time to power up our city! Based on our calculations, we need to build a power plant to provide electricity to all 40 houses."
+"text": "Let's tackle a challenging energy problem! We need to figure out how much electricity gaming consoles and TVs use."
 },
-"placement_hint": {
+"question_shown": {
 "animation": "thinking",
 "duration": 5000,
-"text": "Try to place the power plant away from residential areas but close enough to supply power efficiently."
-},
-"placement_success": {
-"animation": "excited",
-"duration": 5000,
-"text": "Perfect placement! Now the power plant can distribute electricity to all the houses in your city."
+"text": "This is a system of equations problem. We have two houses with different combinations of gaming consoles and TVs."
 }
 }
-unlocked_items = Array[String](["res://models/power_plant-wind.glb", "res://models/building-garage.glb"])
+unlocked_items = Array[String](["res://models/power_plant.glb"])
