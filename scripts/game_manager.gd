@@ -121,15 +121,7 @@ func setup_background_music():
 			music.loop = true
 		
 		music_player.stream = music
-		music_player.volume_db = 0  # Full volume for better web playback
 		music_player.bus = "Music"  # Use the Music bus
-		
-		# Direct check of music bus
-		var music_bus_idx = AudioServer.get_bus_index("Music")
-		if music_bus_idx >= 0:
-			# Force bus volume
-			AudioServer.set_bus_volume_db(music_bus_idx, 0)
-			AudioServer.set_bus_mute(music_bus_idx, false)
 		
 		# Check if we can play audio immediately (desktop) or need to wait (web)
 		var can_play_now = true
@@ -137,11 +129,6 @@ func setup_background_music():
 			var sound_manager = get_node_or_null("/root/SoundManager")
 			if sound_manager:
 				can_play_now = sound_manager.audio_initialized
-				
-				# Force SoundManager settings
-				sound_manager.music_volume = 1.0
-				sound_manager.music_muted = false
-				sound_manager._apply_music_volume()
 				
 				# If not initialized, connect to the ready signal
 				if not can_play_now:
@@ -155,7 +142,6 @@ func setup_background_music():
 		var fallback_sound = load("res://sounds/building_placing.wav")
 		if fallback_sound:
 			music_player.stream = fallback_sound
-			music_player.volume_db = 0
 			music_player.bus = "Music"
 			
 			# Check if we can play immediately
@@ -176,18 +162,6 @@ func _start_background_music():
 			# Make sure we start from the beginning
 			music_player.stop()
 			music_player.seek(0.0)
-			
-			# Set reasonable volume
-			music_player.volume_db = -10  # Normal volume for web
-			music_player.bus = "Music" 
-			
-			# Make sure buses are unmuted
-			AudioServer.set_bus_mute(0, false) # Master
-			
-			# Music bus
-			var music_bus_idx = AudioServer.get_bus_index("Music")
-			if music_bus_idx >= 0:
-				AudioServer.set_bus_mute(music_bus_idx, false)
 			
 			# Play the music
 			music_player.play()
@@ -210,11 +184,7 @@ func _start_background_music():
 		else:
 			# Standard approach for desktop builds
 			music_player.play()
-			
-# This retry audio function has been removed in favor of the simpler approach
-	
-# This helper has been removed in favor of a simpler approach
-		
+
 # Setup building sound effects
 func setup_building_sfx():
 	building_sfx = AudioStreamPlayer.new()
