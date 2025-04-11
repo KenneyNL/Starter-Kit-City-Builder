@@ -11,8 +11,8 @@ var react_sound_bridge = null # Will be instantiated from a script
 var audio_bridge = null # Will be instantiated from a script
 
 # Volume ranges from 0.0 to 1.0
-var music_volume: float = 0.8
-var sfx_volume: float = 0.8
+var music_volume: float = 0.1
+var sfx_volume: float = 0.1
 
 # Mute states
 var music_muted: bool = false
@@ -100,10 +100,13 @@ func _ready():
 		# Set the music player bus
 		music_player.bus = MUSIC_BUS_NAME
 		
+		# Apply initial volume settings
+		_apply_music_volume()
+		
 		# For non-web platforms, we can initialize immediately
 		audio_initialized = true
 		
-		# Emit the audio_ready signal
+		# Emit the audio ready signal
 		audio_ready.emit()
 
 # Setup audio buses (doesn't start audio playback)
@@ -274,16 +277,16 @@ func play_music(sound_name: String, loop: bool = true):
 	
 	# Set up and play the music
 	music_player.stream = stream
-	if music_muted:
-		music_player.volume_db = linear_to_db(0)
-	else:
-		music_player.volume_db = linear_to_db(music_volume)
 	music_player.bus = MUSIC_BUS_NAME
 	
 	# Set looping if supported by the stream
 	if stream is AudioStreamMP3 or stream is AudioStreamOggVorbis:
 		stream.loop = loop
 	
+	# Ensure volume is set correctly before playing
+	_apply_music_volume()
+	
+	# Play the music
 	music_player.play()
 
 # Play a sound effect
@@ -471,7 +474,8 @@ func _apply_music_volume():
 		if music_muted:
 			music_player.volume_db = linear_to_db(0)
 		else:
-			music_player.volume_db = linear_to_db(music_volume)
+			var db_value = linear_to_db(music_volume)
+			music_player.volume_db = db_value
 
 # Apply SFX volume settings
 func _apply_sfx_volume():
@@ -501,4 +505,6 @@ func _apply_sfx_volume():
 func linear_to_db(linear_value: float) -> float:
 	if linear_value <= 0:
 		return -80.0  # Very low but not -INF
-	return 20.0 * log(linear_value) / log(10.0)
+	# Map 0.0-1.0 to -30dB to 0dB for a more usable range
+	var db_value = (linear_value * 30.0) - 30.0
+	return db_value
