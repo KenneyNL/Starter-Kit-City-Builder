@@ -634,23 +634,10 @@ func _remove_resident_for_building(position: Vector3):
 				# Update the HUD population count
 				var hud = get_node_or_null("/root/Main/CanvasLayer/HUD")
 				if hud:
-					hud.total_population = max(0, hud.total_population - 1)
-					hud.update_hud()
-					hud.population_updated.emit(hud.total_population)
+					_on_update_population(-1)
 				
 				break
 				
-		# If not found by exact name, find any resident (as a fallback)
-		if not found:
-			var residents = get_tree().get_nodes_in_group("characters")
-			if residents.size() > 0:
-				# Just remove the first resident we find
-				residents[0].queue_free()
-				
-				# Update the HUD population count
-				var hud = get_node_or_null("/root/Main/CanvasLayer/HUD")
-				if hud:
-					_on_update_population(-1)
 func _on_update_population(count: int):
 	hud_manager.population_updated.emit(count)
 # Function to update mission objectives when residential building is demolished
