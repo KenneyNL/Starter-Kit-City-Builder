@@ -108,86 +108,7 @@ func _ready():
 	connection_timer.timeout.connect(_force_learning_companion_connection)
 	print("Created timer to force learning companion connection in 3 seconds")
 	
-	# Load the sequence of missions
-	# Load first mission (building a road)
-	var first_mission = load("res://mission/first_mission.tres")
-	if first_mission:
-		var found = false
-		for mission in missions:
-			if mission.id == "1":
-				found = true
-				break
-		
-		if not found:
-			missions.append(first_mission)
-	
-	# Load second mission (building a residential building)
-	var second_mission = load("res://mission/second_mission.tres")
-	if second_mission:
-		var found = false
-		for mission in missions:
-			if mission.id == "2":
-				found = true
-				break
-		
-		if not found:
-			missions.append(second_mission)
-		
-		# Set next_mission_id for first mission to point to second mission
-		for mission in missions:
-			if mission.id == "1":
-				mission.next_mission_id = "2"
-	
-	# Load learning mission (construction company comparison)
-	var learning_mission = load("res://mission/learning_mission.tres")
-	if learning_mission:
-		var found = false
-		for mission in missions:
-			if mission.id == "3a":
-				found = true
-				break
-		
-		if not found:
-			missions.append(learning_mission)
-		
-		# Set next_mission_id for second mission to point to learning mission
-		for mission in missions:
-			if mission.id == "2":
-				mission.next_mission_id = "3a"
-				
-	# Load third mission (city expansion)
-	var third_mission = load("res://mission/third_mission.tres")
-	if third_mission:
-		var found = false
-		for mission in missions:
-			if mission.id == "3":
-				found = true
-				break
-		
-		if not found:
-			missions.append(third_mission)
-		
-		# Set next_mission_id for learning mission to point to third mission
-		for mission in missions:
-			if mission.id == "3a":
-				mission.next_mission_id = "3"
-	
-	# Load fourth mission if not already in the list
-	var fourth_mission = load("res://mission/fourth_mission.tres")
-	if fourth_mission:
-		var found = false
-		for mission in missions:
-			if mission.id == "4":
-				found = true
-				break
-		
-		if not found:
-			missions.append(fourth_mission)
-		
-		# Set next_mission_id for third mission to point to fourth mission
-		for mission in missions:
-			if mission.id == "3":
-				mission.next_mission_id = "4"
+			
 	
 	# Emit game_started signal before starting the first mission
 	game_started.emit()
@@ -638,7 +559,7 @@ func _on_structure_placed(structure_index, position):
 			var hud = get_node_or_null("/root/Main/CanvasLayer/HUD")
 			if hud:
 				# Update the power display
-				hud.total_power += power_produced
+				hud.total_kW_production += power_produced
 				hud.update_hud()
 				
 #	# Check for residential building placement to update population
