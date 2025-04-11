@@ -19,3 +19,4 @@ class_name MissionData
 @export var num_of_user_inputs: int = 1 # Number of user input fields to display
 @export var input_labels: Array[String] = [] # Labels for each input field
 @export var companion_dialog: Dictionary = {} # Map of event keys to dialog entries for the learning companion
+@export var unlocked_items: Array[String] = [] # Array of structure resource paths that get unlocked after mission completion

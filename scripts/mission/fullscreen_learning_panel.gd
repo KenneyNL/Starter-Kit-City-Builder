@@ -1,6 +1,6 @@
 extends Control
 
-signal completed
+signal completed(mission)
 signal panel_opened
 signal panel_closed
 
@@ -375,8 +375,8 @@ func _on_modal_complete_mission(modal):
 			
 		hide_fullscreen_panel()
 		
-		# Emit completed signal
-		completed.emit()
+		# Emit completed signal with mission parameter
+		completed.emit(mission)
 
 func hide_fullscreen_panel():
 	visible = false

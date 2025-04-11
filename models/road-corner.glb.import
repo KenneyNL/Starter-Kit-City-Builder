@@ -31,6 +31,13 @@ animation/trimming=false
 animation/remove_immutable_tracks=true
 animation/import_rest_as_RESET=false
 import_script/path=""
-_subresources={}
+_subresources={
+"materials": {
+"colormap": {
+"use_external/enabled": false,
+"use_external/path": "res://mesges/road-mesh.res"
+}
+}
+}
 gltf/naming_version=0
 gltf/embedded_image_handling=1
