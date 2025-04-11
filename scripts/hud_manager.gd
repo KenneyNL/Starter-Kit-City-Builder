@@ -119,12 +119,8 @@ func _on_structure_removed(structure_index, position):
 	
 	
 # Update Population
-func update_population_count(added_population: int):
-	if(added_population < 0):
-		total_population -= added_population
-	else:
-		total_population += added_population
-	
+func update_population_count(count: int):
+	total_population += count
 	population_label.text = str(total_population)
 	
 #	# Emit signal
