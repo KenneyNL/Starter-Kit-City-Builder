@@ -547,7 +547,7 @@ func _on_structure_placed(structure_index, position):
 				update_objective_progress(current_mission.id, MissionObjective.ObjectiveType.BUILD_RESIDENTIAL)
 		elif structure.type == Structure.StructureType.POWER_PLANT:
 			# For mission 5, we update the economy/power objective when a power plant is built
-			if current_mission.id == "5":
+			if current_mission.id == "6":
 				update_objective_progress(current_mission.id, MissionObjective.ObjectiveType.ECONOMY)
 			
 	# Check for power plant unlocking in normal gameplay

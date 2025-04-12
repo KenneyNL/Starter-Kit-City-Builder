@@ -14,14 +14,14 @@ completed = false
 
 [resource]
 script = ExtResource("2_mum3p")
-id = "4"
+id = "5"
 title = "Residential Energy Usage"
 description = ""
 objectives = Array[ExtResource("1_dhx01")]([SubResource("Resource_c06be")])
 rewards = {
 "cash": 0
 }
-next_mission_id = "5"
+next_mission_id = "6"
 graph_path = ""
 full_screen_path = ""
 intro_text = "A neighborhood is calculating energy usage from gaming consoles and TVs.

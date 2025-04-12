@@ -1,4 +1,4 @@
-[gd_scene load_steps=28 format=3 uid="uid://vgwrcfy1qawf"]
+[gd_scene load_steps=29 format=3 uid="uid://vgwrcfy1qawf"]
 
 [ext_resource type="Script" path="res://scripts/builder.gd" id="1_jybm7"]
 [ext_resource type="Environment" uid="uid://jbptgqvstei3" path="res://scenes/main-environment.tres" id="1_yndf3"]
@@ -20,8 +20,9 @@
 [ext_resource type="Resource" uid="uid://bho4qh41asyk1" path="res://mission/fourth_mission.tres" id="18_h4fpv"]
 [ext_resource type="PackedScene" uid="uid://cgk66f6rg03mj" path="res://scenes/hud.tscn" id="18_hud"]
 [ext_resource type="PackedScene" uid="uid://bqjnp7uypupog" path="res://scenes/controls_panel.tscn" id="19_controls"]
-[ext_resource type="Resource" uid="uid://p3xwn2mp6bm6" path="res://mission/sixth_mission.tres" id="19_e8sub"]
+[ext_resource type="Resource" uid="uid://p3xwn2mp6bm6" path="res://mission/fifth_mission.tres" id="19_e8sub"]
 [ext_resource type="Script" path="res://scripts/game_manager.gd" id="20_game_manager"]
+[ext_resource type="Resource" uid="uid://bv4r7ebpjdce4" path="res://mission/sixth_mission.tres" id="20_r0ysx"]
 [ext_resource type="PackedScene" uid="uid://b4s46k58ddpyc" path="res://scenes/sound_panel.tscn" id="21_sound_panel"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mission"]
@@ -127,7 +128,7 @@ anchors_preset = 8
 
 [node name="MissionManager" type="Node" parent="." node_paths=PackedStringArray("mission_ui", "builder")]
 script = ExtResource("10_oe3re")
-missions = Array[ExtResource("14_vcrh8")]([ExtResource("15_obmwc"), ExtResource("16_rl54y"), ExtResource("17_rrdy6"), ExtResource("18_h4fpv"), ExtResource("19_e8sub")])
+missions = Array[ExtResource("14_vcrh8")]([ExtResource("15_obmwc"), ExtResource("16_rl54y"), ExtResource("17_rrdy6"), ExtResource("18_h4fpv"), ExtResource("19_e8sub"), ExtResource("20_r0ysx")])
 mission_ui = NodePath("MissionPanel")
 builder = NodePath("../Builder")
 character_scene = ExtResource("18_8lrh8")

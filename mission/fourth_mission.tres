@@ -14,14 +14,14 @@ completed = false
 
 [resource]
 script = ExtResource("2_mum3p")
-id = "3"
+id = "4"
 title = "City Expansion Project"
 description = "Your city needs to grow! Build 40 residential buildings using your team of construction workers. Watch as they construct each building from the ground up!"
 objectives = Array[ExtResource("1_dhx01")]([SubResource("Resource_c06be")])
 rewards = {
 "cash": 0
 }
-next_mission_id = ""
+next_mission_id = "5"
 graph_path = ""
 full_screen_path = ""
 intro_text = "Your city is expanding rapidly! Now that you've learned which construction company is more efficient, it's time to put them to work."
