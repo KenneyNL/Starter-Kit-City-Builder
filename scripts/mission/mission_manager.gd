@@ -39,6 +39,7 @@ var learning_panel
 var fullscreen_learning_panel
 
 func _ready():
+	
 	if builder:
 		# Connect to builder signals
 		builder.connect("structure_placed", _on_structure_placed)
@@ -86,13 +87,13 @@ func _ready():
 		print("WARNING: Fullscreen learning panel not found!")
 	
 	# For web builds, try to proactively initialize audio on load
-	if OS.has_feature("web"):
-		# Try to find sound manager and init audio
-		var sound_manager = get_node_or_null("/root/SoundManager")
-		if sound_manager and not sound_manager.audio_initialized:
-			# Connect to user input to detect interaction
-			get_viewport().gui_focus_changed.connect(_on_gui_focus_for_audio)
-			get_tree().get_root().connect("gui_input", _on_gui_input_for_audio)
+#	if OS.has_feature("web"):
+#		# Try to find sound manager and init audio
+#		var sound_manager = get_node_or_null("/root/SoundManager")
+#		if sound_manager and not sound_manager.audio_initialized:
+#			# Connect to user input to detect interaction
+#			get_viewport().gui_focus_changed.connect(_on_gui_focus_for_audio)
+#			get_tree().get_root().connect("gui_input", _on_gui_input_for_audio)
 	
 	# Set up communication with the learning companion
 	_setup_learning_companion_communication()
@@ -283,7 +284,7 @@ func start_mission(mission: MissionData):
 	
 	# Special handling for power plant mission: add power plant
 	# Use more robust checking for power missions - check power_math_content as well
-	elif (mission.id == "4" or mission.power_math_content != "") and builder:
+	elif (mission.id == "5" or mission.power_math_content != "") and builder:
 		# Check if we need to add the power plant
 		var has_power_plant = false
 		
@@ -396,16 +397,11 @@ func complete_mission(mission_id: String):
 		await get_tree().create_timer(2.0).timeout
 		start_mission(next_mission)
 	else:
+		all_missions_completed.emit()
 		print("No more missions available - all complete!")
 		
 		# Send the "end" event to the companion
 		await get_tree().create_timer(2.0).timeout
-		
-		# Tell learning companion all missions are complete
-		if learning_companion_connected and JSBridge.has_interface():
-			print("Sending all_missions_completed event to learning companion")
-			# Using a lambda prevents the event from actually being emitted
-			all_missions_completed.emit()
 	
 func update_objective_progress(mission_id, objective_type, count_change = 1):
 	if not active_missions.has(mission_id):
@@ -547,7 +543,7 @@ func _on_structure_placed(structure_index, position):
 				update_objective_progress(current_mission.id, MissionObjective.ObjectiveType.BUILD_RESIDENTIAL)
 		elif structure.type == Structure.StructureType.POWER_PLANT:
 			# For mission 5, we update the economy/power objective when a power plant is built
-			if current_mission.id == "5":
+			if current_mission.id == "6":
 				update_objective_progress(current_mission.id, MissionObjective.ObjectiveType.ECONOMY)
 			
 	# Check for power plant unlocking in normal gameplay

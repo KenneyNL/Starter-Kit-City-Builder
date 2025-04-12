@@ -14,14 +14,14 @@ completed = false
 
 [resource]
 script = ExtResource("2_b4llw")
-id = "3a"
+id = "3"
 title = "Compare Construction Companies"
 description = "As your city grows, you need to choose the most efficient construction company."
 objectives = Array[ExtResource("1_l3spi")]([SubResource("Resource_c06be")])
 rewards = {
 "cash": 500
 }
-next_mission_id = "3"
+next_mission_id = "4"
 graph_path = "res://images/mission_2.png"
 full_screen_path = ""
 intro_text = "Your city is rapidly growing, and you need to build houses to accommodate new residents! Two different construction companies offer to help. Study the company data below, find the unit rates (houses per worker), and determine which company would require fewer workers to build 40 houses in a week. Which company requires fewer workers to build 40 houses in a week? (A or B)"
@@ -60,4 +60,4 @@ companion_dialog = {
 "text": ["You've solved the construction company problem! That's good mathematical thinking.", "You've made a wise decision based on the data. That's how city planners work!"]
 }
 }
-unlocked_items = Array[String](["res://models/road-corner.glb", "res://models/building-small-b.glb"])
+unlocked_items = Array[String](["res://models/road-corner.glb"])

@@ -465,9 +465,9 @@ class JavaScriptGlobal:
 		})()
 		"""
 		
-		var result = js_interface.eval(script)
-		print("JavaScript audio initialization result:", result)
-		return result
+#		var result = js_interface.eval(script)
+#		print("JavaScript audio initialization result:", result)
+#		return result
 		
 	# Setup audio message listener from JavaScript
 	static func setup_audio_message_listener():
