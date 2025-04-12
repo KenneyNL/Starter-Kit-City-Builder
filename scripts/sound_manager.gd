@@ -50,48 +50,50 @@ func _ready():
 	add_child(music_player)
 	
 	# For web builds, we'll use Audio Bridge
-	if OS.has_feature("web"):
-		# Set a flag to track initialization
-		audio_initialized = false
-		
-		print("Web build detected, Audio bridges will be used")
-		
-		# Connect to the input events to detect user interaction as fallback
-		get_viewport().connect("gui_focus_changed", _on_user_interaction)
-		
-		# Try to use a custom Node for audio bridge functionality
-		# Instead of relying on class_name registration or preload
-		audio_bridge = Node.new()
-		audio_bridge.name = "AudioBridge"
-		add_child(audio_bridge)
-		
-		# Set up the necessary properties
-		audio_bridge.set_script(load("res://scripts/audio_bridge.gd"))
-		
-		# Connect to the signal after the script is loaded
-		if audio_bridge.has_signal("bridge_connected"):
-			audio_bridge.bridge_connected.connect(_on_audio_bridge_connected)
-		
-		# We also create the ReactSoundBridge for backward compatibility
-		# But using the same approach as AudioBridge to avoid class_name dependency
-		react_sound_bridge = Node.new()
-		react_sound_bridge.name = "ReactSoundBridge"
-		add_child(react_sound_bridge)
-		
-		# Set up the necessary properties
-		react_sound_bridge.set_script(load("res://scripts/react_sound_bridge.gd"))
-		
-		# Connect to the signal after the script is loaded
-		if react_sound_bridge.has_signal("audio_ready"):
-			react_sound_bridge.audio_ready.connect(_on_react_audio_ready)
-		
-		# Signal that we're using web audio (don't create audio buses)
-		await get_tree().process_frame
-		audio_initialized = true
-		audio_ready.emit()
-		
-		# Store a reference to this object in the main loop for JavaScript callbacks
-		Engine.get_main_loop().set_meta("sound_manager", self)
+	if false:
+		pass
+#	if OS.has_feature("web"):
+#		# Set a flag to track initialization
+#		audio_initialized = false
+#		
+#		print("Web build detected, Audio bridges will be used")
+#		
+#		# Connect to the input events to detect user interaction as fallback
+#		get_viewport().connect("gui_focus_changed", _on_user_interaction)
+#		
+#		# Try to use a custom Node for audio bridge functionality
+#		# Instead of relying on class_name registration or preload
+#		audio_bridge = Node.new()
+#		audio_bridge.name = "AudioBridge"
+#		add_child(audio_bridge)
+#		
+#		# Set up the necessary properties
+#		audio_bridge.set_script(load("res://scripts/audio_bridge.gd"))
+#		
+#		# Connect to the signal after the script is loaded
+#		if audio_bridge.has_signal("bridge_connected"):
+#			audio_bridge.bridge_connected.connect(_on_audio_bridge_connected)
+#		
+#		# We also create the ReactSoundBridge for backward compatibility
+#		# But using the same approach as AudioBridge to avoid class_name dependency
+#		react_sound_bridge = Node.new()
+#		react_sound_bridge.name = "ReactSoundBridge"
+#		add_child(react_sound_bridge)
+#		
+#		# Set up the necessary properties
+#		react_sound_bridge.set_script(load("res://scripts/react_sound_bridge.gd"))
+#		
+#		# Connect to the signal after the script is loaded
+#		if react_sound_bridge.has_signal("audio_ready"):
+#			react_sound_bridge.audio_ready.connect(_on_react_audio_ready)
+#		
+#		# Signal that we're using web audio (don't create audio buses)
+#		await get_tree().process_frame
+#		audio_initialized = true
+#		audio_ready.emit()
+#		
+#		# Store a reference to this object in the main loop for JavaScript callbacks
+#		Engine.get_main_loop().set_meta("sound_manager", self)
 	else:
 		# For non-web platforms, set up standard Godot audio
 		# Set up the audio buses
@@ -215,8 +217,9 @@ func _input(event):
 # If this method is called from JavaScript, it will help the game to 
 # initialize audio properly in web builds
 func init_web_audio_from_js():
-	if OS.has_feature("web") and not audio_initialized:
-		_initialize_web_audio()
+	pass
+	#if OS.has_feature("web") and not audio_initialized:
+		#_initialize_web_audio()
 
 # Initialize audio for web builds
 func _initialize_web_audio():
@@ -224,16 +227,16 @@ func _initialize_web_audio():
 		return
 		
 	# For web builds, we notify JavaScript to initialize audio
-	if OS.has_feature("web"):
-		JSBridge.JavaScriptGlobal.handle_audio_action("INITIALIZE_AUDIO")
-		
-		# We don't need to create any dummy players, as JavaScript will handle the audio
-		audio_initialized = true
-		audio_ready.emit()
-		return
+#	if OS.has_feature("web"):
+#		JSBridge.JavaScriptGlobal.handle_audio_action("INITIALIZE_AUDIO")
+#		
+#		# We don't need to create any dummy players, as JavaScript will handle the audio
+#		audio_initialized = true
+#		audio_ready.emit()
+#		return
 	
 	# For non-web platforms, initialize Godot audio (this shouldn't get called)
-	if not OS.has_feature("web"):
+#	if not OS.has_feature("web"):
 		# Set the flag to prevent multiple initializations
 		audio_initialized = true
 		audio_ready.emit()
@@ -247,17 +250,17 @@ func play_music(sound_name: String, loop: bool = true):
 	current_music = sound_name
 	
 	# For web builds, try multiple bridge options
-	if OS.has_feature("web"):
-		# Try AudioBridge first (platform-one integration)
-		if audio_bridge != null and audio_bridge.get("is_connected") == true:
-			print("Using AudioBridge to play music: ", sound_name)
-			if audio_bridge.has_method("play_music") and audio_bridge.play_music(sound_name):
-				return
-		
-		# Fall back to JavaScript Bridge
-		print("Using JavaScriptBridge to play music: ", sound_name)
-		JSBridge.JavaScriptGlobal.handle_audio_action("PLAY_MUSIC", sound_name)
-		return
+#	if OS.has_feature("web"):
+#		# Try AudioBridge first (platform-one integration)
+#		if audio_bridge != null and audio_bridge.get("is_connected") == true:
+#			print("Using AudioBridge to play music: ", sound_name)
+#			if audio_bridge.has_method("play_music") and audio_bridge.play_music(sound_name):
+#				return
+#		
+#		# Fall back to JavaScript Bridge
+#		print("Using JavaScriptBridge to play music: ", sound_name)
+#		JSBridge.JavaScriptGlobal.handle_audio_action("PLAY_MUSIC", sound_name)
+#		return
 	
 	# For native builds, use Godot audio
 	if not SOUND_FILES.has(sound_name):
@@ -295,17 +298,17 @@ func play_sfx(sound_name: String):
 		return
 		
 	# For web builds, try multiple bridge options
-	if OS.has_feature("web"):
-		# Try AudioBridge first (platform-one integration)
-		if audio_bridge != null and audio_bridge.get("is_connected") == true:
-			print("Using AudioBridge to play sfx: ", sound_name)
-			if audio_bridge.has_method("play_sfx") and audio_bridge.play_sfx(sound_name):
-				return
-		
-		# Fall back to JavaScript Bridge
-		print("Using JavaScriptBridge to play sfx: ", sound_name)
-		JSBridge.JavaScriptGlobal.handle_audio_action("PLAY_SFX", sound_name)
-		return
+	#if OS.has_feature("web"):
+		## Try AudioBridge first (platform-one integration)
+		#if audio_bridge != null and audio_bridge.get("is_connected") == true:
+			#print("Using AudioBridge to play sfx: ", sound_name)
+			#if audio_bridge.has_method("play_sfx") and audio_bridge.play_sfx(sound_name):
+				#return
+		#
+		## Fall back to JavaScript Bridge
+		#print("Using JavaScriptBridge to play sfx: ", sound_name)
+		#JSBridge.JavaScriptGlobal.handle_audio_action("PLAY_SFX", sound_name)
+		#return
 	
 	# For native builds, use Godot audio
 	if not SOUND_FILES.has(sound_name):
@@ -345,19 +348,19 @@ func stop_music():
 		return
 		
 	# For web builds, try multiple bridge options
-	if OS.has_feature("web"):
-		# Try AudioBridge first (platform-one integration)
-		if audio_bridge != null and audio_bridge.get("is_connected") == true:
-			print("Using AudioBridge to stop music")
-			if audio_bridge.has_method("stop_music") and audio_bridge.stop_music():
-				current_music = ""
-				return
-		
-		# Fall back to JavaScript Bridge
-		print("Using JavaScriptBridge to stop music")
-		JSBridge.JavaScriptGlobal.handle_audio_action("STOP_MUSIC")
-		current_music = ""
-		return
+	#if OS.has_feature("web"):
+		## Try AudioBridge first (platform-one integration)
+		#if audio_bridge != null and audio_bridge.get("is_connected") == true:
+			#print("Using AudioBridge to stop music")
+			#if audio_bridge.has_method("stop_music") and audio_bridge.stop_music():
+				#current_music = ""
+				#return
+		#
+		## Fall back to JavaScript Bridge
+		#print("Using JavaScriptBridge to stop music")
+		#JSBridge.JavaScriptGlobal.handle_audio_action("STOP_MUSIC")
+		#current_music = ""
+		#return
 	
 	# For native builds, use Godot audio
 	if music_player and music_player.playing:
@@ -370,16 +373,18 @@ func set_music_volume(volume: float):
 	music_volume = clampf(volume, 0.0, 1.0)
 	
 	# For web builds, try multiple bridge options
-	if OS.has_feature("web"):
-		# Try AudioBridge first (platform-one integration)
-		if audio_bridge != null and audio_bridge.get("is_connected") == true:
-			print("Using AudioBridge to set music volume: ", music_volume)
-			if audio_bridge.has_method("set_music_volume"):
-				audio_bridge.set_music_volume(music_volume)
-		else:
-			# Fall back to JavaScript Bridge
-			print("Using JavaScriptBridge to set music volume: ", music_volume)
-			JSBridge.JavaScriptGlobal.handle_audio_action("SET_MUSIC_VOLUME", "", music_volume)
+	if false:
+		pass
+#	if OS.has_feature("web"):
+#		# Try AudioBridge first (platform-one integration)
+#		if audio_bridge != null and audio_bridge.get("is_connected") == true:
+#			print("Using AudioBridge to set music volume: ", music_volume)
+#			if audio_bridge.has_method("set_music_volume"):
+#				audio_bridge.set_music_volume(music_volume)
+#		else:
+#			# Fall back to JavaScript Bridge
+#			print("Using JavaScriptBridge to set music volume: ", music_volume)
+#			JSBridge.JavaScriptGlobal.handle_audio_action("SET_MUSIC_VOLUME", "", music_volume)
 	else:
 		# Apply to local Godot audio system
 		_apply_music_volume()
@@ -392,16 +397,18 @@ func set_sfx_volume(volume: float):
 	sfx_volume = clampf(volume, 0.0, 1.0)
 	
 	# For web builds, try multiple bridge options
-	if OS.has_feature("web"):
-		# Try AudioBridge first (platform-one integration)
-		if audio_bridge != null and audio_bridge.get("is_connected") == true:
-			print("Using AudioBridge to set sfx volume: ", sfx_volume)
-			if audio_bridge.has_method("set_sfx_volume"):
-				audio_bridge.set_sfx_volume(sfx_volume)
-		else:
-			# Fall back to JavaScript Bridge
-			print("Using JavaScriptBridge to set sfx volume: ", sfx_volume)
-			JSBridge.JavaScriptGlobal.handle_audio_action("SET_SFX_VOLUME", "", sfx_volume)
+#	if OS.has_feature("web"):
+	if false:
+		pass
+#		# Try AudioBridge first (platform-one integration)
+#		if audio_bridge != null and audio_bridge.get("is_connected") == true:
+#			print("Using AudioBridge to set sfx volume: ", sfx_volume)
+#			if audio_bridge.has_method("set_sfx_volume"):
+#				audio_bridge.set_sfx_volume(sfx_volume)
+#		else:
+#			# Fall back to JavaScript Bridge
+#			print("Using JavaScriptBridge to set sfx volume: ", sfx_volume)
+#			JSBridge.JavaScriptGlobal.handle_audio_action("SET_SFX_VOLUME", "", sfx_volume)
 	else:
 		# Apply to local Godot audio system
 		_apply_sfx_volume()
@@ -414,16 +421,18 @@ func toggle_music_mute():
 	music_muted = !music_muted
 	
 	# For web builds, try multiple bridge options
-	if OS.has_feature("web"):
-		# Try AudioBridge first (platform-one integration)
-		if audio_bridge != null and audio_bridge.get("is_connected") == true:
-			print("Using AudioBridge to toggle music mute: ", music_muted)
-			if audio_bridge.has_method("toggle_music_mute"):
-				audio_bridge.toggle_music_mute()
-		else:
-			# Fall back to JavaScript Bridge
-			print("Using JavaScriptBridge to toggle music mute: ", music_muted)
-			JSBridge.JavaScriptGlobal.handle_audio_action("TOGGLE_MUSIC_MUTE")
+#	if OS.has_feature("web"):
+	if false:
+		pass
+#		# Try AudioBridge first (platform-one integration)
+#		if audio_bridge != null and audio_bridge.get("is_connected") == true:
+#			print("Using AudioBridge to toggle music mute: ", music_muted)
+#			if audio_bridge.has_method("toggle_music_mute"):
+#				audio_bridge.toggle_music_mute()
+#		else:
+#			# Fall back to JavaScript Bridge
+#			print("Using JavaScriptBridge to toggle music mute: ", music_muted)
+#			JSBridge.JavaScriptGlobal.handle_audio_action("TOGGLE_MUSIC_MUTE")
 	else:
 		# Apply to local Godot audio system
 		_apply_music_volume()
@@ -436,16 +445,18 @@ func toggle_sfx_mute():
 	sfx_muted = !sfx_muted
 	
 	# For web builds, try multiple bridge options
-	if OS.has_feature("web"):
-		# Try AudioBridge first (platform-one integration)
-		if audio_bridge != null and audio_bridge.get("is_connected") == true:
-			print("Using AudioBridge to toggle sfx mute: ", sfx_muted)
-			if audio_bridge.has_method("toggle_sfx_mute"):
-				audio_bridge.toggle_sfx_mute()
-		else:
-			# Fall back to JavaScript Bridge
-			print("Using JavaScriptBridge to toggle sfx mute: ", sfx_muted)
-			JSBridge.JavaScriptGlobal.handle_audio_action("TOGGLE_SFX_MUTE")
+#	if OS.has_feature("web"):
+	if false:
+		pass
+#		# Try AudioBridge first (platform-one integration)
+#		if audio_bridge != null and audio_bridge.get("is_connected") == true:
+#			print("Using AudioBridge to toggle sfx mute: ", sfx_muted)
+#			if audio_bridge.has_method("toggle_sfx_mute"):
+#				audio_bridge.toggle_sfx_mute()
+#		else:
+#			# Fall back to JavaScript Bridge
+#			print("Using JavaScriptBridge to toggle sfx mute: ", sfx_muted)
+#			JSBridge.JavaScriptGlobal.handle_audio_action("TOGGLE_SFX_MUTE")
 	else:
 		# Apply to local Godot audio system
 		_apply_sfx_volume()
@@ -456,8 +467,8 @@ func toggle_sfx_mute():
 # Apply music volume settings
 func _apply_music_volume():
 	# Skip for web builds - JavaScript Bridge handles volume
-	if OS.has_feature("web"):
-		return
+#	if OS.has_feature("web"):
+#		return
 	
 	# For non-web builds, use the audio buses
 	if music_bus_index != -1:
@@ -480,8 +491,8 @@ func _apply_music_volume():
 # Apply SFX volume settings
 func _apply_sfx_volume():
 	# Skip for web builds - JavaScript Bridge handles volume
-	if OS.has_feature("web"):
-		return
+#	if OS.has_feature("web"):
+#		return
 	
 	# For non-web builds, use the audio buses
 	if sfx_bus_index != -1:

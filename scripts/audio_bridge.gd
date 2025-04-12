@@ -8,10 +8,9 @@ signal bridge_connected(is_connected)
 
 var is_connected: bool = false
 
-func _ready():
 	# Connect to the React sound manager if in web environment
-	if OS.has_feature("web"):
-		connect_to_sound_manager()
+	#if OS.has_feature("web"):
+		#connect_to_sound_manager()
 
 # Try to connect to the React sound manager
 func connect_to_sound_manager() -> bool:

@@ -6,6 +6,13 @@ var music_player: AudioStreamPlayer
 var building_sfx: AudioStreamPlayer
 var construction_sfx: AudioStreamPlayer
 
+@onready var generic_text_panel = $CanvasLayer/GenericTextPanel
+
+# Export variables for intro and outro resource
+@export var intro_text_resource: GenericText
+@export var outro_text_resource: GenericText
+
+
 func _ready():
 	# Register SoundManager in the main loop for JavaScript bridge to find
 	Engine.get_main_loop().set_meta("sound_manager", get_node_or_null("/root/SoundManager"))
@@ -19,23 +26,31 @@ func _ready():
 	hud.controls_panel = controls_panel
 	hud.sound_panel = sound_panel
 	
+	
+	if generic_text_panel and intro_text_resource:
+		print(generic_text_panel.resource_data)
+		generic_text_panel.apply_resource_data(intro_text_resource)
+		generic_text_panel.show_panel()
+		
+		generic_text_panel.closed.connect(func():
+			if generic_text_panel.resource_data.panel_type == 0 and controls_panel:
+				controls_panel.show_panel()
+			)
+	
 	# Auto-show controls at start
 	if controls_panel:
-		controls_panel.show_panel()
-		
-		# Connect the closed signal to handle when player closes the controls
 		controls_panel.closed.connect(_on_controls_panel_closed)
 	
 	# Check for audio initialization status (important for web)
 	var sound_manager = get_node_or_null("/root/SoundManager")
 	var can_initialize_audio = true
-	
-	if OS.has_feature("web") and sound_manager:
-		can_initialize_audio = sound_manager.audio_initialized
-		
-		if not can_initialize_audio:
-			# For web, wait for the audio_ready signal before initializing audio
-			sound_manager.audio_ready.connect(_initialize_game_audio)
+#	
+#	if OS.has_feature("web") and sound_manager:
+#		can_initialize_audio = sound_manager.audio_initialized
+#		
+#		if not can_initialize_audio:
+#			# For web, wait for the audio_ready signal before initializing audio
+#			sound_manager.audio_ready.connect(_initialize_game_audio)
 	
 	# Set up audio if allowed (immediate for desktop, after interaction for web)
 	if can_initialize_audio:
@@ -61,17 +76,18 @@ func _initialize_game_audio():
 
 # This function is called when the controls panel is closed
 func _on_controls_panel_closed():
+	pass
 	# This is the perfect place to initialize audio for web builds
 	# since we know the user has interacted with the game
-	if OS.has_feature("web"):
-		# Force initialize the sound manager (will have no effect if already initialized)
-		var sound_manager = get_node_or_null("/root/SoundManager")
-		if sound_manager and not sound_manager.audio_initialized:
-			sound_manager._initialize_web_audio()
-		
-		# Make sure our music is playing
-		if music_player and music_player.stream and not music_player.playing:
-			music_player.play()
+#	if OS.has_feature("web"):
+#		# Force initialize the sound manager (will have no effect if already initialized)
+#		var sound_manager = get_node_or_null("/root/SoundManager")
+#		if sound_manager and not sound_manager.audio_initialized:
+#			sound_manager._initialize_web_audio()
+#		
+#		# Make sure our music is playing
+#		if music_player and music_player.stream and not music_player.playing:
+#			music_player.play()
 
 # Function to set up the sound buses
 func _setup_sound_buses():
@@ -274,3 +290,9 @@ func _setup_construction_signals():
 			# Connect signals
 			construction_manager.worker_construction_started.connect(play_construction_sound)
 			construction_manager.worker_construction_ended.connect(stop_construction_sound)
+
+
+func _on_mission_manager_all_missions_completed() -> void:
+	if generic_text_panel and outro_text_resource:
+		generic_text_panel.apply_resource_data(outro_text_resource)
+		generic_text_panel.show_panel()

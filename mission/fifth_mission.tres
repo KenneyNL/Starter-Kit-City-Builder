@@ -34,12 +34,7 @@ incorrect_feedback = "Not quite right. Try setting up a system of equations:
 - House A: 2 gaming consoles + 3 TVs = 660 kWh
 - House B: 4 gaming consoles + 1 TV = 760 kWh
 Let x be the kWh for gaming consoles and y be the kWh for TVs.
-So we have: 2x + 3y = 660 and 4x + y = 760
-Solve for y in the second equation: y = 760 - 4x
-Substitute into the first equation: 2x + 3(760 - 4x) = 660
-Simplify: 2x + 2280 - 12x = 660
-Solve: -10x = -1620
-Therefore: x = 150 and y = 70"
+So we have: 2x + 3y = 660 and 4x + y = 760"
 company_data = ""
 power_math_content = ""
 num_of_user_inputs = 2
