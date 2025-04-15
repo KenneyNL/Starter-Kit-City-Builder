@@ -26,3 +26,4 @@ detail_blend_mode = 3
 detail_uv_layer = 1
 detail_albedo = ExtResource("2_anm7f")
 uv2_scale = Vector3(6, 6, 6)
+grow_amount = 0.685
