@@ -2,9 +2,9 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c8ka2yo5ohv5n"
-path.s3tc="res://.godot/imported/colormap.png-c1bc3c3aabeec406ff4b53328583776a.s3tc.ctex"
-path.etc2="res://.godot/imported/colormap.png-c1bc3c3aabeec406ff4b53328583776a.etc2.ctex"
+uid="uid://fux13nshdwi4"
+path.s3tc="res://.godot/imported/rainbow.png-dcd47698ecc41924b32b4de6ec2ddf50.s3tc.ctex"
+path.etc2="res://.godot/imported/rainbow.png-dcd47698ecc41924b32b4de6ec2ddf50.etc2.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
@@ -12,8 +12,8 @@ metadata={
 
 [deps]
 
-source_file="res://models/Textures/colormap.png"
-dest_files=["res://.godot/imported/colormap.png-c1bc3c3aabeec406ff4b53328583776a.s3tc.ctex", "res://.godot/imported/colormap.png-c1bc3c3aabeec406ff4b53328583776a.etc2.ctex"]
+source_file="res://models/Textures/rainbow.png"
+dest_files=["res://.godot/imported/rainbow.png-dcd47698ecc41924b32b4de6ec2ddf50.s3tc.ctex", "res://.godot/imported/rainbow.png-dcd47698ecc41924b32b4de6ec2ddf50.etc2.ctex"]
 
 [params]
 
