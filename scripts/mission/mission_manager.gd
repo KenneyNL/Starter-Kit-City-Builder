@@ -23,6 +23,10 @@ var active_missions: Dictionary = {}  # mission_id: MissionData
 var character_spawned: bool = false
 var learning_companion_connected: bool = false
 
+# Panel state tracking
+var is_unlocked_panel_showing = false
+var delayed_mission_start_queue = []  # Queue of missions to start after unlocked panel closes
+
 # Mission skip variables
 var skip_key_presses: int = 0
 var last_skip_press_time: float = 0
@@ -35,6 +39,7 @@ var learning_panel
 var fullscreen_learning_panel
 
 func _ready():
+	
 	if builder:
 		# Connect to builder signals
 		builder.connect("structure_placed", _on_structure_placed)
@@ -82,13 +87,13 @@ func _ready():
 		print("WARNING: Fullscreen learning panel not found!")
 	
 	# For web builds, try to proactively initialize audio on load
-	if OS.has_feature("web"):
-		# Try to find sound manager and init audio
-		var sound_manager = get_node_or_null("/root/SoundManager")
-		if sound_manager and not sound_manager.audio_initialized:
-			# Connect to user input to detect interaction
-			get_viewport().gui_focus_changed.connect(_on_gui_focus_for_audio)
-			get_tree().get_root().connect("gui_input", _on_gui_input_for_audio)
+#	if OS.has_feature("web"):
+#		# Try to find sound manager and init audio
+#		var sound_manager = get_node_or_null("/root/SoundManager")
+#		if sound_manager and not sound_manager.audio_initialized:
+#			# Connect to user input to detect interaction
+#			get_viewport().gui_focus_changed.connect(_on_gui_focus_for_audio)
+#			get_tree().get_root().connect("gui_input", _on_gui_input_for_audio)
 	
 	# Set up communication with the learning companion
 	_setup_learning_companion_communication()
@@ -104,39 +109,7 @@ func _ready():
 	connection_timer.timeout.connect(_force_learning_companion_connection)
 	print("Created timer to force learning companion connection in 3 seconds")
 	
-	# Load third mission if not already in the list
-	var third_mission = load("res://mission/third_mission.tres")
-	if third_mission:
-		var found = false
-		for mission in missions:
-			if mission.id == "3":
-				found = true
-				break
-		
-		if not found:
-			missions.append(third_mission)
-		
-		# Set next_mission_id for second mission to point to third mission
-		for mission in missions:
-			if mission.id == "2":
-				mission.next_mission_id = "3"
-	
-	# Load fourth mission if not already in the list
-	var fourth_mission = load("res://mission/fourth_mission.tres")
-	if fourth_mission:
-		var found = false
-		for mission in missions:
-			if mission.id == "4":
-				found = true
-				break
-		
-		if not found:
-			missions.append(fourth_mission)
-		
-		# Set next_mission_id for third mission to point to fourth mission
-		for mission in missions:
-			if mission.id == "3":
-				mission.next_mission_id = "4"
+			
 	
 	# Emit game_started signal before starting the first mission
 	game_started.emit()
@@ -243,6 +216,12 @@ func start_mission(mission: MissionData):
 	if mission == null:
 		push_error("Null mission data provided to start_mission")
 		return
+	
+	# If the unlocked items panel is currently showing, queue this mission to start later
+	if is_unlocked_panel_showing:
+		print("Unlocked items panel is showing, queueing mission start: " + mission.id)
+		delayed_mission_start_queue.append(mission)
+		return
 		
 	current_mission = mission
 	active_missions[mission.id] = mission
@@ -305,7 +284,7 @@ func start_mission(mission: MissionData):
 	
 	# Special handling for power plant mission: add power plant
 	# Use more robust checking for power missions - check power_math_content as well
-	elif (mission.id == "4" or mission.power_math_content != "") and builder:
+	elif (mission.id == "5" or mission.power_math_content != "") and builder:
 		# Check if we need to add the power plant
 		var has_power_plant = false
 		
@@ -381,563 +360,416 @@ func start_mission(mission: MissionData):
 
 func complete_mission(mission_id: String):
 	if not active_missions.has(mission_id):
+		print("ERROR: Mission " + mission_id + " not found in active_missions!")
 		return
 	
 	var mission = active_missions[mission_id]
+	print("Completing mission: " + mission.id + " - " + mission.title)
 	
 	# Grant rewards
 	if mission.rewards.has("cash") and builder:
 		builder.map.cash += mission.rewards.cash
 		builder.update_cash()
+		print("Granted " + str(mission.rewards.cash) + " cash reward")
+	
+	# Handle structure unlocking when mission is completed
+	print("Handling structure unlocking for mission: " + mission.id)
+	_handle_structure_unlocking(mission)
 	
 	# Remove from active missions
 	active_missions.erase(mission_id)
 	
-	# Send mission completed event to the learning companion
-	# This will also send the companion dialog data
-	_on_mission_completed_for_companion(mission)
-	
-	# Start next mission if specified
-	if mission.next_mission_id != "":
-		for next_mission in missions:
-			if next_mission.id == mission.next_mission_id:
-				start_mission(next_mission)
+	# Figure out if there's a next mission
+	var next_mission: MissionData
+	if mission.next_mission_id:
+		# Find mission with that ID
+		for m in missions:
+			if m.id == mission.next_mission_id:
+				next_mission = m
 				break
-	else:
-		# This was the last mission - show completion modal and emit all_missions_completed
-		# This will also trigger the companion dialog
-		_show_completion_modal()
-	
-	# Emit signal for mission completion
+				
+	# Emit mission completed signal
 	mission_completed.emit(mission)
-	update_mission_ui()
-
-# Shows a modal when all missions are complete
-func _show_completion_modal():
-	# Emit signal that all missions are completed
-	all_missions_completed.emit()
 	
-	# Create the modal overlay
-	var modal = ColorRect.new()
-	modal.name = "CompletionModal"
-	modal.color = Color(0.1, 0.1, 0.2, 0.9)  # Dark transparent background
-	modal.anchor_right = 1.0
-	modal.anchor_bottom = 1.0
-	
-	# Create a panel container for the modal content
-	var panel = PanelContainer.new()
-	panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	panel.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	panel.custom_minimum_size = Vector2(800, 500)
-	
-	var panel_style = StyleBoxFlat.new()
-	panel_style.bg_color = Color(0.15, 0.15, 0.25, 1.0)
-	panel_style.border_width_left = 5
-	panel_style.border_width_top = 5
-	panel_style.border_width_right = 5
-	panel_style.border_width_bottom = 5
-	panel_style.border_color = Color(0.376, 0.760, 0.658, 1.0)  # Teal border
-	panel_style.corner_radius_top_left = 20
-	panel_style.corner_radius_top_right = 20
-	panel_style.corner_radius_bottom_right = 20
-	panel_style.corner_radius_bottom_left = 20
-	panel_style.shadow_color = Color(0, 0, 0, 0.7)
-	panel_style.shadow_size = 10
-	
-	panel.add_theme_stylebox_override("panel", panel_style)
-	
-	# Create a margin container for padding
-	var margin = MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 30)
-	margin.add_theme_constant_override("margin_right", 30)
-	margin.add_theme_constant_override("margin_top", 30)
-	margin.add_theme_constant_override("margin_bottom", 30)
-	
-	# Create a vertical container for the content
-	var v_box = VBoxContainer.new()
-	v_box.custom_minimum_size = Vector2(700, 0)
-	v_box.add_theme_constant_override("separation", 30)
-	
-	# Add a title label
-	var title_label = Label.new()
-	title_label.text = "CONGRATULATIONS!"
-	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title_label.add_theme_font_size_override("font_size", 48)
-	title_label.add_theme_color_override("font_color", Color(0.376, 0.760, 0.658, 1.0))  # Teal text
-	
-	# Add a description label
-	var desc_label = Label.new()
-	desc_label.text = "You've completed all the missions in STEM City!\n\nYou can continue building and expanding your city or try different activities."
-	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	desc_label.add_theme_font_size_override("font_size", 32)
-	desc_label.add_theme_color_override("font_color", Color(1, 1, 1, 1.0))
-	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	
-	# Create a continue button
-	var continue_button = Button.new()
-	continue_button.name = "ContinueButton"
-	continue_button.text = "CONTINUE BUILDING"
-	continue_button.custom_minimum_size = Vector2(400, 80)
-	
-	# Style the continue button
-	var button_style = StyleBoxFlat.new()
-	button_style.bg_color = Color(0.376, 0.760, 0.658, 0.25)  # Teal with transparency
-	button_style.border_width_left = 3
-	button_style.border_width_top = 3
-	button_style.border_width_right = 3
-	button_style.border_width_bottom = 3
-	button_style.border_color = Color(0.376, 0.760, 0.658, 1.0)  # Teal border
-	button_style.corner_radius_top_left = 15
-	button_style.corner_radius_top_right = 15
-	button_style.corner_radius_bottom_right = 15
-	button_style.corner_radius_bottom_left = 15
-	
-	continue_button.add_theme_stylebox_override("normal", button_style)
-	continue_button.add_theme_stylebox_override("hover", button_style)
-	continue_button.add_theme_stylebox_override("pressed", button_style)
-	continue_button.add_theme_font_size_override("font_size", 32)
-	continue_button.add_theme_color_override("font_color", Color(0.376, 0.760, 0.658, 1.0))  # Teal text
-	continue_button.add_theme_color_override("font_hover_color", Color(1, 1, 1, 1.0))  # White text on hover
-	
-	# Center the continue button
-	var button_container = CenterContainer.new()
-	button_container.add_child(continue_button)
-	
-	# Add elements to the vertical container
-	v_box.add_child(title_label)
-	v_box.add_child(desc_label)
-	v_box.add_child(button_container)
-	
-	# Assemble the hierarchy
-	margin.add_child(v_box)
-	panel.add_child(margin)
-	
-	# Center the panel in the modal
-	var center_container = CenterContainer.new()
-	center_container.anchor_right = 1.0
-	center_container.anchor_bottom = 1.0
-	center_container.add_child(panel)
-	
-	modal.add_child(center_container)
-	
-	# Add the modal to the scene
-	var canvas_layer = get_node("/root/Main/CanvasLayer")
-	if canvas_layer:
-		canvas_layer.add_child(modal)
+	# Start the next mission if one is available
+	if next_mission:
+		# Start the next mission after a short delay
+		await get_tree().create_timer(2.0).timeout
+		start_mission(next_mission)
 	else:
-		add_child(modal)
-	
-	# Connect button signal - use a specific method for clarity and debugging
-	continue_button.pressed.connect(_on_completion_continue_button_pressed.bind(modal))
-
-# Handler for the mission completion continue button
-func _on_completion_continue_button_pressed(modal_to_close):
-	if is_instance_valid(modal_to_close) and modal_to_close is Node and modal_to_close.is_inside_tree():
-		modal_to_close.queue_free()
-	else:
-		push_error("Invalid modal reference or modal already removed")
-
-# Event handler functions for learning companion communication
-func _on_game_started_for_companion():
-	# If learning companion is not connected, just log but still proceed
-	# This allows the game to start in the editor
-	if not learning_companion_connected:
-		print("Learning companion not connected, skipping companion events for game start")
-		return
+		all_missions_completed.emit()
+		print("No more missions available - all complete!")
 		
-	print("Sending game started event to learning companion")
-	if JSBridge.has_interface():
-		JSBridge.get_interface().onGameStarted()
-		
-
-func _on_mission_started_for_companion(mission: MissionData):
-	# If learning companion is not connected, just log but still proceed with mission
-	# This allows missions to load in the editor
-	if not learning_companion_connected:
-		print("Learning companion not connected, skipping companion events for mission: " + mission.id)
-		return
-		
-	print("Sending mission started event to learning companion for mission: " + mission.id)
-	if JSBridge.has_interface():
-		# Convert mission data to a format that can be passed to JavaScript
-		var mission_data = {
-			"id": mission.id,
-			"title": mission.title,
-			"description": mission.description,
-			"intro_text": mission.intro_text,
-		}
-		JSBridge.get_interface().onMissionStarted(mission_data)
-		
-		# Send mission started dialog if available in mission data
-		if mission.companion_dialog.has("mission_started"):
-			var dialog_data = mission.companion_dialog["mission_started"]
-			JSBridge.get_interface().sendCompanionDialog("mission_started", dialog_data)
-		else:
-			# Fallback dialog if not defined in mission data
-			var fallback_dialog = {
-				"text": "Starting Mission " + mission.id + ": " + mission.title + ". Let's do this!",
-				"animation": "excited",
-				"duration": 3000
-			}
-			JSBridge.get_interface().sendCompanionDialog("mission_started", fallback_dialog)
-
-func _on_mission_completed_for_companion(mission: MissionData):
-	# If learning companion is not connected, just log but still proceed with mission
-	# This allows missions to complete in the editor
-	if not learning_companion_connected:
-		print("Learning companion not connected, skipping companion events for mission completion: " + mission.id)
-		return
-		
-	print("Sending mission completed event to learning companion for mission: " + mission.id)
-	if JSBridge.has_interface():
-		# Convert mission data to a format that can be passed to JavaScript
-		var mission_data = {
-			"id": mission.id,
-			"title": mission.title,
-			"description": mission.description,
-		}
-		JSBridge.get_interface().onMissionCompleted(mission_data)
-		
-		# Send mission completed dialog if available in mission data
-		if mission.companion_dialog.has("mission_completed"):
-			var dialog_data = mission.companion_dialog["mission_completed"]
-			JSBridge.get_interface().sendCompanionDialog("mission_completed", dialog_data)
-		else:
-			# Fallback dialog if not defined in mission data
-			var fallback_dialog = {
-				"text": "Great job completing Mission " + mission.id + "! You're making excellent progress!",
-				"animation": "happy",
-				"duration": 3000
-			}
-			JSBridge.get_interface().sendCompanionDialog("mission_completed", fallback_dialog)
-
-func _on_all_missions_completed_for_companion():
-	# If learning companion is not connected, just log but still proceed
-	# This allows all missions to complete in the editor
-	if not learning_companion_connected:
-		print("Learning companion not connected, skipping companion events for all missions completed")
-		return
-		
-	print("Sending all missions completed event to learning companion")
-	if JSBridge.has_interface():
-		JSBridge.get_interface().onAllMissionsCompleted()
-		
-		# Send all_missions_completed dialog to learning companion if current mission has it
-		if current_mission != null and current_mission.companion_dialog.has("all_missions_completed"):
-			var dialog_data = current_mission.companion_dialog["all_missions_completed"]
-			JSBridge.get_interface().sendCompanionDialog("all_missions_completed", dialog_data)
-		else:
-			# Use fallback dialog if not defined in mission
-			var dialog_data = {
-				"text": "Congratulations! You've completed all the missions in STEM City! You're a master city planner!",
-				"animation": "excited",
-				"duration": 0  # No reset, stay excited
-			}
-			JSBridge.get_interface().sendCompanionDialog("all_missions_completed", dialog_data)
-
-# Function to force learning companion connection after a delay
-func _force_learning_companion_connection():
-	print("Forcing learning companion connection after delay")
+		# Send the "end" event to the companion
+		await get_tree().create_timer(2.0).timeout
 	
-	# Set the connection flag to true even if the connection might have failed
-	learning_companion_connected = true
-	
-	# Try to ensure audio is initialized as well
-	if JSBridge:
-		if JSBridge.has_interface():
-			JSBridge.get_interface().ensure_audio_initialized()
-	
-	# Emit game started event
-	_on_game_started_for_companion()
-	
-	print("Force-sent game started event to learning companion")
-
-func check_mission_progress(mission_id: String) -> bool:
-	if not active_missions.has(mission_id):
-		return false
-	
-	var mission = active_missions[mission_id]
-	var all_completed = true
-	
-	for i in range(mission.objectives.size()):
-		var objective = mission.objectives[i]
-		if not objective.completed:
-			all_completed = false
-	
-	if all_completed:
-		complete_mission(mission_id)
-		return true
-	
-	return false
-
-func update_objective_progress(mission_id: String, objective_type: int, amount: int = 1, structure_index: int = -1):
+func update_objective_progress(mission_id, objective_type, count_change = 1):
 	if not active_missions.has(mission_id):
 		return
-	
+		
 	var mission = active_missions[mission_id]
-	
 	for objective in mission.objectives:
 		if objective.type == objective_type:
-			# For specific structure objectives, check structure index
-			if objective.type == MissionObjective.ObjectiveType.BUILD_SPECIFIC_STRUCTURE:
-				if structure_index != objective.structure_index:
-					continue
+			objective.current_count += count_change
 			
-			# Track old count for comparison
-			var old_count = objective.current_count
-			
-			# Update progress (positive or negative)
-			if amount > 0:
-				objective.progress(amount)
-			else:
-				# For negative amounts (like when demolishing buildings)
-				objective.regress(abs(amount))
-				# Ensure completed flag is updated properly
-				objective.completed = objective.is_completed()
-			
-			# Emit signal if progress changed
-			if old_count != objective.current_count:
-				objective_progress.emit(objective, objective.current_count)
-				
-				# Check for progress milestones (25%, 50%, 75%) but only if learning companion is connected
-				if learning_companion_connected and objective.target_count > 0:
-					var progress_percentage = (float(objective.current_count) / float(objective.target_count)) * 100.0
-					var milestone_keys = [
-						["mission_progress_25", 25.0, false],
-						["mission_progress_50", 50.0, false],
-						["mission_progress_75", 75.0, false]
-					]
-					
-					# Check each milestone
-					for milestone in milestone_keys:
-						var key = milestone[0]
-						var threshold = milestone[1]
-						var old_percentage = (float(old_count) / float(objective.target_count)) * 100.0
-						
-						# Only trigger if we just crossed this threshold
-						if old_percentage < threshold and progress_percentage >= threshold:
-							if mission.companion_dialog.has(key) and JSBridge.has_interface():
-								print("Sending progress milestone dialog: " + key)
-								var dialog_data = mission.companion_dialog[key]
-								JSBridge.get_interface().sendCompanionDialog(key, dialog_data)
-			
-			# Check if objective was just completed
-			if objective.completed and old_count != objective.current_count:
+			# Only update to completed if we've reached the target
+			if objective.current_count >= objective.target_count and not objective.completed:
+				objective.completed = true
 				objective_completed.emit(objective)
 				
-				# Only send dialog if learning companion is connected
-				if learning_companion_connected:
-					# Send objective-specific dialog to learning companion if available
-					var objective_key = "objective_completed_" + str(objective.type)
-					if mission.companion_dialog.has(objective_key):
-						var dialog_data = mission.companion_dialog[objective_key]
-						if JSBridge.has_interface():
-							JSBridge.get_interface().sendCompanionDialog(objective_key, dialog_data)
-					# Or send generic objective completion dialog if available
-					elif mission.companion_dialog.has("objective_completed"):
-						var dialog_data = mission.companion_dialog["objective_completed"]
-						if JSBridge.has_interface():
-							JSBridge.get_interface().sendCompanionDialog("objective_completed", dialog_data)
+				# Send dialog event if available
+				var dialog_key = "objective_completed_" + str(objective.type)
+				_send_companion_dialog(dialog_key, mission)
+			
+			# Update UI
+			update_mission_ui()
+			
+			# Emit progress signal for objective
+			objective_progress.emit(objective, objective.current_count)
+			
+			# Check if the mission is complete
+			check_mission_completion(mission_id)
+			break
+			
+func check_objective_completion(mission_id, objective_type):
+	if not active_missions.has(mission_id):
+		return false
+		
+	var mission = active_missions[mission_id]
+	for objective in mission.objectives:
+		if objective.type == objective_type:
+			return objective.completed
 	
-	# Check if mission is now complete
-	check_mission_progress(mission_id)
-	update_mission_ui()
+	return false
+	
+# Function to reset an objective's count to a specific value
+func reset_objective_count(objective_type, new_count):
+	if not current_mission:
+		print("ERROR: No current mission to reset objective count for")
+		return
+		
+	var mission_id = current_mission.id
+	if not active_missions.has(mission_id):
+		print("ERROR: Current mission ID " + mission_id + " not found in active_missions!")
+		return
+		
+	var mission = active_missions[mission_id]
+	for objective in mission.objectives:
+		if objective.type == objective_type:
+			print("Resetting objective count for type " + str(objective_type) + " from " + str(objective.current_count) + " to " + str(new_count))
+			objective.current_count = new_count
+			
+			# Update completion status based on new count
+			objective.completed = objective.current_count >= objective.target_count
+			
+			# If newly completed, emit signal
+			if objective.completed and objective.current_count >= objective.target_count:
+				objective_completed.emit(objective)
+				
+				# Send dialog event if available
+				var dialog_key = "objective_completed_" + str(objective.type)
+				_send_companion_dialog(dialog_key, mission)
+			
+			# Update UI
+			update_mission_ui()
+			
+			# Emit progress signal for objective
+			objective_progress.emit(objective, objective.current_count)
+			
+			# Check if the mission is complete
+			check_mission_completion(mission_id)
+			break
 
-func _on_structure_placed(structure_index: int, position: Vector3):
+func check_mission_completion(mission_id):
+	if not active_missions.has(mission_id):
+		return
+		
+	var mission = active_missions[mission_id]
+	var all_complete = true
+	
+	for objective in mission.objectives:
+		if not objective.completed:
+			all_complete = false
+			break
+	
+	if all_complete:
+		# All objectives complete, complete the mission
+		complete_mission(mission_id)
+		return true
+		
+	return false
+
+func update_mission_ui():
+	if mission_ui:
+		mission_ui.update_missions(active_missions)
+
+func _on_structure_placed(structure_index, position):
+	# Get the structure that was placed
 	if structure_index < 0 or structure_index >= builder.structures.size():
 		return
 		
 	var structure = builder.structures[structure_index]
+	print("Structure placed: " + structure.model.resource_path)
 	
-	# Check if this is a residential building in mission 3 (which uses construction workers)
-	var skip_residential_count = false
-	if structure.type == Structure.StructureType.RESIDENTIAL_BUILDING:
-		if current_mission and current_mission.id == "3":
-			# Skip residential count updates - will be handled after construction completes
-			skip_residential_count = true
-	
-	# Special handling for power plant (Mission 5)
-	if structure.model.resource_path.contains("power_plant"):
-		for mission_id in active_missions:
-			if active_missions[mission_id].id == "5":
-				var mission = active_missions[mission_id]
-				for objective in mission.objectives:
-					if not objective.completed:
-						objective.progress(objective.target_count)
-						objective_progress.emit(objective, objective.current_count)
-						objective_completed.emit(objective)
-				
-				# Force mission completion check
-				check_mission_progress(mission_id)
-	
-	for mission_id in active_missions:
-		# Update generic structure objective
-		update_objective_progress(mission_id, MissionObjective.ObjectiveType.BUILD_STRUCTURE)
-		
-		# Update based on structure type
-		match structure.type:
-			Structure.StructureType.ROAD:
-				update_objective_progress(mission_id, MissionObjective.ObjectiveType.BUILD_ROAD)
-			Structure.StructureType.RESIDENTIAL_BUILDING:
-				# Only update residential count if we're not in mission 3 or 1
-				if not skip_residential_count:
-					update_objective_progress(mission_id, MissionObjective.ObjectiveType.BUILD_RESIDENTIAL)
-					
-				# We don't spawn characters here anymore - this is handled by the builder.gd
-				# for both direct placement and worker construction
-					
-			Structure.StructureType.COMMERCIAL_BUILDING:
-				update_objective_progress(mission_id, MissionObjective.ObjectiveType.BUILD_COMMERCIAL)
-			Structure.StructureType.INDUSTRIAL_BUILDING:
-				update_objective_progress(mission_id, MissionObjective.ObjectiveType.BUILD_INDUSTRIAL)
-		
-		# If it's a specific structure, check that too
-		update_objective_progress(
-			mission_id, 
-			MissionObjective.ObjectiveType.BUILD_SPECIFIC_STRUCTURE,
-			1,
-			structure_index
-		)
-
-func update_mission_ui():
-	if mission_ui and current_mission:
-		mission_ui.update_mission_display(current_mission)
-		
-# Reset the count of a specific objective type in the current mission
-func reset_objective_count(objective_type: int, new_count: int = 0):
-	if not current_mission:
-		return
-		
-	for objective in current_mission.objectives:
-		if objective.type == objective_type:
-			objective.current_count = new_count
-			objective.completed = objective.is_completed()
-			objective_progress.emit(objective, objective.current_count)
+	# Update objectives based on structure type
+	if current_mission:
+		if structure.type == Structure.StructureType.ROAD:
+			update_objective_progress(current_mission.id, MissionObjective.ObjectiveType.BUILD_ROAD)
+		elif structure.type == Structure.StructureType.RESIDENTIAL_BUILDING:
+			# Note: for mission 3, the objective update happens after construction is complete
+			# See builder.gd -> _on_construction_completed
 			
-	update_mission_ui()
+			# Special check for mission 1 since we might need to manually spawn a character
+			if current_mission.id == "1" and not character_spawned:
+				# Only spawn a new character if:
+				# 1. This is mission 1
+				# 2. We haven't spawned a character yet
+				# 3. All objectives except character spawning are complete
+				
+				# Check if all non-character objectives are complete
+				var spawn_character = true
+				for objective in current_mission.objectives:
+						spawn_character = false
+						break
+				
+				if spawn_character:
+					# This will be done after construction completes in mission_manager._on_construction_completed
+					print("Character will be spawned after construction completes")
+				else:
+					# Update the objective progress for building a residential structure
+					update_objective_progress(current_mission.id, MissionObjective.ObjectiveType.BUILD_RESIDENTIAL)
+			else:
+				# Normal case - not mission 1 or character already spawned
+				update_objective_progress(current_mission.id, MissionObjective.ObjectiveType.BUILD_RESIDENTIAL)
+		elif structure.type == Structure.StructureType.POWER_PLANT:
+			# For mission 5, we update the economy/power objective when a power plant is built
+			if current_mission.id == "6":
+				update_objective_progress(current_mission.id, MissionObjective.ObjectiveType.ECONOMY)
+			
+	# Check for power plant unlocking in normal gameplay
+	if structure.type == Structure.StructureType.POWER_PLANT:
+		# This should increase the city's power production
+		var power_produced = structure.kW_production
+		if power_produced > 0:
+			# Get the HUD if available
+			var hud = get_node_or_null("/root/Main/CanvasLayer/HUD")
+			if hud:
+				# Update the power display
+				hud.total_kW_production += power_produced
+				hud.update_hud()
+				
+#	# Check for residential building placement to update population
+#	if structure.type == Structure.StructureType.RESIDENTIAL_BUILDING:
+#		# This should increase the city's population
+#		var population_added = structure.population_count
+#		if population_added > 0:
+#			# Get the HUD if available
+#			var hud = get_node_or_null("/root/Main/CanvasLayer/HUD")
+#			if hud:
+#				# Update the population display
+#				hud.total_population += population_added
+#				hud.update_hud()
+#				
+#				# Emit signal for population update
+#				hud.population_updated.emit(hud.total_population)
 
-func _on_learning_completed():
-	# Check current mission for progress
-	if current_mission != null and current_mission.id != "":
-		check_mission_progress(current_mission.id)
-		
+# Only used for mission 3, to disable builder functionality during the companion dialog
 func _on_learning_panel_opened():
-	# Disable building controls
 	if builder:
 		builder.disabled = true
-		
+
+# Only used for mission 3, to re-enable builder functionality after dialog is complete
 func _on_learning_panel_closed():
-	# Re-enable building controls
 	if builder:
 		builder.disabled = false
+	
+func _on_learning_completed(mission):
+	if mission:
+		print("Learning completed for mission: " + mission.id)
+		# If the mission has a learning objective, mark it as completed
+		for objective in mission.objectives:
+			if objective.type == MissionObjective.ObjectiveType.LEARNING:
+				objective.current_count = objective.target_count  # Set to target count
+				objective.completed = true
+				objective_completed.emit(objective)
+				
+				# Update the UI
+				update_mission_ui()
+				
+				# Explicitly complete the mission after a short delay
+				await get_tree().create_timer(1.0).timeout
+				complete_mission(mission.id)
+				break
+				
+	# Set a callback to dismiss learning panel if needed
+	await get_tree().create_timer(1.0).timeout
+	_check_learning_panel_state()
+	
+func _check_learning_panel_state():
+	# Check if the learning panel should be auto-closed
+	var should_auto_close = true
+	
+	if current_mission:
+		# If the mission is still active (not completed), may need to keep panel open
+		var mission = current_mission
 		
-# Method to skip the current mission
+		# If power_math_content is non-empty, this is a "calculator" mission
+		# that should keep the panel open until the user completes the mission
+		if mission.power_math_content != "":
+			should_auto_close = false
+		
+		# Check if all learning objectives are complete but other objectives remain
+		var learning_objectives_complete = true
+		var other_objectives_incomplete = false
+		
+		for objective in mission.objectives:
+			if objective.type == MissionObjective.ObjectiveType.LEARNING:
+				learning_objectives_complete = learning_objectives_complete and objective.completed
+			else:
+				other_objectives_incomplete = other_objectives_incomplete or not objective.completed
+		
+		# If all learning is complete but we still have other objectives, auto close
+		if learning_objectives_complete and other_objectives_incomplete:
+			should_auto_close = true
+	
+	# Automatically close the panel if appropriate
+	if should_auto_close:
+		if learning_panel and learning_panel.visible:
+			learning_panel.hide_learning_panel()
+		if fullscreen_learning_panel and fullscreen_learning_panel.visible:
+			fullscreen_learning_panel.hide_fullscreen_panel()
+	
+# Skip to the next mission (for debug/testing)
 func _skip_current_mission():
-	if not current_mission:
-		return
+	if current_mission:
+		# Get the next mission ID
+		var next_mission_id = current_mission.next_mission_id
 		
-	var mission_id = current_mission.id
+		# Complete the current mission
+		print("Skipping mission: " + current_mission.id)
+		
+		# Force all objectives to be complete
+		for objective in current_mission.objectives:
+			objective.current_count = objective.target_count
+			objective.completed = true
+		
+		# Complete the mission
+		complete_mission(current_mission.id)
+	else:
+		print("No current mission to skip")
+
+# Called when the unlocked panel is shown - used for additional state tracking
+func _on_unlocked_panel_shown():
+	# Update panel state
+	is_unlocked_panel_showing = true
 	
-	# Auto-complete all objectives in the current mission
-	for objective in current_mission.objectives:
-		objective.progress(objective.target_count - objective.current_count)
-	
-	# If there's a learning panel open, close it
+	# This ensures that learning panels won't appear while this panel is visible
 	if learning_panel and learning_panel.visible:
 		learning_panel.hide_learning_panel()
 	
-	# If there's a fullscreen learning panel open, close it
 	if fullscreen_learning_panel and fullscreen_learning_panel.visible:
 		fullscreen_learning_panel.hide_fullscreen_panel()
-	
-	# Complete the mission
-	complete_mission(mission_id)
 		
+	print("Unlocked panel shown, game paused")
+
+# Helper function to process any delayed mission starts after panel closes
+func _process_delayed_mission_starts():
+	if delayed_mission_start_queue.size() > 0:
+		print("Processing " + str(delayed_mission_start_queue.size()) + " delayed mission starts")
+		
+		# Get the first mission in the queue
+		var next_mission = delayed_mission_start_queue.pop_front()
+		
+		# Clear the rest of the queue - we only start the next mission
+		# This prevents multiple mission starts if there were more queued
+		delayed_mission_start_queue.clear()
+		
+		# Start the mission
+		if next_mission:
+			print("Starting delayed mission: " + next_mission.id)
+			# Use a short delay to ensure the UI is fully updated
+			await get_tree().create_timer(0.5).timeout
+			start_mission(next_mission)
+
+# Function to spawn a character at a residential building
 func _spawn_character_on_road(building_position: Vector3):
-	if !character_scene:
+	if not character_scene:
+		print("ERROR: No character scene provided for spawning")
 		return
 		
-	# Check if a character has already been spawned
-	var existing_characters = get_tree().get_nodes_in_group("characters")
-	if existing_characters.size() > 0 or character_spawned:
-		character_spawned = true
+	if not builder:
+		print("ERROR: Builder reference missing, can't spawn character")
 		return
 		
-	# Mark as spawned to prevent multiple spawns
+	# Find the nearest road to the building
+	var nearby_road = _find_nearest_road(building_position, builder.gridmap)
+	if nearby_road == Vector3.ZERO:
+		print("ERROR: Could not find a road near the building to spawn character")
+		return
+		
+	print("Spawning character on road at: " + str(nearby_road))
+	
+	# Check if the road is associated with a navigation mesh
+	var has_navigation = false
+	
+	# Get the navigation region
+	var nav_region = builder.nav_region
+	if nav_region:
+		has_navigation = true
+	
+	if not has_navigation:
+		print("WARNING: No navigation mesh found near spawn point")
+		
+	# Create the character
+	var character = character_scene.instantiate()
+	character.name = "Resident_" + str(int(building_position.x)) + "_" + str(int(building_position.z))
+	
+	# Add the character either to the NavRegion3D or directly to the scene
+	if nav_region:
+		nav_region.add_child(character)
+	else:
+		# Add to the builder as fallback
+		builder.add_child(character)
+	
+	# Position the character on the road
+	character.global_transform.origin = nearby_road
+	character.global_transform.origin.y = 0.0  # Make sure the character is at ground level
+	
+	# Store the home position for the character
+	if character.get("home_position") != null:
+		character.home_position = building_position
+	
+	# If the character has a population_manager reference, set it
+	if character.get("population_manager") != null:
+		var population_manager = get_node_or_null("/root/Main/PopulationManager")
+		if population_manager:
+			character.population_manager = population_manager
+	
+	# If the character has a gridmap reference, set it
+	if character.get("gridmap") != null:
+		character.gridmap = builder.gridmap
+	
+	# If the character has random colors, apply them
+	if character.has_method("randomize_colors"):
+		character.randomize_colors()
+		
+	# Add to a group for easier finding later
+	character.add_to_group("characters")
+	
+	# Assume that the character has a move_to method if it's a navigation agent
+	if character.has_method("move_to"):
+		# Find a patrol target for the character
+		var patrol_target = _find_patrol_target(nearby_road, builder.gridmap, 10.0)
+		character.move_to(patrol_target)
+		
+	# Set character as spawned to prevent multiple spawns
 	character_spawned = true
 	
-	# Find the nearest road to the building
-	var gridmap = builder.gridmap
-	var nearest_road_position = _find_nearest_road(building_position, gridmap)
+	# Update the objective progress for meeting a character
+	if current_mission and current_mission.id == "1":
+		update_objective_progress(current_mission.id, MissionObjective.ObjectiveType.MEET_CHARACTER)
 	
-	if nearest_road_position != Vector3.ZERO:
-		# Make sure there are no existing characters
-		for existing in get_tree().get_nodes_in_group("characters"):
-			existing.queue_free()
-		
-		# Use the pre-made character pathing scene
-		var character = load("res://scenes/character_pathing.tscn").instantiate()
-		
-		# Override with our improved navigation script
-		character.set_script(load("res://scripts/NavigationNPC.gd"))
-		
-		# Add to a group for management
-		character.add_to_group("characters")
-		
-		# Find the NavRegion3D (should have been created by builder)
-		var nav_region = builder.nav_region
-		if nav_region:
-			# Add character as a child of the NavRegion3D
-			nav_region.add_child(character)
-		else:
-			# Fallback to root if NavRegion3D doesn't exist
-			get_tree().root.add_child(character)
-		
-		# Position character just slightly above the road's surface
-		character.global_transform.origin = Vector3(nearest_road_position.x, 0.1, nearest_road_position.z)
-		
-		# Set an initial target to get the character moving
-		var target_position = _find_patrol_target(nearest_road_position, gridmap, 8.0)
-		
-		# Allow the character to initialize
-		await get_tree().process_frame
-		
-		# Make sure the navigation agent is properly set up
-		if character.has_node("NavigationAgent3D"):
-			var nav_agent = character.get_node("NavigationAgent3D")
-			nav_agent.path_desired_distance = 0.5
-			nav_agent.target_desired_distance = 0.5
-			
-			# Set target position
-			nav_agent.set_target_position(target_position)
-		
-		# Make the character start moving
-		if character.has_method("set_movement_target"):
-			character.set_movement_target(target_position)
-		
-func _setup_character_for_navigation(character, initial_target):
-	# Access character's script to set up navigation
-	if character.has_node("character-female-d2"):
-		var model = character.get_node("character-female-d2")
-		
-		# Set up animation
-		if model.has_node("AnimationPlayer"):
-			var anim_player = model.get_node("AnimationPlayer")
-			anim_player.play("walk")
-			
-	# Configure navigation agent parameters
-	if character.has_node("NavigationAgent3D"):
-		var nav_agent = character.get_node("NavigationAgent3D")
-		nav_agent.path_desired_distance = 0.5
-		nav_agent.target_desired_distance = 0.5
-		
-		# Force movement to start immediately
-		if character.has_method("set_movement_target"):
-			# Wait a bit to make sure the navigation mesh is ready
-			await get_tree().create_timer(1.0).timeout
-			character.set_movement_target(initial_target)
-	
-	# Ensure auto-patrol is enabled if the character supports it
+	# Make sure the character has auto-patrol is enabled if the character supports it
 	if character.get("auto_patrol") != null:
 		character.auto_patrol = true
 		
@@ -1079,3 +911,331 @@ func _get_connected_road_length(road_position: Vector3, gridmap: GridMap) -> flo
 		road_length = max(road_length, connected_roads + 1)
 	
 	return road_length
+
+# This function handles structure unlocking when a mission is completed
+func _handle_structure_unlocking(mission):
+	if not builder:
+		print("ERROR: Builder is null, can't unlock structures")
+		return
+	
+	print("Builder has " + str(builder.structures.size()) + " structures")
+	
+	var unlocked_structures = []
+	
+	# Check mission properties
+	print("Mission properties check:")
+	print("- mission is Resource: " + str(mission is Resource))
+	if mission is Resource:
+		print("- 'unlocked_items' in mission: " + str("unlocked_items" in mission))
+		if "unlocked_items" in mission:
+			print("- unlocked_items size: " + str(mission.unlocked_items.size()))
+			print("- unlocked_items content: " + str(mission.unlocked_items))
+	
+	# Check for explicitly defined unlocked items in mission
+	if mission is Resource and "unlocked_items" in mission and mission.unlocked_items.size() > 0:
+		print("Found unlocked_items in mission: " + mission.id)
+		print("Unlocked items: " + str(mission.unlocked_items))
+		
+		var items = mission.unlocked_items
+		for item_path in items:
+			print("Looking for structure with path: " + item_path)
+			var found = false
+			
+			# DEBUG: Print all builder structures for comparison
+			print("Available builder structures:")
+			for i in range(builder.structures.size()):
+				var s = builder.structures[i]
+				if s.model:
+					print(str(i) + ": " + s.model.resource_path + " (type: " + str(s.type) + ")")
+				else:
+					print(str(i) + ": <no model>")
+			
+			# Find the structure in builder's structures that matches this path
+			for structure in builder.structures:
+				if structure.model:
+					# Try exact match
+					if structure.model.resource_path == item_path:
+						found = true
+						print("EXACT MATCH: " + structure.model.resource_path)
+						
+						# Make sure structure has the unlocked property before setting it
+						if "unlocked" in structure:
+							structure.unlocked = true
+							unlocked_structures.append(structure)
+							print("SUCCESS: Unlocked structure: " + structure.model.resource_path)
+						else:
+							print("WARNING: Structure doesn't have an 'unlocked' property")
+					
+					# Try matching just the filename part
+					elif structure.model.resource_path.get_file() == item_path.get_file():
+						found = true
+						print("FILENAME MATCH: " + structure.model.resource_path + " = " + item_path.get_file())
+						
+						# Make sure structure has the unlocked property before setting it
+						if "unlocked" in structure:
+							structure.unlocked = true
+							unlocked_structures.append(structure)
+							print("SUCCESS: Unlocked structure: " + structure.model.resource_path)
+						else:
+							print("WARNING: Structure doesn't have an 'unlocked' property") 
+							
+					# Try contains match for more flexible path matching (handles directory differences)
+					elif item_path.get_file() in structure.model.resource_path:
+						found = true
+						print("CONTAINS MATCH: " + structure.model.resource_path + " contains " + item_path.get_file())
+						
+						# Make sure structure has the unlocked property before setting it
+						if "unlocked" in structure:
+							structure.unlocked = true
+							unlocked_structures.append(structure)
+							print("SUCCESS: Unlocked structure: " + structure.model.resource_path)
+						else:
+							print("WARNING: Structure doesn't have an 'unlocked' property")
+			
+			if not found:
+				print("ERROR: Couldn't find any structure with path: " + item_path)
+	
+	# If we already have explicit unlocked items defined, skip the hardcoded rules
+	var has_explicit_unlocks = mission is Resource and "unlocked_items" in mission and mission.unlocked_items.size() > 0
+	
+	# Check for power plant unlocking in power-related missions (only if no explicit unlocks)
+	if (not has_explicit_unlocks) and (mission.id == "4" or mission.id == "5" or mission.power_math_content != ""):
+		print("Using hardcoded power plant unlocks for mission: " + mission.id)
+		for structure in builder.structures:
+			if structure.model and structure.model.resource_path.contains("power_plant"):
+				# Make sure structure has the unlocked property before setting it
+				if "unlocked" in structure:
+					structure.unlocked = true
+					# Only add to unlocked_structures if not already there
+					if not unlocked_structures.has(structure):
+						unlocked_structures.append(structure)
+				else:
+					print("WARNING: Power plant structure doesn't have an 'unlocked' property")
+	
+	# Check for curved roads and decorations in city expansion missions (only if no explicit unlocks)
+	if (not has_explicit_unlocks) and (mission.id == "2" or mission.id == "3"):
+		print("Using hardcoded curved roads and decorations for mission: " + mission.id)
+		for structure in builder.structures:
+			if structure.model and (structure.model.resource_path.contains("road-corner") or structure.model.resource_path.contains("grass-trees-tall")):
+				# Make sure structure has the unlocked property before setting it
+				if "unlocked" in structure:
+					structure.unlocked = true
+					# Only add to unlocked_structures if not already there
+					if not unlocked_structures.has(structure):
+						unlocked_structures.append(structure)
+				else:
+					print("WARNING: Road/decoration structure doesn't have an 'unlocked' property")
+	
+	# Make sure the builder starts with a valid unlocked structure selected
+	var found_unlocked = false
+	for i in range(builder.structures.size()):
+		var structure = builder.structures[i]
+		if "unlocked" in structure and structure.unlocked:
+			builder.index = i
+			builder.update_structure()
+			found_unlocked = true
+			break
+			
+	# If no structures are unlocked, unlock ONLY the road for the first mission
+	if not found_unlocked and builder.structures.size() > 0:
+		# Find and unlock only the straight road structure
+		var road_index = -1
+		for i in range(builder.structures.size()):
+			var structure = builder.structures[i]
+			if structure.model and structure.model.resource_path.contains("road-straight"):
+				if "unlocked" in structure:
+					structure.unlocked = true
+					road_index = i
+					print("Unlocked initial road structure: " + structure.model.resource_path)
+					break
+					
+		# Set builder to use the road as the initial structure
+		if road_index >= 0:
+			builder.index = road_index
+			builder.update_structure()
+		else:
+			# Fallback to first structure if road not found
+			var structure = builder.structures[0]
+			if "unlocked" in structure:
+				structure.unlocked = true
+				builder.index = 0
+				builder.update_structure()
+			else:
+				print("WARNING: First structure doesn't have an 'unlocked' property")
+	
+	# Show the unlocked items panel if we unlocked anything
+	print("Unlocked " + str(unlocked_structures.size()) + " structures in total")
+	if unlocked_structures.size() > 0:
+		print("Showing unlocked items panel...")
+		# Make sure all structures in the unlock list are properly marked as unlocked
+		for structure in unlocked_structures:
+			if "unlocked" in structure:
+				structure.unlocked = true
+				print("Confirmed structure is unlocked: " + structure.model.resource_path)
+		
+		# If we have no structures explicitly unlocked from mission data,
+		# show all currently unlocked structures
+		if unlocked_structures.size() == 0 and builder.structures.size() > 0:
+			var all_unlocked = []
+			for structure in builder.structures:
+				if "unlocked" in structure and structure.unlocked:
+					all_unlocked.append(structure)
+			
+			if all_unlocked.size() > 0:
+				print("No new structures, showing all " + str(all_unlocked.size()) + " unlocked structures")
+				unlocked_structures = all_unlocked
+		
+		_show_unlocked_items_panel(unlocked_structures)
+	else:
+		print("No structures unlocked, not showing panel")
+
+# Shows a panel with the newly unlocked items
+func _show_unlocked_items_panel(unlocked_structures):
+	print("Showing unlocked items panel with " + str(unlocked_structures.size()) + " structures")
+	
+	# Set panel state to showing - prevents mission starts while panel is visible
+	is_unlocked_panel_showing = true
+	
+	# Check if there's already an unlocked items panel in the scene and remove it
+	var existing_panels = []
+	
+	# Check in HUD
+	var hud = get_node_or_null("/root/Main/CanvasLayer/HUD")
+	if hud:
+		for child in hud.get_children():
+			if child.name.contains("UnlockedItems") or (child is Control and child.get_script() != null and "unlocked" in child.get_script().resource_path.to_lower()):
+				print("Found existing panel in HUD: " + child.name)
+				existing_panels.append(child)
+	
+	# Check in CanvasLayer
+	var canvas = get_node_or_null("/root/Main/CanvasLayer")
+	if canvas:
+		for child in canvas.get_children():
+			if child.name.contains("UnlockedItems") or (child is Control and child.get_script() != null and "unlocked" in child.get_script().resource_path.to_lower()):
+				print("Found existing panel in CanvasLayer: " + child.name)
+				existing_panels.append(child)
+	
+	# Remove any existing panels
+	for panel in existing_panels:
+		print("Removing existing panel: " + panel.name)
+		panel.queue_free()
+	
+	# Wait a short delay before showing the panel
+	await get_tree().create_timer(0.5).timeout
+	
+	# Load the panel scene
+	var unlocked_panel_scene = load("res://scenes/unlocked_items_panel.tscn")
+	if unlocked_panel_scene:
+		print("Successfully loaded unlocked_items_panel.tscn")
+		var unlocked_panel = unlocked_panel_scene.instantiate()
+		
+		# Always add to HUD if available
+		if hud:
+			print("Adding panel to HUD")
+			hud.add_child(unlocked_panel)
+		else:
+			# Fallback to CanvasLayer if HUD not available
+			if canvas:
+				print("Adding panel to CanvasLayer")
+				canvas.add_child(unlocked_panel)
+			else:
+				# Final fallback to root
+				print("Adding panel to root")
+				get_tree().root.add_child(unlocked_panel)
+		
+		# Wait for panel to be added
+		await get_tree().process_frame
+		
+		# Make sure the panel is visible and on top
+		unlocked_panel.z_index = 100
+		unlocked_panel.show()
+		
+		# Setup and show the panel
+		unlocked_panel.setup(unlocked_structures)
+		unlocked_panel.show_panel()
+		
+		# Connect the closed signal
+		unlocked_panel.closed.connect(func():
+			print("Unlocked panel was closed")
+			# Reset the panel showing state
+			is_unlocked_panel_showing = false
+			
+			# Make sure the game is unpaused
+			get_tree().paused = false
+			
+			# Process any delayed mission starts
+			_process_delayed_mission_starts()
+		)
+	else:
+		push_error("Could not load unlocked_items_panel scene")
+		# Even if we couldn't load the panel, make sure to reset the state
+		is_unlocked_panel_showing = false
+	
+# Public function to show all unlocked structures when requested
+func show_unlocked_structures_panel():
+	if not builder:
+		print("Cannot show unlocked structures - builder not found")
+		return
+		
+	var all_unlocked = []
+	for structure in builder.structures:
+		if "unlocked" in structure and structure.unlocked:
+			all_unlocked.append(structure)
+		
+	print("Showing panel with all " + str(all_unlocked.size()) + " unlocked structures")
+	# Pause the game when showing the panel
+	get_tree().paused = true
+	_show_unlocked_items_panel(all_unlocked)
+
+# Functions for communication with learning companion
+func _on_game_started_for_companion():
+	if learning_companion_connected and JSBridge.has_interface():
+		print("Sending gameStarted event to learning companion")
+		JSBridge.get_interface().sendGameStarted()
+
+func _on_mission_started_for_companion(mission):
+	if learning_companion_connected and JSBridge.has_interface():
+		print("Sending missionStarted event to learning companion for mission: " + mission.id)
+		
+		# Only send dialog if it exists
+		if mission.companion_dialog.has("mission_started"):
+			var dialog_data = mission.companion_dialog["mission_started"]
+			JSBridge.get_interface().sendCompanionDialog("mission_started", dialog_data)
+
+func _on_mission_completed_for_companion(mission):
+	if learning_companion_connected and JSBridge.has_interface():
+		print("Sending missionCompleted event to learning companion for mission: " + mission.id)
+		
+		# Only send dialog if it exists
+		if mission.companion_dialog.has("mission_completed"):
+			var dialog_data = mission.companion_dialog["mission_completed"]
+			JSBridge.get_interface().sendCompanionDialog("mission_completed", dialog_data)
+
+func _on_all_missions_completed_for_companion():
+	if learning_companion_connected and JSBridge.has_interface():
+		print("Sending allMissionsCompleted event to learning companion")
+		JSBridge.get_interface().sendAllMissionsCompleted()
+
+# Helper function to send dialog to the companion
+func _send_companion_dialog(dialog_key, mission):
+	if learning_companion_connected and JSBridge.has_interface() and mission.companion_dialog.has(dialog_key):
+		var dialog_data = mission.companion_dialog[dialog_key]
+		JSBridge.get_interface().sendCompanionDialog(dialog_key, dialog_data)
+		return true
+	return false
+
+# Fallback to force a connection if the normal method doesn't work
+func _force_learning_companion_connection():
+	if not learning_companion_connected and JSBridge.has_interface():
+		print("Forcing learning companion connection")
+		learning_companion_connected = true
+		
+		# Connect signals
+		game_started.connect(_on_game_started_for_companion)
+		mission_started.connect(_on_mission_started_for_companion)
+		mission_completed.connect(_on_mission_completed_for_companion)
+		all_missions_completed.connect(_on_all_missions_completed_for_companion)
+		
+		# Send initial event if we've already started
+		if current_mission:
+			_on_mission_started_for_companion(current_mission)

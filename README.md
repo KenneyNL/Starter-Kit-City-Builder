@@ -17,6 +17,10 @@ This package includes a basic template for a 3D city builder in Godot 4.3 (stabl
   - 8.EE.A - Work with radicals and integer exponents.
   - 8.EE.B - Understand the connections between proportional relationships, lines, and linear equations.
 
+### Deploy
+- Create a Web Build
+- Run ```gsutil rsync -r /home/mrwadepro/Documents/stemuli/stem-city/builds/html/ gs://stem-city-game```
+
 
 ### Screenshot
 

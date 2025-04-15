@@ -16,7 +16,7 @@ func _ready():
 		builder.construction_manager.construction_completed.connect(_on_construction_completed)
 		
 		# Do initial count on mission start
-		update_mission_3_count()
+		update_mission_4_count()
 
 # Called when a structure is placed
 func _on_structure_placed(structure_index, position):
@@ -31,14 +31,14 @@ func _on_structure_removed(structure_index, position):
 			# Wait one frame to make sure the GridMap is updated
 			await get_tree().process_frame
 			# Update the count
-			update_mission_3_count()
+			update_mission_4_count()
 
 # Called when construction is completed
 func _on_construction_completed(position):
-	update_mission_3_count()
+	update_mission_4_count()
 
 # Updates the mission 3 objective count based on actual residential buildings
-func update_mission_3_count():
+func update_mission_4_count():					
 	# Find the mission manager
 	var mission_manager = get_node_or_null("/root/Main/MissionManager")
 	if not mission_manager:

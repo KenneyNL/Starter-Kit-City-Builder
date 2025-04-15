@@ -3,8 +3,13 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bnn1b2yg61elu"
+<<<<<<<< HEAD:models/Textures/colormap.png.import
 path.s3tc="res://.godot/imported/colormap.png-c1bc3c3aabeec406ff4b53328583776a.s3tc.ctex"
 path.etc2="res://.godot/imported/colormap.png-c1bc3c3aabeec406ff4b53328583776a.etc2.ctex"
+========
+path.s3tc="res://.godot/imported/colormap.png-6f96a945bc6d1c76c460db26dbd64298.s3tc.ctex"
+path.etc2="res://.godot/imported/colormap.png-6f96a945bc6d1c76c460db26dbd64298.etc2.ctex"
+>>>>>>>> main:models/colormap.png.import
 metadata={
 "imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
@@ -12,8 +17,13 @@ metadata={
 
 [deps]
 
+<<<<<<<< HEAD:models/Textures/colormap.png.import
 source_file="res://models/Textures/colormap.png"
 dest_files=["res://.godot/imported/colormap.png-c1bc3c3aabeec406ff4b53328583776a.s3tc.ctex", "res://.godot/imported/colormap.png-c1bc3c3aabeec406ff4b53328583776a.etc2.ctex"]
+========
+source_file="res://models/colormap.png"
+dest_files=["res://.godot/imported/colormap.png-6f96a945bc6d1c76c460db26dbd64298.s3tc.ctex", "res://.godot/imported/colormap.png-6f96a945bc6d1c76c460db26dbd64298.etc2.ctex"]
+>>>>>>>> main:models/colormap.png.import
 
 [params]
 

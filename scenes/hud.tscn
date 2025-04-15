@@ -1,6 +1,6 @@
 [gd_scene load_steps=10 format=3 uid="uid://cgk66f6rg03mj"]
 
-[ext_resource type="Script" uid="uid://bp75qrvcc3at4" path="res://scripts/hud_manager.gd" id="1_6vdxc"]
+[ext_resource type="Script" path="res://scripts/hud_manager.gd" id="1_6vdxc"]
 [ext_resource type="Texture2D" uid="uid://hendpftbt4iw" path="res://sprites/population_icon.png" id="2_28oy1"]
 [ext_resource type="Texture2D" uid="uid://jk3mremfu7lm" path="res://sprites/electricity_icon.png" id="3_2u5bk"]
 [ext_resource type="FontFile" uid="uid://d0cxd77jybrcn" path="res://fonts/lilita_one_regular.ttf" id="4_qfmf5"]
@@ -32,7 +32,6 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 0
 script = ExtResource("1_6vdxc")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
@@ -129,7 +128,6 @@ theme_override_constants/separation = 8
 custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
 size_flags_vertical = 4
-mouse_filter = 0
 mouse_default_cursor_shape = 2
 texture_normal = ExtResource("7_80m3c")
 ignore_texture_size = true
@@ -148,7 +146,6 @@ theme_override_constants/separation = 8
 custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
 size_flags_vertical = 4
-mouse_filter = 0
 mouse_default_cursor_shape = 2
 texture_normal = ExtResource("6_i1y88")
 ignore_texture_size = true

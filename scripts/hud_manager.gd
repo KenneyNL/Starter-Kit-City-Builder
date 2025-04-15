@@ -11,6 +11,7 @@ var total_kW_production: float = 0.0
 
 # References
 var builder
+var building_construction_manager
 var population_label: Label
 var electricity_label: Label
 var electricity_indicator: ColorRect
@@ -22,6 +23,7 @@ var sound_panel: PanelContainer
 func _ready():
 	# Connect to signals from the builder
 	builder = get_node_or_null("/root/Main/Builder")
+	population_updated.connect(update_population_count)
 	if builder:
 		builder.structure_placed.connect(_on_structure_placed)
 		builder.structure_removed.connect(_on_structure_removed)
@@ -72,11 +74,7 @@ func _on_structure_placed(structure_index, position):
 	if mission_manager and mission_manager.current_mission:
 		var mission_id = mission_manager.current_mission.id
 		using_construction = (mission_id == "3" or mission_id == "1")
-	
-	# Only increment population for residential buildings when not using construction workers
-	if (!is_residential or !using_construction):
-		total_population += structure.population_count
-	
+		
 	# Always update electricity usage/production
 	total_kW_usage += structure.kW_usage
 	total_kW_production += structure.kW_production
@@ -85,7 +83,6 @@ func _on_structure_placed(structure_index, position):
 	update_hud()
 	
 	# Emit signals
-	population_updated.emit(total_population)
 	electricity_updated.emit(total_kW_usage, total_kW_production)
 	
 # Called when a structure is removed
@@ -118,9 +115,17 @@ func _on_structure_removed(structure_index, position):
 	update_hud()
 	
 	# Emit signals
-	population_updated.emit(total_population)
 	electricity_updated.emit(total_kW_usage, total_kW_production)
-
+	
+	
+# Update Population
+func update_population_count(count: int):
+	total_population += count
+	population_label.text = str(total_population)
+	
+#	# Emit signal
+#	increased_population.emit(added_population)
+	
 # Updates the HUD elements
 func update_hud():
 	# Update population label

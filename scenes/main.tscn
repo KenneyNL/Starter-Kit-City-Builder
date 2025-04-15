@@ -1,4 +1,4 @@
-[gd_scene load_steps=27 format=3 uid="uid://vgwrcfy1qawf"]
+[gd_scene load_steps=33 format=3 uid="uid://vgwrcfy1qawf"]
 
 [ext_resource type="Script" path="res://scripts/builder.gd" id="1_jybm7"]
 [ext_resource type="Environment" uid="uid://jbptgqvstei3" path="res://scenes/main-environment.tres" id="1_yndf3"]
@@ -6,22 +6,66 @@
 [ext_resource type="Resource" uid="uid://dv14kkhb6umkv" path="res://structures/road-straight.tres" id="2_bwyku"]
 [ext_resource type="Texture2D" uid="uid://cbk07cxgshg26" path="res://sprites/selector.png" id="4_wr1wv"]
 [ext_resource type="Resource" uid="uid://cntgl86ianngh" path="res://structures/building-small-a.tres" id="5_v5o2m"]
+[ext_resource type="Resource" uid="uid://ccb475jeg7ym5" path="res://structures/grass-trees.tres" id="6_fwsy4"]
 [ext_resource type="Script" path="res://scripts/view.gd" id="8_yovpv"]
 [ext_resource type="Script" path="res://scripts/mission/mission_manager.gd" id="10_oe3re"]
-[ext_resource type="Script" path="res://scripts/mission/mission_data.gd" id="11_msovb"]
-[ext_resource type="Resource" uid="uid://x5h4xutbldq3" path="res://mission/first_mission.tres" id="12_ms7i7"]
-[ext_resource type="Resource" uid="uid://cjr36hqnmyn0x" path="res://mission/second_mission.tres" id="13_s13s0"]
+[ext_resource type="PackedScene" uid="uid://dmsy06s02tcw4" path="res://scenes/generic_text_panel.tscn" id="13_7i6dj"]
 [ext_resource type="Script" path="res://scripts/mission/mission_ui.gd" id="13_xvw5w"]
-[ext_resource type="Resource" uid="uid://dykbopx8n3c3v" path="res://mission/third_mission.tres" id="14_bnke0"]
+[ext_resource type="Script" path="res://resources/generic_text_panel.resource.gd" id="14_76jlq"]
 [ext_resource type="Script" path="res://scripts/mission/learning_panel.gd" id="14_q2ymb"]
-[ext_resource type="Resource" uid="uid://bho4qh41asyk1" path="res://mission/fourth_mission.tres" id="15_plrw2"]
-[ext_resource type="Resource" uid="uid://p3xwn2mp6bm6" path="res://mission/fifth_mission.tres" id="16_5fmk3"]
+[ext_resource type="Script" path="res://scripts/mission/mission_data.gd" id="14_vcrh8"]
+[ext_resource type="Resource" uid="uid://x5h4xutbldq3" path="res://mission/first_mission.tres" id="15_obmwc"]
+[ext_resource type="Resource" uid="uid://cjr36hqnmyn0x" path="res://mission/second_mission.tres" id="16_rl54y"]
+[ext_resource type="Resource" uid="uid://dykbopx8n3c3v" path="res://mission/third_mission.tres" id="17_rrdy6"]
 [ext_resource type="FontFile" uid="uid://d0cxd77jybrcn" path="res://fonts/lilita_one_regular.ttf" id="17_vlub6"]
 [ext_resource type="PackedScene" uid="uid://b4gkfwf4i3ydl" path="res://scenes/character.tscn" id="18_8lrh8"]
+[ext_resource type="Resource" uid="uid://bho4qh41asyk1" path="res://mission/fourth_mission.tres" id="18_h4fpv"]
 [ext_resource type="PackedScene" uid="uid://cgk66f6rg03mj" path="res://scenes/hud.tscn" id="18_hud"]
 [ext_resource type="PackedScene" uid="uid://bqjnp7uypupog" path="res://scenes/controls_panel.tscn" id="19_controls"]
+[ext_resource type="Resource" uid="uid://p3xwn2mp6bm6" path="res://mission/fifth_mission.tres" id="19_e8sub"]
 [ext_resource type="Script" path="res://scripts/game_manager.gd" id="20_game_manager"]
+[ext_resource type="Resource" uid="uid://bv4r7ebpjdce4" path="res://mission/sixth_mission.tres" id="20_r0ysx"]
 [ext_resource type="PackedScene" uid="uid://b4s46k58ddpyc" path="res://scenes/sound_panel.tscn" id="21_sound_panel"]
+
+[sub_resource type="Resource" id="Resource_1gdbm"]
+script = ExtResource("14_76jlq")
+panel_type = 0
+title = "Welcome to Stem City "
+body_text = "Hi League Community,
+
+  Your goal is to build a thriving community from the ground up. As you complete missions, you'll unlock new structures to expand and improve your city.
+
+  Each mission introduces important Math concepts used in urban planning and city management. You'll apply mathematics while watching your city grow.
+
+You are the very first group of students who get to test this. So keep in mind there will be bugs, but do note them. 
+
+We are aware of the following bugs:
+- Population count may be off by 1
+- Lighting Baking in Web Builds are too bright
+- We don't restrict building off of roads which will cause workers not to reach buildings
+- Building overlap
+- No builders for Power Plant 
+
+
+  Ready to start planning your city? Click Close to see the controls and begin your first mission!
+
+
+"
+button_text = "Close"
+
+[sub_resource type="Resource" id="Resource_ja86h"]
+script = ExtResource("14_76jlq")
+panel_type = 1
+title = "Welcome to Stem City"
+body_text = "Congratulations, City Planner!
+
+  You've completed all the guided missions and unlocked the full potential of Stem City. Your understanding of urban planning and STEM concepts has helped create a thriving community.
+
+  But the journey doesn't end here! Continue expanding your city using all the structures you've unlocked. Experiment with different layouts, create new neighborhoods, and see how large you can grow your population.
+
+  The future of Stem City is now in your hands - keep building and exploring!
+"
+button_text = "Close"
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mission"]
 bg_color = Color(0.145098, 0.172549, 0.231373, 0.941176)
@@ -77,10 +121,12 @@ corner_radius_bottom_left = 4
 
 [node name="Main" type="Node3D"]
 script = ExtResource("20_game_manager")
+intro_text_resource = SubResource("Resource_1gdbm")
+outro_text_resource = SubResource("Resource_ja86h")
 
 [node name="Builder" type="Node3D" parent="." node_paths=PackedStringArray("selector", "selector_container", "view_camera", "gridmap", "cash_display")]
 script = ExtResource("1_jybm7")
-structures = Array[ExtResource("2_54v6r")]([ExtResource("2_bwyku"), ExtResource("5_v5o2m")])
+structures = Array[ExtResource("2_54v6r")]([ExtResource("2_bwyku"), ExtResource("5_v5o2m"), ExtResource("6_fwsy4")])
 selector = NodePath("Selector")
 selector_container = NodePath("Selector/Container")
 view_camera = NodePath("../View/Camera")
@@ -124,9 +170,12 @@ shadow_opacity = 0.75
 [node name="SoundPanel" parent="CanvasLayer" instance=ExtResource("21_sound_panel")]
 anchors_preset = 8
 
+[node name="GenericTextPanel" parent="CanvasLayer" instance=ExtResource("13_7i6dj")]
+resource_data = ExtResource("14_76jlq")
+
 [node name="MissionManager" type="Node" parent="." node_paths=PackedStringArray("mission_ui", "builder")]
 script = ExtResource("10_oe3re")
-missions = Array[ExtResource("11_msovb")]([ExtResource("12_ms7i7"), ExtResource("13_s13s0"), ExtResource("14_bnke0"), ExtResource("15_plrw2"), ExtResource("16_5fmk3")])
+missions = Array[ExtResource("14_vcrh8")]([ExtResource("15_obmwc"), ExtResource("16_rl54y"), ExtResource("17_rrdy6"), ExtResource("18_h4fpv"), ExtResource("19_e8sub"), ExtResource("20_r0ysx")])
 mission_ui = NodePath("MissionPanel")
 builder = NodePath("../Builder")
 character_scene = ExtResource("18_8lrh8")
@@ -312,4 +361,5 @@ text = "Complete"
 offset_right = 40.0
 offset_bottom = 23.0
 
+[connection signal="all_missions_completed" from="MissionManager" to="." method="_on_mission_manager_all_missions_completed"]
 [connection signal="pressed" from="MissionManager/LearningPanel/MarginContainer/VBoxContainer/HBoxContainer/CompleteButton" to="MissionManager/LearningPanel" method="_on_complete_button_pressed"]
