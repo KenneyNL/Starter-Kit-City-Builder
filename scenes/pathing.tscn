@@ -1,11 +1,12 @@
 [gd_scene load_steps=3 format=3 uid="uid://b3kdhu8jq41iq"]
 
-[ext_resource type="PackedScene" uid="uid://b4tgtg0j2dgh8" path="res://models/road-straight.glb" id="2_kgyfd"]
-
 [sub_resource type="NavigationMesh" id="NavigationMesh_qdlwc"]
 vertices = PackedVector3Array(-1.27868, 0.435088, -1.17848, -1.27868, 0.435088, 1.32152, 1.22132, 0.435088, 1.32152, 1.22132, 0.435088, -1.17848)
 polygons = [PackedInt32Array(3, 2, 0), PackedInt32Array(0, 2, 1)]
 agent_radius = 0.25
+
+[sub_resource type="Resource" id="Resource_dvt8f"]
+metadata/__load_path__ = "res://models/road-straight.glb"
 
 [node name="NavigationRegion3D" type="NavigationRegion3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.0819869, 0)
@@ -14,7 +15,7 @@ navigation_mesh = SubResource("NavigationMesh_qdlwc")
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(0.030951, -0.708895, 0.704634, -0.0307357, 0.703964, 0.709571, -0.999048, -0.0436194, -3.08005e-08, 2.29147, 2.02866, 0)
 
-[node name="road-straight" parent="." instance=ExtResource("2_kgyfd")]
+[node name="road-straight" parent="."]
 transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, -0.0286824, -0.0649124, 0.0715187)
 
 [editable path="road-straight"]

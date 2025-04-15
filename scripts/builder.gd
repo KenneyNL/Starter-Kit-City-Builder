@@ -55,22 +55,24 @@ func _ready():
 	# Sound effects now handled in game_manager.gd
 	
 	for structure in structures:
-		
+		if structure.model == null:
+			continue
+			
 		var id = mesh_library.get_last_unused_item_id()
 		
 		mesh_library.create_item(id)
 		mesh_library.set_item_mesh(id, get_mesh(structure.model))
 		
 		# Apply appropriate scaling for buildings and roads
-		var transform = Transform3D()
-		if structure.model.resource_path.contains("power_plant"):
+		var _xform = Transform3D()
+		if structure.model.resource_path != null and structure.model.resource_path.contains("power_plant"):
 			# Scale power plant model to be much smaller (0.5x)
-			transform = transform.scaled(Vector3(0.5, 0.5, 0.5))
+			_xform = _xform.scaled(Vector3(0.5, 0.5, 0.5))
 		elif structure.type == Structure.StructureType.RESIDENTIAL_BUILDING or structure.type == Structure.StructureType.ROAD:
 			# Scale buildings and roads to be consistent (3x)
-			transform = transform.scaled(Vector3(3.0, 3.0, 3.0))
+			_xform = _xform.scaled(Vector3(3.0, 3.0, 3.0))
 		
-		mesh_library.set_item_mesh_transform(id, transform)
+		mesh_library.set_item_mesh_transform(id, _xform)
 		
 	gridmap.mesh_library = mesh_library
 	
@@ -80,7 +82,10 @@ func _ready():
 		if "unlocked" in structures[i] and structures[i].unlocked:
 			index = i
 			found_unlocked = true
-			print("Starting with unlocked structure: " + structures[i].model.resource_path)
+			if structures[i].model != null:
+				print("Starting with unlocked structure: " + structures[i].model.resource_path)
+			else:
+				print("Starting with unlocked structure: (no model)")
 			break
 	
 	if not found_unlocked:
@@ -133,7 +138,7 @@ func is_mouse_over_ui() -> bool:
 	# Get HUD dimensions for debug
 	var hud = get_node_or_null("/root/Main/CanvasLayer/HUD")
 	if hud:
-		var hud_rect = hud.get_global_rect()
+		var _hud_rect = hud.get_global_rect()
 		
 		# Get HBoxContainer dimensions - this is the actual content area
 		var hbox = hud.get_node_or_null("HBoxContainer")
@@ -173,6 +178,9 @@ func is_mouse_over_ui() -> bool:
 
 func get_mesh(packed_scene):
 	# Instantiate the scene to access its properties
+	if packed_scene == null:
+		return
+	
 	var scene_instance = packed_scene.instantiate()
 	var mesh_instance = null
 	
@@ -227,13 +235,13 @@ func action_build(gridmap_position):
 		# For residential buildings, we use the construction manager in mission 3
 		var is_residential = structures[index].type == Structure.StructureType.RESIDENTIAL_BUILDING
 		# For power plants, we handle them specially
-		var is_power_plant = structures[index].model.resource_path.contains("power_plant")
+		var is_power_plant = structures[index].model != null and structures[index].model.resource_path.contains("power_plant")
 			# For grass and trees (terrain), we need special handling
 		var is_terrain = structures[index].type == Structure.StructureType.TERRAIN
 		
-		# Check if we're in mission 3 (when we should use construction workers)
+		# Function to check if we're in mission 3 (when we should use construction workers)
 		var use_worker_construction = true
-		var mission_manager = get_node_or_null("/root/Main/MissionManager")
+		var _mission_manager = get_node_or_null("/root/Main/MissionManager")
 		# Sound effects are handled via game_manager.gd through the structure_placed signal
 		
 		if is_road:
@@ -355,7 +363,7 @@ func action_demolish(gridmap_position):
 		
 		# Check for building model in the scene as a direct child of builder
 		var building_model_name = "Building_" + str(int(gridmap_position.x)) + "_" + str(int(gridmap_position.z))
-		var has_building_model = has_node(building_model_name)
+		var _has_building_model = has_node(building_model_name)
 		
 		# Store structure index before removal for signaling
 		var structure_index = -1
@@ -423,7 +431,7 @@ func action_demolish(gridmap_position):
 			
 # This function is no longer needed since we're using a single NavRegion3D
 # Keeping it for compatibility, but it doesn't do anything now
-func remove_navigation_region(position: Vector3):
+func remove_navigation_region(_pos: Vector3):
 	# With our new approach using a single nav region, we just rebake
 	# the entire navigation mesh when roads are added or removed
 
@@ -480,15 +488,31 @@ func update_structure():
 	for n in selector_container.get_children():
 		selector_container.remove_child(n)
 		
+	# Check if we have a valid structure and model
+	if index < 0 or index >= structures.size():
+		print("Invalid structure index: ", index)
+		return
+		
+	if not structures[index].model:
+		# print("No model found for structure at index: ", index)
+		return
+		
 	# Create new structure preview in selector
 	var _model = structures[index].model.instantiate()
+	if not _model:
+		print("Failed to instantiate model for structure at index: ", index)
+		return
+		
 	selector_container.add_child(_model)
 	
 	# Get reference to the selector sprite
 	var selector_sprite = selector.get_node("Sprite")
+	if not selector_sprite:
+		print("No Sprite node found in selector")
+		return
 	
 	# Apply appropriate scaling based on structure type
-	if structures[index].model.resource_path.contains("power_plant"):
+	if structures[index].model.resource_path != null and structures[index].model.resource_path.contains("power_plant"):
 		# Scale power plant model to be much smaller (0.5x)
 		_model.scale = Vector3(0.5, 0.5, 0.5)
 		# Center the power plant model within the selector
@@ -496,7 +520,7 @@ func update_structure():
 	elif (structures[index].type == Structure.StructureType.RESIDENTIAL_BUILDING
 	   or structures[index].type == Structure.StructureType.ROAD
 	   or structures[index].type == Structure.StructureType.TERRAIN
-	   or structures[index].model.resource_path.contains("grass")):
+	   or (structures[index].model.resource_path != null and structures[index].model.resource_path.contains("grass"))):
 		# Scale buildings, roads, and decorative terrain to match (3x)
 		_model.scale = Vector3(3.0, 3.0, 3.0)
 		_model.position.y += 0.0 # No need for Y adjustment with scaling
@@ -514,13 +538,13 @@ func update_cash():
 	cash_display.text = "$" + str(map.cash)
 	
 # Function to add a road model as a child of the navigation region
-func _add_road_to_navregion(position: Vector3, structure_index: int):
+func _add_road_to_navregion(_pos: Vector3, structure_index: int):
 	# Make sure we have a navigation region
 	if not nav_region:
 		setup_navigation_region()
 		
 	# Create a unique name for this road based on its position
-	var road_name = "Road_" + str(int(position.x)) + "_" + str(int(position.z))
+	var road_name = "Road_" + str(int(_pos.x)) + "_" + str(int(_pos.z))
 	
 	# Check if a road with this name already exists
 	if nav_region.has_node(road_name):
@@ -528,7 +552,7 @@ func _add_road_to_navregion(position: Vector3, structure_index: int):
 	
 	# Instantiate the road model - get the actual model based on road type
 	var road_model
-	var model_path = structures[structure_index].model.resource_path
+	var model_path = structures[structure_index].model.resource_path if structures[structure_index].model != null else ""
 	if model_path.contains("road-straight"):
 		# Use the specific road-straight model that works with navmesh
 		road_model = load("res://models/road-straight.glb").instantiate()
@@ -545,27 +569,27 @@ func _add_road_to_navregion(position: Vector3, structure_index: int):
 	nav_region.add_child(road_model)
 	
 	# Create the transform directly matching the exact one from pathing.tscn
-	var transform = Transform3D()
+	var _transform = Transform3D()
 	
 	# Set scale first
-	transform.basis = Basis().scaled(Vector3(3.0, 3.0, 3.0))
+	_transform.basis = Basis().scaled(Vector3(3.0, 3.0, 3.0))
 	
 	# Then apply rotation from the selector to preserve the rotation the player chose
-	transform.basis = transform.basis * selector.basis
+	_transform.basis = _transform.basis * selector.basis
 	
 	# Set position
-	transform.origin = position
-	transform.origin.y = -0.065  # From the pathing scene y offset
+	_transform.origin = _pos
+	_transform.origin.y = -0.065  # From the pathing scene y offset
 	
 	# Apply the complete transform in one go
-	road_model.transform = transform
+	road_model.transform = _transform
 	
 
 
 # Function to add a power plant as a direct child of the builder
-func _add_power_plant(position: Vector3, structure_index: int):
+func _add_power_plant(_pos: Vector3, structure_index: int):
 	# Create a unique name for this power plant based on its position
-	var power_plant_name = "PowerPlant_" + str(int(position.x)) + "_" + str(int(position.z))
+	var power_plant_name = "PowerPlant_" + str(int(_pos.x)) + "_" + str(int(_pos.z))
 	
 	# Check if a power plant with this name already exists
 	if has_node(power_plant_name):
@@ -579,30 +603,30 @@ func _add_power_plant(position: Vector3, structure_index: int):
 	add_child(power_plant_model)
 	
 	# Create the transform
-	var transform = Transform3D()
+	var _transform = Transform3D()
 	
 	# Set scale (using the smaller 0.5x scale)
-	transform.basis = Basis().scaled(Vector3(0.5, 0.5, 0.5))
+	_transform.basis = Basis().scaled(Vector3(0.5, 0.5, 0.5))
 	
 	# Apply rotation from the selector to preserve the rotation the player chose
-	transform.basis = transform.basis * selector.basis
+	_transform.basis = _transform.basis * selector.basis
 	
 	# Set position with offset to center the model at the grid position
-	transform.origin = position
+	_transform.origin = _pos
 	
 	# Apply position offset to center the model (matching the preview)
 	# These offsets need to be transformed based on the current rotation
 	var offset = selector.basis * Vector3(0.25, 0, -0.25)
-	transform.origin += offset
+	_transform.origin += offset
 	
 	# Apply the complete transform in one go
-	power_plant_model.transform = transform
+	power_plant_model.transform = _transform
 	
 
 # Function to remove a power plant
-func _remove_power_plant(position: Vector3):
+func _remove_power_plant(_pos: Vector3):
 	# Get the power plant name based on its position
-	var power_plant_name = "PowerPlant_" + str(int(position.x)) + "_" + str(int(position.z))
+	var power_plant_name = "PowerPlant_" + str(int(_pos.x)) + "_" + str(int(_pos.z))
 	
 	# Check if a power plant with this name exists
 	if has_node(power_plant_name):
@@ -615,21 +639,21 @@ func _remove_power_plant(position: Vector3):
 		pass
 
 # Function to remove a resident model when a residential building is demolished
-func _remove_resident_for_building(position: Vector3):
+func _remove_resident_for_building(_pos: Vector3):
 	# First, check if we have a nav region reference
 	if not nav_region and has_node("NavRegion3D"):
 		nav_region = get_node("NavRegion3D")
 	
 	if nav_region:
 		# Look for resident with matching position in the name
-		var resident_name = "Resident_" + str(int(position.x)) + "_" + str(int(position.z))
+		var resident_name = "Resident_" + str(int(_pos.x)) + "_" + str(int(_pos.z))
 		
 		# First try to find by exact name
-		var found = false
+		var _found = false
 		for child in nav_region.get_children():
 			if child.name.begins_with(resident_name):
 				child.queue_free()
-				found = true
+				_found = true
 				
 				# Update the HUD population count
 				var hud = get_node_or_null("/root/Main/CanvasLayer/HUD")
@@ -653,9 +677,9 @@ func _update_mission_objective_on_demolish():
 			mission_manager.update_objective_progress(mission_id, MissionObjective.ObjectiveType.BUILD_RESIDENTIAL, -1)
 		
 # Function to remove terrain (grass or trees)
-func _remove_terrain(position: Vector3):
+func _remove_terrain(_pos: Vector3):
 	# Get the terrain name based on its position
-	var terrain_name = "Terrain_" + str(int(position.x)) + "_" + str(int(position.z))
+	var terrain_name = "Terrain_" + str(int(_pos.x)) + "_" + str(int(_pos.z))
 	
 	# Check if terrain with this name exists
 	if has_node(terrain_name):
@@ -667,15 +691,15 @@ func _remove_terrain(position: Vector3):
 		pass
 
 # Function to remove building model from scene
-func _remove_building_model(position: Vector3):
+func _remove_building_model(_pos: Vector3):
 	# Try multiple possible naming patterns
 	var building_patterns = [
-		"Building_" + str(int(position.x)) + "_" + str(int(position.z)),
-		"building-small-a_" + str(int(position.x)) + "_" + str(int(position.z)),
-		"building-small-b_" + str(int(position.x)) + "_" + str(int(position.z)),
-		"building-small-c_" + str(int(position.x)) + "_" + str(int(position.z)),
-		"building-small-d_" + str(int(position.x)) + "_" + str(int(position.z)),
-		"building-garage_" + str(int(position.x)) + "_" + str(int(position.z))
+		"Building_" + str(int(_pos.x)) + "_" + str(int(_pos.z)),
+		"building-small-a_" + str(int(_pos.x)) + "_" + str(int(_pos.z)),
+		"building-small-b_" + str(int(_pos.x)) + "_" + str(int(_pos.z)),
+		"building-small-c_" + str(int(_pos.x)) + "_" + str(int(_pos.z)),
+		"building-small-d_" + str(int(_pos.x)) + "_" + str(int(_pos.z)),
+		"building-garage_" + str(int(_pos.x)) + "_" + str(int(_pos.z))
 	]
 	
 	# Check if we can find the building model with any of the pattern names
@@ -696,7 +720,7 @@ func _remove_building_model(position: Vector3):
 				continue
 				
 			# Check if this building is at our position (with some tolerance)
-			var pos_diff = (child.global_transform.origin - position).abs()
+			var pos_diff = (child.global_transform.origin - _pos).abs()
 			if pos_diff.x < 0.5 and pos_diff.z < 0.5:
 				child.queue_free()
 				found = true
@@ -712,7 +736,7 @@ func _remove_building_model(position: Vector3):
 					continue
 					
 				# Check if this building is at our position (with some tolerance)
-				var pos_diff = (child.global_transform.origin - position).abs()
+				var pos_diff = (child.global_transform.origin - _pos).abs()
 				if pos_diff.x < 0.5 and pos_diff.z < 0.5:
 					child.queue_free()
 					found = true
@@ -722,20 +746,20 @@ func _remove_building_model(position: Vector3):
 	if !found and gridmap:
 		for child in gridmap.get_children():
 			# Check if this is any model at our position (with some tolerance)
-			var pos_diff = (child.global_transform.origin - position).abs()
+			var pos_diff = (child.global_transform.origin - _pos).abs()
 			if pos_diff.x < 0.5 and pos_diff.z < 0.5:
 				child.queue_free()
 				found = true
 				break
 
 # Function to remove a road model from the navigation region
-func _remove_road_from_navregion(position: Vector3):
+func _remove_road_from_navregion(_pos: Vector3):
 	# Make sure we have a navigation region
 	if not nav_region:
 		return
 		
 	# Get the road name based on its position
-	var road_name = "Road_" + str(int(position.x)) + "_" + str(int(position.z))
+	var road_name = "Road_" + str(int(_pos.x)) + "_" + str(int(_pos.z))
 	
 	# Check if a road with this name exists
 	if nav_region.has_node(road_name):
@@ -758,7 +782,7 @@ func _add_existing_roads_to_navregion():
 			child.queue_free()
 	
 	# Find all road cells in the gridmap
-	var added_count = 0
+	var _added_count = 0
 	
 	# We need to convert any existing roads in the GridMap to our new system
 	# Find existing road cells and add them to the NavRegion3D, then clear from GridMap
@@ -770,7 +794,7 @@ func _add_existing_roads_to_navregion():
 				_add_road_to_navregion(cell, structure_index)
 				# Remove from the GridMap since we're now handling roads differently
 				gridmap.set_cell_item(cell, -1)
-				added_count += 1
+				_added_count += 1
 				
 # Function to move all character NPCs to be children of the navigation region
 func _move_characters_to_navregion():
@@ -799,9 +823,9 @@ func _move_characters_to_navregion():
 	
 
 # Function to add terrain (grass or trees) as a direct child
-func _add_terrain(position: Vector3, structure_index: int):
+func _add_terrain(_pos: Vector3, structure_index: int):
 	# Create a unique name for this terrain element based on its position
-	var terrain_name = "Terrain_" + str(int(position.x)) + "_" + str(int(position.z))
+	var terrain_name = "Terrain_" + str(int(_pos.x)) + "_" + str(int(_pos.z))
 	
 	# Check if terrain with this name already exists
 	if has_node(terrain_name):
@@ -815,22 +839,22 @@ func _add_terrain(position: Vector3, structure_index: int):
 	add_child(terrain_model)
 	
 	# Create the transform
-	var transform = Transform3D()
+	var _transform = Transform3D()
 	
 	# Set scale (using 3.0 scale as per other terrain elements)
-	transform.basis = Basis().scaled(Vector3(3.0, 3.0, 3.0))
+	_transform.basis = Basis().scaled(Vector3(3.0, 3.0, 3.0))
 	
 	# Apply rotation from the selector to preserve the rotation the player chose
-	transform.basis = transform.basis * selector.basis
+	_transform.basis = _transform.basis * selector.basis
 	
 	# Set position
-	transform.origin = position
+	_transform.origin = _pos
 	
 	# Apply the complete transform in one go
-	terrain_model.transform = transform
+	terrain_model.transform = _transform
 
 # Callback for when construction is completed
-func _on_construction_completed(position: Vector3):
+func _on_construction_completed(_pos: Vector3):
 	# We need to find a residential structure index to add to gridmap
 	var residential_index = -1
 	for i in range(structures.size()):
@@ -843,14 +867,14 @@ func _on_construction_completed(position: Vector3):
 		var rotation_index = 0
 		
 		# Try to get the rotation index from the construction manager
-		if construction_manager and construction_manager.construction_sites.has(position):
-			var site = construction_manager.construction_sites[position]
+		if construction_manager and construction_manager.construction_sites.has(_pos):
+			var site = construction_manager.construction_sites[_pos]
 			if site.has("rotation_index"):
 				rotation_index = site["rotation_index"]
 			
 		
 		# Add the completed residential building to the gridmap with the correct rotation
-		gridmap.set_cell_item(position, residential_index, rotation_index)
+		gridmap.set_cell_item(_pos, residential_index, rotation_index)
 		
 		# Check if we need to spawn a character for mission 1
 		var mission_manager = get_node_or_null("/root/Main/MissionManager")
@@ -862,7 +886,7 @@ func _on_construction_completed(position: Vector3):
 			# Now check if we need to manually handle mission 1 character spawning
 			if mission_manager.current_mission and mission_manager.current_mission.id == "1" and not mission_manager.character_spawned:
 				mission_manager.character_spawned = true
-				mission_manager._spawn_character_on_road(position)
+				mission_manager._spawn_character_on_road(_pos)
 			
 			# NOTE: We removed the structure_placed signal emission here to fix the population double-counting
 		else:

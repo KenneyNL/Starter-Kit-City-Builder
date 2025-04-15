@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://7aqckirt7b41"]
 
 [ext_resource type="PackedScene" uid="uid://h2jjkvc4edsp" path="res://people/character-female-d.glb" id="1_anb25"]
-[ext_resource type="Script" uid="uid://88a6avyptj0n" path="res://scripts/NavigationNPC.gd" id="1_eug4x"]
+[ext_resource type="Script" uid="uid://buvxhq2ipa8gt" path="res://scripts/NavigationNPC.gd" id="1_eug4x"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_8rf01"]
 radius = 0.307771

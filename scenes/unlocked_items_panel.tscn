@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://cc3c30ioo11if"]
 
-[ext_resource type="Script" path="res://scripts/mission/unlocked_items_panel.gd" id="1_j0tih"]
+[ext_resource type="Script" uid="uid://uftqbpj0c2u8" path="res://scripts/mission/unlocked_items_panel.gd" id="1_j0tih"]
 [ext_resource type="FontFile" uid="uid://d0cxd77jybrcn" path="res://fonts/lilita_one_regular.ttf" id="2_exmr5"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2q5cr"]

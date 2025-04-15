@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://b8ne7pqtnju2y"]
 
-[ext_resource type="Script" uid="uid://dsdxor1cwpqp" path="res://sample/UpdateLatex.gd" id="2"]
+[ext_resource type="Script" uid="uid://dvs8h3w31nbty" path="res://sample/UpdateLatex.gd" id="2"]
 
 [sub_resource type="Image" id="Image_0hed4"]
 data = {

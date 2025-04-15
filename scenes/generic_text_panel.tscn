@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://dmsy06s02tcw4"]
 
-[ext_resource type="Script" path="res://scenes/generic_text.gd" id="1_qcnox"]
+[ext_resource type="Script" uid="uid://c7qrkyfuarnfa" path="res://scenes/generic_text.gd" id="1_qcnox"]
 [ext_resource type="FontFile" uid="uid://d0cxd77jybrcn" path="res://fonts/lilita_one_regular.ttf" id="2_7oj77"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_f2mso"]

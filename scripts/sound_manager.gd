@@ -189,10 +189,10 @@ func _on_react_audio_ready():
 	audio_ready.emit()
 
 # Called when AudioBridge connects to the platform-one sound manager
-func _on_audio_bridge_connected(is_connected: bool):
-	print("AudioBridge connected: ", is_connected)
+func _on_audio_bridge_connected(connected: bool):
+	print("AudioBridge connected: ", connected)
 	
-	if is_connected:
+	if connected:
 		audio_initialized = true
 		
 		# Request the sound state from the platform-one sound manager
@@ -221,24 +221,42 @@ func init_web_audio_from_js():
 	#if OS.has_feature("web") and not audio_initialized:
 		#_initialize_web_audio()
 
-# Initialize audio for web builds
+# Initialize web audio system
 func _initialize_web_audio():
+	# Only initialize if we haven't already
 	if audio_initialized:
 		return
 		
-	# For web builds, we notify JavaScript to initialize audio
-#	if OS.has_feature("web"):
-#		JSBridge.JavaScriptGlobal.handle_audio_action("INITIALIZE_AUDIO")
-#		
-#		# We don't need to create any dummy players, as JavaScript will handle the audio
-#		audio_initialized = true
-#		audio_ready.emit()
-#		return
-	
-	# For non-web platforms, initialize Godot audio (this shouldn't get called)
-#	if not OS.has_feature("web"):
-		# Set the flag to prevent multiple initializations
+	# Try to initialize the audio context
+	if Engine.has_singleton("JavaScriptBridge"):
+		var js = Engine.get_singleton("JavaScriptBridge")
+		js.eval("""
+		(function() {
+			try {
+				// Create or get the audio context
+				if (!window._godotAudioContext) {
+					window._godotAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+					console.log('SoundManager: Created new audio context');
+				}
+				
+				// Resume the audio context if it's suspended
+				if (window._godotAudioContext.state === 'suspended') {
+					window._godotAudioContext.resume();
+					console.log('SoundManager: Resumed audio context');
+				}
+				
+				// Set initialized flag
+				window._godotAudioInitialized = true;
+			} catch(e) {
+				console.error('SoundManager: Error initializing audio:', e);
+			}
+		})()
+		""")
+		
+		# Set our initialized flag
 		audio_initialized = true
+		
+		# Emit the ready signal
 		audio_ready.emit()
 
 # Play background music
@@ -252,7 +270,7 @@ func play_music(sound_name: String, loop: bool = true):
 	# For web builds, try multiple bridge options
 #	if OS.has_feature("web"):
 #		# Try AudioBridge first (platform-one integration)
-#		if audio_bridge != null and audio_bridge.get("is_connected") == true:
+#		if audio_bridge != null and audio_bridge.get("connected") == true:
 #			print("Using AudioBridge to play music: ", sound_name)
 #			if audio_bridge.has_method("play_music") and audio_bridge.play_music(sound_name):
 #				return
@@ -300,7 +318,7 @@ func play_sfx(sound_name: String):
 	# For web builds, try multiple bridge options
 	#if OS.has_feature("web"):
 		## Try AudioBridge first (platform-one integration)
-		#if audio_bridge != null and audio_bridge.get("is_connected") == true:
+		#if audio_bridge != null and audio_bridge.get("connected") == true:
 			#print("Using AudioBridge to play sfx: ", sound_name)
 			#if audio_bridge.has_method("play_sfx") and audio_bridge.play_sfx(sound_name):
 				#return
@@ -350,7 +368,7 @@ func stop_music():
 	# For web builds, try multiple bridge options
 	#if OS.has_feature("web"):
 		## Try AudioBridge first (platform-one integration)
-		#if audio_bridge != null and audio_bridge.get("is_connected") == true:
+		#if audio_bridge != null and audio_bridge.get("connected") == true:
 			#print("Using AudioBridge to stop music")
 			#if audio_bridge.has_method("stop_music") and audio_bridge.stop_music():
 				#current_music = ""
@@ -377,7 +395,7 @@ func set_music_volume(volume: float):
 		pass
 #	if OS.has_feature("web"):
 #		# Try AudioBridge first (platform-one integration)
-#		if audio_bridge != null and audio_bridge.get("is_connected") == true:
+#		if audio_bridge != null and audio_bridge.get("connected") == true:
 #			print("Using AudioBridge to set music volume: ", music_volume)
 #			if audio_bridge.has_method("set_music_volume"):
 #				audio_bridge.set_music_volume(music_volume)
@@ -401,7 +419,7 @@ func set_sfx_volume(volume: float):
 	if false:
 		pass
 #		# Try AudioBridge first (platform-one integration)
-#		if audio_bridge != null and audio_bridge.get("is_connected") == true:
+#		if audio_bridge != null and audio_bridge.get("connected") == true:
 #			print("Using AudioBridge to set sfx volume: ", sfx_volume)
 #			if audio_bridge.has_method("set_sfx_volume"):
 #				audio_bridge.set_sfx_volume(sfx_volume)
@@ -425,7 +443,7 @@ func toggle_music_mute():
 	if false:
 		pass
 #		# Try AudioBridge first (platform-one integration)
-#		if audio_bridge != null and audio_bridge.get("is_connected") == true:
+#		if audio_bridge != null and audio_bridge.get("connected") == true:
 #			print("Using AudioBridge to toggle music mute: ", music_muted)
 #			if audio_bridge.has_method("toggle_music_mute"):
 #				audio_bridge.toggle_music_mute()
@@ -449,7 +467,7 @@ func toggle_sfx_mute():
 	if false:
 		pass
 #		# Try AudioBridge first (platform-one integration)
-#		if audio_bridge != null and audio_bridge.get("is_connected") == true:
+#		if audio_bridge != null and audio_bridge.get("connected") == true:
 #			print("Using AudioBridge to toggle sfx mute: ", sfx_muted)
 #			if audio_bridge.has_method("toggle_sfx_mute"):
 #				audio_bridge.toggle_sfx_mute()

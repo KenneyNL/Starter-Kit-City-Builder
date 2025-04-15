@@ -42,7 +42,7 @@ func _ready():
 		controls_panel.closed.connect(_on_controls_panel_closed)
 	
 	# Check for audio initialization status (important for web)
-	var sound_manager = get_node_or_null("/root/SoundManager")
+	var _sound_manager = get_node_or_null("/root/SoundManager")
 	var can_initialize_audio = true
 #	
 #	if OS.has_feature("web") and sound_manager:
@@ -232,7 +232,7 @@ func setup_construction_sfx():
 		construction_sfx.bus = "SFX"  # Use the SFX bus
 		
 # Play the building sound effect when a structure is placed
-func _on_structure_placed(structure_index, position):
+func _on_structure_placed(_structure_index, _position):
 	# Check web audio initialized status if needed
 	var can_play_audio = true
 	if OS.has_feature("web"):

@@ -1,10 +1,11 @@
 [gd_resource type="Resource" script_class="Structure" load_steps=3 format=3 uid="uid://dqqe3iofnleup"]
 
 [ext_resource type="PackedScene" uid="uid://6v0t536s83vb" path="res://models/pavement-fountain.glb" id="1_r2n53"]
-[ext_resource type="Script" uid="uid://smbpvh2nwds4" path="res://scripts/structure.gd" id="2_wqyte"]
+[ext_resource type="Script" uid="uid://cw0jlq5d8r66g" path="res://scripts/structure.gd" id="2_wqyte"]
 
 [resource]
 script = ExtResource("2_wqyte")
+title = ""
 model = ExtResource("1_r2n53")
 type = 6
 price = 10
@@ -12,3 +13,6 @@ population_count = 0
 kW_usage = 0.0
 kW_production = 0.0
 selector_scale = 2.8
+unlocked = false
+description = "Description"
+thumbnail = "Thumbnail"

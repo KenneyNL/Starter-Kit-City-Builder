@@ -1,12 +1,12 @@
 [gd_resource type="Resource" script_class="Structure" load_steps=3 format=3 uid="uid://dv14kkhb6umkv"]
 
-[ext_resource type="Script" path="res://scripts/structure.gd" id="1_5fmmh"]
-[ext_resource type="PackedScene" uid="uid://b4tgtg0j2dgh8" path="res://models/road-straight.glb" id="1_ump1f"]
+[ext_resource type="Script" uid="uid://cw0jlq5d8r66g" path="res://scripts/structure.gd" id="1_5fmmh"]
+[ext_resource type="Resource" uid="uid://b4tgtg0j2dgh8" path="res://models/road-straight.glb" id="1_qlpqf"]
 
 [resource]
 script = ExtResource("1_5fmmh")
 title = "Road"
-model = ExtResource("1_ump1f")
+model = ExtResource("1_qlpqf")
 type = 0
 price = 25
 population_count = 0
