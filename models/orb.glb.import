@@ -33,13 +33,17 @@ animation/import_rest_as_RESET=false
 import_script/path=""
 _subresources={
 "materials": {
-"M_Glass_PRISM": {
+"M_orb_body": {
 "use_external/enabled": true,
-"use_external/path": "res://models/Materials/orb_outershell.tres"
+"use_external/path": "res://models/Materials/orb_inner.tres"
 },
-"M_Simple_BASE": {
+"M_orb_face": {
 "use_external/enabled": true,
 "use_external/path": "res://models/Materials/colormap_mat.tres"
+},
+"M_orb_outer": {
+"use_external/enabled": true,
+"use_external/path": "res://models/Materials/orb_outershell.tres"
 }
 }
 }

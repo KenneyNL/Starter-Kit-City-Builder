@@ -1,0 +1,14 @@
+[gd_resource type="ShaderMaterial" load_steps=3 format=3 uid="uid://cyfeg6kqnnjbl"]
+
+[ext_resource type="Shader" uid="uid://b781omasqxx6g" path="res://models/Materials/orb_inner_shader.tres" id="1_r8t2t"]
+[ext_resource type="Texture2D" uid="uid://c8ka2yo5ohv5n" path="res://models/Textures/colormap.png" id="2_83rgw"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_r8t2t")
+shader_parameter/Albedo_Tone = Color(0.505645, 0.698715, 1, 1)
+shader_parameter/Metallic = 0.194
+shader_parameter/Roughness = 0.403
+shader_parameter/Emission = Color(0.151504, 0.398018, 0.646932, 1)
+shader_parameter/Fresnel_Power = 0.1
+shader_parameter/Albedo_Map = ExtResource("2_83rgw")

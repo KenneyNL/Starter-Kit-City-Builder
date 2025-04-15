@@ -1,6 +1,6 @@
 [gd_resource type="StandardMaterial3D" load_steps=6 format=3 uid="uid://b8yum5qqa1c75"]
 
-[ext_resource type="Texture2D" uid="uid://bnn1b2yg61elu" path="res://models/Textures/colormap.png" id="1_poylw"]
+[ext_resource type="Texture2D" uid="uid://c8ka2yo5ohv5n" path="res://models/Textures/colormap.png" id="1_poylw"]
 [ext_resource type="Texture2D" uid="uid://ch8semjsmmkm8" path="res://models/Textures/detailmap.png" id="2_anm7f"]
 [ext_resource type="Texture2D" uid="uid://bxvaqvi2e1lw" path="res://models/Textures/colormap_Detail.png" id="3_xqhy7"]
 [ext_resource type="Texture2D" uid="uid://da006y2gi1rwt" path="res://models/Textures/colormap E.png" id="4_jkbia"]
