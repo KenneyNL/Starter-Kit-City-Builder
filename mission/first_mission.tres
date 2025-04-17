@@ -15,8 +15,8 @@ completed = false
 [resource]
 script = ExtResource("1_nv6c6")
 id = "1"
-title = "Building Roads"
-description = "Welcome to the city builder! Let's start by placing your first road."
+title = "Census Planning"
+description = "As the new city planner, you need to establish a baseline understanding of your growing community. The mayor has requested a comprehensive census to guide future development."
 objectives = Array[ExtResource("1_yfbrc")]([SubResource("Resource_ywws1")])
 rewards = {
 "cash": 250

@@ -296,3 +296,17 @@ func _on_mission_manager_all_missions_completed() -> void:
 	if generic_text_panel and outro_text_resource:
 		generic_text_panel.apply_resource_data(outro_text_resource)
 		generic_text_panel.show_panel()
+
+
+func _on_mission_manager_mission_started(mission: MissionData) -> void:
+	var mission_text = GenericText.new()
+	mission_text.panel_type = 2
+	mission_text.title = mission.title
+	mission_text.body_text = mission.description
+	mission_text.button_text = "Start Mission"
+	
+	print(generic_text_panel)
+	if generic_text_panel:
+		generic_text_panel.apply_resource_data(mission_text)
+		generic_text_panel.show_panel()
+		

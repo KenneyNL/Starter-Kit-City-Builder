@@ -213,6 +213,7 @@ theme_override_fonts/font = ExtResource("17_vlub6")
 theme_override_font_sizes/font_size = 24
 text = "Mission Title"
 horizontal_alignment = 1
+autowrap_mode = 2
 
 [node name="HSeparator" type="HSeparator" parent="MissionManager/MissionPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
@@ -362,4 +363,5 @@ offset_right = 40.0
 offset_bottom = 23.0
 
 [connection signal="all_missions_completed" from="MissionManager" to="." method="_on_mission_manager_all_missions_completed"]
+[connection signal="mission_started" from="MissionManager" to="." method="_on_mission_manager_mission_started"]
 [connection signal="pressed" from="MissionManager/LearningPanel/MarginContainer/VBoxContainer/HBoxContainer/CompleteButton" to="MissionManager/LearningPanel" method="_on_complete_button_pressed"]
