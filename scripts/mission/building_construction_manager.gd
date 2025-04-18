@@ -266,7 +266,7 @@ func _on_worker_construction_ended():
 	# Forward the signal for mission managers/other systems that need it
 	worker_construction_ended.emit()
 func update_population(count: int):
-			EventBus.population_update.emit(count)
+	Globals.set_population_count(count)
 	
 
 

@@ -28,7 +28,7 @@ func _ready():
 		builder.structure_removed.connect(_on_structure_removed)
 
 
-	EventBus.population_update.connect(set_population_count)
+#	EventBus.population_update.connect(set_population_count)
 		
 	# Initialize UI elements
 	population_label = $HBoxContainer/PopulationItem/PopulationLabel
@@ -36,6 +36,8 @@ func _ready():
 	electricity_indicator = $HBoxContainer/ElectricityItem/ElectricityValues/ElectricityIndicator
 	population_tooltip = $PopulationTooltip
 	electricity_tooltip = $ElectricityTooltip
+
+
 	
 	# Ensure electricity indicator starts with red color
 	if electricity_indicator:
@@ -60,7 +62,15 @@ func _ready():
 		electricity_tooltip.visible = false
 	
 	# Update HUD
-	update_hud()
+	update_hud() 
+	
+	
+func _process(delta):
+	# Update the population label if it changes
+	if population_label and Globals.population != total_population:
+		total_population = Globals.population
+		population_label.text = str(total_population)
+
 
 # Called when a structure is placed
 func _on_structure_placed(structure_index, position):

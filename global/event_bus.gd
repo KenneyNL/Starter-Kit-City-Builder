@@ -1,6 +1,6 @@
 extends Node
 
-signal population_update(new_population:int)
+signal population_update(count:int)
 
 var current_scene = null
 

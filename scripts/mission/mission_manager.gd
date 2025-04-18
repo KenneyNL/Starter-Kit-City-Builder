@@ -6,7 +6,6 @@ class_name MissionManager
 const JSBridge = preload("res://scripts/javascript_bridge.gd")
 const ObjectiveType = preload("res://configs/data.config.gd").ObjectiveType
 
-
 signal mission_started(mission: MissionData)
 signal mission_completed(mission: MissionData)
 signal objective_completed(objective: MissionObjective)
@@ -42,7 +41,8 @@ var learning_panel
 var fullscreen_learning_panel
 
 func _ready():
-	
+
+	EventBus.population_update.connect(population_updated)
 	if builder:
 		# Connect to builder signals
 		builder.connect("structure_placed", _on_structure_placed)
@@ -282,19 +282,32 @@ func complete_mission(mission_id: String):
 		# Send the "end" event to the companion
 		await get_tree().create_timer(2.0).timeout
 	
-func update_objective_progress(mission_id,count_change = 1):
+func update_objective_progress(mission_id,count_change=1):
 	if not active_missions.has(mission_id):
 		return
 		
-	current_objective.current_count += count_change
 	
+	match current_objective.type:
+		ObjectiveType.BUILD_RESIDENTIAL,ObjectiveType.BUILD_STRUCTURE:
+			current_objective.current_count += count_change
+			if current_objective.target_count <= current_objective.current_count:
+				current_objective.completed = true
+				objective_completed.emit(current_objective)
+				var dialog_key = "objective_completed_" + str(current_objective.type)
+				_send_companion_dialog(dialog_key, current_mission) ## So Companion can react
+				update_current_objective(current_mission)  # Go ahead and progress to nex objective if it exists.
+		ObjectiveType.REACH_POPULATION:
+
+			if Globals.population >= current_objective.target_count:
+				current_objective.completed = true
+				objective_completed.emit(current_objective)
+				var dialog_key = "objective_completed_" + str(current_objective.type)
+				_send_companion_dialog(dialog_key, current_mission) ## So Companion can react
+				update_current_objective(current_mission)  # Go ahead and progress to nex objective if it exists.
+			
+
 	# IF this is true then objectives are completed
-	if current_objective.target_count <= current_objective.current_count:
-		current_objective.completed = true
-		objective_completed.emit(current_objective)
-		var dialog_key = "objective_completed_" + str(current_objective.type)
-		_send_companion_dialog(dialog_key, current_mission) ## So Companion can react
-		update_current_objective(current_mission)  # Go ahead and progress to nex objective if it exists.
+	
 		
 		
 	update_mission_ui()
@@ -1112,5 +1125,5 @@ func _force_learning_companion_connection():
 			_on_mission_started_for_companion(current_mission)
 
 
-func _on_hud_population_updated(new_population: Variant) -> void:
-	update_objective_progress(current_mission.id, new_population)
+func population_updated(new_population: Variant) -> void:
+	update_objective_progress(current_mission.id)

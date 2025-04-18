@@ -1,4 +1,4 @@
-[gd_scene load_steps=33 format=3 uid="uid://vgwrcfy1qawf"]
+[gd_scene load_steps=34 format=3 uid="uid://vgwrcfy1qawf"]
 
 [ext_resource type="Script" path="res://scripts/builder.gd" id="1_jybm7"]
 [ext_resource type="Environment" uid="uid://jbptgqvstei3" path="res://scenes/main-environment.tres" id="1_yndf3"]
@@ -8,24 +8,25 @@
 [ext_resource type="Resource" uid="uid://cntgl86ianngh" path="res://structures/building-small-a.tres" id="5_v5o2m"]
 [ext_resource type="Resource" uid="uid://ccb475jeg7ym5" path="res://structures/grass-trees.tres" id="6_fwsy4"]
 [ext_resource type="Script" path="res://scripts/view.gd" id="8_yovpv"]
+[ext_resource type="Resource" uid="uid://tm532uesguhk" path="res://structures/grass.tres" id="9_2t3p4"]
+[ext_resource type="Resource" uid="uid://d2jplegnkl6u2" path="res://structures/road-corner.tres" id="10_ii8xx"]
 [ext_resource type="Script" path="res://scripts/mission/mission_manager.gd" id="10_oe3re"]
 [ext_resource type="PackedScene" uid="uid://dmsy06s02tcw4" path="res://scenes/generic_text_panel.tscn" id="13_7i6dj"]
 [ext_resource type="Script" path="res://scripts/mission/mission_ui.gd" id="13_xvw5w"]
 [ext_resource type="Script" path="res://resources/generic_text_panel.resource.gd" id="14_76jlq"]
 [ext_resource type="Script" path="res://scripts/mission/learning_panel.gd" id="14_q2ymb"]
 [ext_resource type="Script" path="res://scripts/mission/mission_data.gd" id="14_vcrh8"]
-[ext_resource type="Resource" uid="uid://x5h4xutbldq3" path="res://mission/first_mission.tres" id="15_obmwc"]
-[ext_resource type="Resource" uid="uid://cjr36hqnmyn0x" path="res://mission/second_mission.tres" id="16_rl54y"]
-[ext_resource type="Resource" uid="uid://dykbopx8n3c3v" path="res://mission/third_mission.tres" id="17_rrdy6"]
+[ext_resource type="Resource" uid="uid://x5h4xutbldq3" path="res://mission/unit_1.02/census_planning_1.tres" id="15_obmwc"]
+[ext_resource type="Resource" uid="uid://cjr36hqnmyn0x" path="res://mission/unit_1.02/census_planning_2.tres" id="16_rl54y"]
+[ext_resource type="Resource" uid="uid://dykbopx8n3c3v" path="res://mission/unit_1.02/census_planning_3.tres" id="17_rrdy6"]
 [ext_resource type="FontFile" uid="uid://d0cxd77jybrcn" path="res://fonts/lilita_one_regular.ttf" id="17_vlub6"]
 [ext_resource type="PackedScene" uid="uid://b4gkfwf4i3ydl" path="res://scenes/character.tscn" id="18_8lrh8"]
-[ext_resource type="Resource" uid="uid://bho4qh41asyk1" path="res://mission/fourth_mission.tres" id="18_h4fpv"]
 [ext_resource type="PackedScene" uid="uid://cgk66f6rg03mj" path="res://scenes/hud.tscn" id="18_hud"]
 [ext_resource type="PackedScene" uid="uid://bqjnp7uypupog" path="res://scenes/controls_panel.tscn" id="19_controls"]
-[ext_resource type="Resource" uid="uid://p3xwn2mp6bm6" path="res://mission/fifth_mission.tres" id="19_e8sub"]
 [ext_resource type="Script" path="res://scripts/game_manager.gd" id="20_game_manager"]
-[ext_resource type="Resource" uid="uid://bv4r7ebpjdce4" path="res://mission/sixth_mission.tres" id="20_r0ysx"]
+[ext_resource type="Resource" uid="uid://442cwthak2pa" path="res://mission/unit_1.03_1.05/market_research_1.tres" id="20_ngu16"]
 [ext_resource type="PackedScene" uid="uid://b4s46k58ddpyc" path="res://scenes/sound_panel.tscn" id="21_sound_panel"]
+[ext_resource type="Resource" uid="uid://dtal0tl2ee336" path="res://structures/store.tres" id="21_y11qv"]
 
 [sub_resource type="Resource" id="Resource_1gdbm"]
 script = ExtResource("14_76jlq")
@@ -119,7 +120,7 @@ outro_text_resource = SubResource("Resource_ja86h")
 
 [node name="Builder" type="Node3D" parent="." node_paths=PackedStringArray("selector", "selector_container", "view_camera", "gridmap", "cash_display")]
 script = ExtResource("1_jybm7")
-structures = Array[ExtResource("2_54v6r")]([ExtResource("2_bwyku"), ExtResource("5_v5o2m"), ExtResource("6_fwsy4")])
+structures = Array[ExtResource("2_54v6r")]([ExtResource("2_bwyku"), ExtResource("5_v5o2m"), ExtResource("6_fwsy4"), ExtResource("21_y11qv"), ExtResource("9_2t3p4"), ExtResource("10_ii8xx")])
 selector = NodePath("Selector")
 selector_container = NodePath("Selector/Container")
 view_camera = NodePath("../View/Camera")
@@ -168,7 +169,7 @@ resource_data = ExtResource("14_76jlq")
 
 [node name="MissionManager" type="Node" parent="." node_paths=PackedStringArray("mission_ui", "builder")]
 script = ExtResource("10_oe3re")
-missions = Array[ExtResource("14_vcrh8")]([ExtResource("15_obmwc"), ExtResource("16_rl54y"), ExtResource("17_rrdy6"), ExtResource("18_h4fpv"), ExtResource("19_e8sub"), ExtResource("20_r0ysx")])
+missions = Array[ExtResource("14_vcrh8")]([ExtResource("15_obmwc"), ExtResource("16_rl54y"), ExtResource("17_rrdy6"), ExtResource("20_ngu16")])
 mission_ui = NodePath("MissionPanel")
 builder = NodePath("../Builder")
 character_scene = ExtResource("18_8lrh8")

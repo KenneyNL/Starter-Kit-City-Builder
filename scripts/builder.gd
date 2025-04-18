@@ -66,7 +66,7 @@ func _ready():
 		if structure.model.resource_path.contains("power_plant"):
 			# Scale power plant model to be much smaller (0.5x)
 			transform = transform.scaled(Vector3(0.5, 0.5, 0.5))
-		elif structure.type == Structure.StructureType.RESIDENTIAL_BUILDING or structure.type == Structure.StructureType.ROAD:
+		else:
 			# Scale buildings and roads to be consistent (3x)
 			transform = transform.scaled(Vector3(3.0, 3.0, 3.0))
 		
@@ -493,16 +493,10 @@ func update_structure():
 		_model.scale = Vector3(0.5, 0.5, 0.5)
 		# Center the power plant model within the selector
 		_model.position = Vector3(-3.0, 0.0, 3.0)  # Reset position
-	elif (structures[index].type == Structure.StructureType.RESIDENTIAL_BUILDING
-	   or structures[index].type == Structure.StructureType.ROAD
-	   or structures[index].type == Structure.StructureType.TERRAIN
-	   or structures[index].model.resource_path.contains("grass")):
+	else:
 		# Scale buildings, roads, and decorative terrain to match (3x)
 		_model.scale = Vector3(3.0, 3.0, 3.0)
 		_model.position.y += 0.0 # No need for Y adjustment with scaling
-	else:
-		# Standard positioning for other structures
-		_model.position.y += 0.25
 	
 	# Get the selector scale from the structure resource
 	var scale_factor = structures[index].selector_scale
