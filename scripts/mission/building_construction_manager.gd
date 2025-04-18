@@ -1,12 +1,18 @@
 extends Node
 class_name BuildingConstructionManager
 
+# Constants
+const ObjectiveType = preload("res://configs/data.config.gd").ObjectiveType
+
+
 # Signals
 signal construction_completed(position)
 signal worker_construction_started
 signal worker_construction_ended
 
+
 const CONSTRUCTION_TIME = 10.0 # seconds to build a building
+
 
 # References to necessary scenes and resources
 var worker_scene: PackedScene
@@ -259,8 +265,8 @@ func _on_worker_construction_started():
 func _on_worker_construction_ended():
 	# Forward the signal for mission managers/other systems that need it
 	worker_construction_ended.emit()
-func _on_update_population(count: int):
-			hud_manager.population_updated.emit(count)
+func update_population(count: int):
+			EventBus.population_update.emit(count)
 	
 
 
@@ -307,40 +313,11 @@ func _complete_construction(position: Vector3):
 	# Spawn a resident from the new building (except for first building in mission 1)
 	if should_spawn_resident:
 		_spawn_resident_from_building(position)
-		
-	# Update population in the HUD when construction is complete
-	# Try different possible paths to find the HUD
-	var hud = get_node_or_null("/root/Main/CanvasLayer/HUD")
-	
-	# If not found, try to find it by group (we added the HUD to "hud" group)
-	if not hud:
-		var hud_nodes = get_tree().get_nodes_in_group("hud")
-		if hud_nodes.size() > 0:
-			hud = hud_nodes[0]
-	
-	# If not found, try other common paths
-	if not hud:
-		var scene_root = get_tree().get_root()
-		for child in scene_root.get_children():
-			if child.name == "Main":
-				if child.has_node("CanvasLayer/HUD"):
-					hud = child.get_node("CanvasLayer/HUD")
-					break
-	
-	# Last resort - try to find using builder's cash_display
-	if not hud and builder and builder.cash_display:
-		var parent = builder.cash_display.get_parent()
-		while parent and parent.get_parent():
-			if "HUD" in parent.name:
-				hud = parent
-				break
-			parent = parent.get_parent()
-	
-	if hud and site["structure_index"] >= 0 and site["structure_index"] < builder.structures.size():
-		var structure = builder.structures[site["structure_index"]]
-		
-		if structure.type == Structure.StructureType.RESIDENTIAL_BUILDING and structure.population_count > 0:
-			_on_update_population(structure.population_count)
+
+	var structure = builder.structures[site["structure_index"]]
+ 	
+	if structure.type == Structure.StructureType.RESIDENTIAL_BUILDING and structure.population_count > 0:
+			update_population(structure.population_count)
 #			hud.total_population += structure.population_count
 #			hud.update_hud()
 #			hud.population_updated.emit(hud.total_population)
@@ -375,25 +352,13 @@ func _update_mission_objective_on_completion(structure_index: int):
 		# Check if this is a residential building
 		if structure_index >= 0 and structure_index < builder.structures.size():
 			var structure = builder.structures[structure_index]
-			
-			if structure.type == Structure.StructureType.RESIDENTIAL_BUILDING:
-				# For mission 3, we'll rely on the fix_mission.gd script to maintain an accurate count
-				# This prevents double counting, as we just need to make sure buildings are counted
-				# based on their actual presence in the scene
-				if mission_manager.current_mission.id == "3":
-					# Instead of directly updating, we'll wait for the fix script to apply the proper count
-					pass
-				
-				# Special handling for mission 1
-				elif mission_manager.current_mission.id == "1":
-					# For mission 1, we need to make sure the objectives are updated
-					mission_manager.update_objective_progress(
+
+			if mission_manager.current_objective.type == ObjectiveType.BUILD_RESIDENTIAL && structure.type == Structure.StructureType.RESIDENTIAL_BUILDING:
+				mission_manager.update_objective_progress(
 						mission_manager.current_mission.id,
-						MissionObjective.ObjectiveType.BUILD_RESIDENTIAL
+						1
 					)
-					
-					# Trigger an immediate progress check
-					mission_manager.check_mission_progress(mission_manager.current_mission.id)
+				mission_manager.check_mission_progress(mission_manager.current_mission.id)
 
 # Place the final building at the construction site
 func _place_final_building(position: Vector3, structure_index: int):

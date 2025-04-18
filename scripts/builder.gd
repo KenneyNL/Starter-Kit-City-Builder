@@ -646,11 +646,9 @@ func _update_mission_objective_on_demolish():
 	var mission_manager = get_node_or_null("/root/Main/MissionManager")
 	
 	if mission_manager and mission_manager.current_mission:
-		# Check if we're in mission 3 (build 40 residential buildings)
-		if mission_manager.current_mission.id != "3":
 			# For other missions, use the normal method
 			var mission_id = mission_manager.current_mission.id
-			mission_manager.update_objective_progress(mission_id, MissionObjective.ObjectiveType.BUILD_RESIDENTIAL, -1)
+			mission_manager.update_objective_progress(mission_id, MissionObjective.ObjectiveType, -1)
 		
 # Function to remove terrain (grass or trees)
 func _remove_terrain(position: Vector3):

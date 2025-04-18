@@ -31,20 +31,13 @@
 script = ExtResource("14_76jlq")
 panel_type = 0
 title = "Welcome to Stem City "
-body_text = "Hi League Community,
+body_text = "Welcome to Stem City!
 
   Your goal is to build a thriving community from the ground up. As you complete missions, you'll unlock new structures to expand and improve your city.
 
-  Each mission introduces important Math concepts used in urban planning and city management. You'll apply mathematics while watching your city grow.
+As the new city planner, you need to establish a baseline understanding of your growing community. The mayor has requested a comprehensive census to guide future development.
 
-You are the very first group of students who get to test this. So keep in mind there will be bugs, but do note them. 
 
-We are aware of the following bugs:
-- Population count may be off by 1
-- Lighting Baking in Web Builds are too bright
-- We don't restrict building off of roads which will cause workers not to reach buildings
-- Building overlap
-- No builders for Power Plant 
 
 
   Ready to start planning your city? Click Close to see the controls and begin your first mission!

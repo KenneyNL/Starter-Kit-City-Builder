@@ -9,7 +9,6 @@ type = 10
 target_count = 1
 current_count = 0
 description = "Build a power plant to provide electricity to your city"
-structure_index = 7
 completed = false
 
 [resource]

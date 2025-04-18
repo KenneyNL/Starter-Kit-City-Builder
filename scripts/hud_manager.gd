@@ -1,16 +1,15 @@
 extends Node
 
 # Signals
-signal population_updated(new_population)
-signal electricity_updated(usage, production)
 
+signal electricity_updated(usage, production)
 # Variables
 var total_population: int = 0
 var total_kW_usage: float = 0.0
 var total_kW_production: float = 0.0
 
 # References
-var builder
+var buildeJuj
 var building_construction_manager
 var population_label: Label
 var electricity_label: Label
@@ -19,14 +18,17 @@ var population_tooltip: Control
 var electricity_tooltip: Control
 var controls_panel: PanelContainer
 var sound_panel: PanelContainer
+var builder:Node
 
 func _ready():
 	# Connect to signals from the builder
 	builder = get_node_or_null("/root/Main/Builder")
-	population_updated.connect(update_population_count)
 	if builder:
 		builder.structure_placed.connect(_on_structure_placed)
 		builder.structure_removed.connect(_on_structure_removed)
+
+
+	EventBus.population_update.connect(set_population_count)
 		
 	# Initialize UI elements
 	population_label = $HBoxContainer/PopulationItem/PopulationLabel
@@ -119,7 +121,7 @@ func _on_structure_removed(structure_index, position):
 	
 	
 # Update Population
-func update_population_count(count: int):
+func set_population_count(count: int):
 	total_population += count
 	population_label.text = str(total_population)
 	

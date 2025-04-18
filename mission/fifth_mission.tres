@@ -9,7 +9,6 @@ type = 7
 target_count = 1
 current_count = 0
 description = "Calculate how many power plants are needed to supply electricity to 40 houses."
-structure_index = -1
 completed = false
 
 [resource]

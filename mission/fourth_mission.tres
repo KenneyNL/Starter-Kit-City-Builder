@@ -9,7 +9,6 @@ type = 3
 target_count = 40
 current_count = 0
 description = "Build 40 residential buildings with construction workers"
-structure_index = -1
 completed = false
 
 [resource]

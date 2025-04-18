@@ -5,17 +5,16 @@
 
 [sub_resource type="Resource" id="Resource_c06be"]
 script = ExtResource("1_l3spi")
-type = 7
-target_count = 1
+type = 2
+target_count = 50
 current_count = 0
-description = "Compare two construction companies and determine which one is more efficient for building 40 houses in a week."
-structure_index = -1
+description = "Reach a population of 50 citizens"
 completed = false
 
 [resource]
 script = ExtResource("2_b4llw")
 id = "3"
-title = "Compare Construction Companies"
+title = "Census Planning"
 description = "As your city grows, you need to choose the most efficient construction company."
 objectives = Array[ExtResource("1_l3spi")]([SubResource("Resource_c06be")])
 rewards = {

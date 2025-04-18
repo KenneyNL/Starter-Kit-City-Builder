@@ -25,6 +25,7 @@ general/default_playback_type.web=0
 [autoload]
 
 SoundManager="*res://scripts/sound_manager.gd"
+EventBus="*res://global/event_bus.gd"
 
 [display]
 

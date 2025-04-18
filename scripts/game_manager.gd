@@ -1,6 +1,11 @@
 extends Node
 
-# This script handles overall game management tasks
+# This script handles overall game management tasks, including audio management and UI interactions.
+var config = ConfigFile.new()
+
+
+
+
 
 var music_player: AudioStreamPlayer
 var building_sfx: AudioStreamPlayer
@@ -14,6 +19,11 @@ var construction_sfx: AudioStreamPlayer
 
 
 func _ready():
+	# Load data from a file.
+	var err = config.load("global://config.cfg")
+	# If the file didn't load, ignore it.
+	if err != OK:
+		return
 	# Register SoundManager in the main loop for JavaScript bridge to find
 	Engine.get_main_loop().set_meta("sound_manager", get_node_or_null("/root/SoundManager"))
 	
@@ -299,6 +309,10 @@ func _on_mission_manager_all_missions_completed() -> void:
 
 
 func _on_mission_manager_mission_started(mission: MissionData) -> void:
+	var mission_manager: Node = get_node_or_null("/root/Main/MissionManager")
+	if mission_manager and mission_manager.mission_ui:
+		mission_manager.mission_ui.update_mission_display(mission)
+		
 	var mission_text = GenericText.new()
 	mission_text.panel_type = 2
 	mission_text.title = mission.title
