@@ -4,6 +4,7 @@ class_name MissionManager
 # Add the JavaScript bridge for HTML5 export
 # This ensures JavaScript is available and degrades gracefully on other platforms
 const JSBridge = preload("res://scripts/javascript_bridge.gd")
+const ObjectiveType = preload("res://configs/data.config.gd").ObjectiveType
 
 signal mission_started(mission: MissionData)
 signal mission_completed(mission: MissionData)
@@ -18,14 +19,15 @@ signal all_missions_completed()
 @export var character_scene: PackedScene
 
 var current_mission: MissionData
+var current_objective: MissionObjective
 var active_missions: Dictionary = {}  # mission_id: MissionData
  
 var character_spawned: bool = false
 var learning_companion_connected: bool = false
 
 # Panel state tracking
-var is_unlocked_panel_showing = false
-var delayed_mission_start_queue = []  # Queue of missions to start after unlocked panel closes
+var is_unlocked_panel_showing: bool = false
+var delayed_mission_start_queue     = []  # Queue of missions to start after unlocked panel closes
 
 # Mission skip variables
 var skip_key_presses: int = 0
@@ -39,7 +41,8 @@ var learning_panel
 var fullscreen_learning_panel
 
 func _ready():
-	
+
+	EventBus.population_update.connect(population_updated)
 	if builder:
 		# Connect to builder signals
 		builder.connect("structure_placed", _on_structure_placed)
@@ -225,138 +228,14 @@ func start_mission(mission: MissionData):
 		
 	current_mission = mission
 	active_missions[mission.id] = mission
+	mission_started.emit(current_mission)
 	
-	# Send mission started event to the learning companion
-	# This will also send the companion dialog data
-	_on_mission_started_for_companion(mission)
+	# Set the first objective as the current objective
+	if mission.objectives.size() > 0:
+		current_objective = mission.objectives[0]
+		print("Set current objective: " + str(current_objective.type) + " - " + current_objective.description)
 	
-	# Fix for mission 3 to ensure accurate count
-	if mission.id == "3":
-		# Reset the residential building count to 0 to avoid any double counting
-		for objective in mission.objectives:
-			if objective.type == MissionObjective.ObjectiveType.BUILD_RESIDENTIAL:
-				objective.current_count = 0
-				objective.completed = false
-				
-		# Load and run the fix script to count actual buildings
-		var FixMissionScript = load("res://scripts/fix_mission.gd")
-		if FixMissionScript:
-			var fix_node = Node.new()
-			fix_node.set_script(FixMissionScript)
-			fix_node.name = "FixMissionHelper"
-			add_child(fix_node)
 	
-	# Add decorative structures and curved roads
-	# Use more robust checking - fallback to ID for backward compatibility
-	var is_construction_or_expansion = (mission.id == "2" or mission.id == "3")
-	if is_construction_or_expansion and builder:
-		# Check if we need to add the road-corner and decoration structures
-		var has_road_corner = false
-		var has_grass_trees_tall = false
-		var has_grass = false
-		
-		# Look through existing structures to see if we already have them
-		for structure in builder.structures:
-			if structure.model.resource_path.contains("road-corner"):
-				has_road_corner = true
-			elif structure.model.resource_path.contains("grass-trees-tall"):
-				has_grass_trees_tall = true
-			elif structure.model.resource_path.contains("grass") and not structure.model.resource_path.contains("trees"):
-				has_grass = true
-		
-		# Add the road-corner if missing
-		if not has_road_corner:
-			var road_corner = load("res://structures/road-corner.tres")
-			if road_corner:
-				builder.structures.append(road_corner)
-		
-		# Add the grass-trees-tall if missing
-		if not has_grass_trees_tall:
-			var grass_trees_tall = load("res://structures/grass-trees-tall.tres")
-			if grass_trees_tall:
-				builder.structures.append(grass_trees_tall)
-		
-		# Add the grass if missing
-		if not has_grass:
-			var grass = load("res://structures/grass.tres")
-			if grass:
-				builder.structures.append(grass)
-	
-	# Special handling for power plant mission: add power plant
-	# Use more robust checking for power missions - check power_math_content as well
-	elif (mission.id == "5" or mission.power_math_content != "") and builder:
-		# Check if we need to add the power plant
-		var has_power_plant = false
-		
-		# Look through existing structures to see if we already have it
-		for structure in builder.structures:
-			if structure.model.resource_path.contains("power_plant"):
-				has_power_plant = true
-				break
-		
-		# Add the power plant if missing
-		if not has_power_plant:
-			var power_plant = load("res://structures/power-plant.tres")
-			if power_plant:
-				builder.structures.append(power_plant)
-		
-		# Update the mesh library to include the new structures
-		if builder.gridmap and builder.gridmap.mesh_library:
-			var mesh_library = builder.gridmap.mesh_library
-			
-			# Update mesh library for any new structures
-			for i in range(builder.structures.size()):
-				var structure = builder.structures[i]
-				if i >= mesh_library.get_item_list().size():
-					var id = mesh_library.get_last_unused_item_id()
-					mesh_library.create_item(id)
-					mesh_library.set_item_mesh(id, builder.get_mesh(structure.model))
-					
-					# Apply appropriate scaling for all road types, buildings, and terrain
-					var transform = Transform3D()
-					if structure.model.resource_path.contains("power_plant"):
-						# Scale power plant model to be much smaller (0.5x)
-						transform = transform.scaled(Vector3(0.5, 0.5, 0.5))
-					elif (structure.type == Structure.StructureType.RESIDENTIAL_BUILDING
-					   or structure.type == Structure.StructureType.ROAD
-					   or structure.type == Structure.StructureType.TERRAIN
-					   or structure.model.resource_path.contains("grass")):
-						# Scale buildings, roads, and decorative terrain to be consistent (3x)
-						transform = transform.scaled(Vector3(3.0, 3.0, 3.0))
-					
-					mesh_library.set_item_mesh_transform(id, transform)
-			
-			# Make sure the builder's structure selector is updated
-			builder.update_structure()
-	
-	# Check if mission has a learning objective
-	var has_learning_objective = false
-	# Make sure mission has valid objectives data
-	if mission != null and mission.objectives != null:
-		for objective in mission.objectives:
-			if objective != null and objective.type == MissionObjective.ObjectiveType.LEARNING:
-				has_learning_objective = true
-				break
-	
-	# Show learning panel if mission has a learning objective
-	if has_learning_objective:
-		# Determine which panel to use based on whether full_screen_path is provided
-		if not mission.full_screen_path.is_empty():
-			# Use fullscreen panel for fullscreen missions
-			if fullscreen_learning_panel:
-				fullscreen_learning_panel.show_fullscreen_panel(mission)
-			else:
-				print("ERROR: Fullscreen learning panel not available but mission requires it")
-		else:
-			# Use regular panel for traditional missions
-			if learning_panel:
-				learning_panel.show_learning_panel(mission)
-			else:
-				print("ERROR: Regular learning panel not available")
-	
-	# Emit signal and update UI
-	mission_started.emit(mission)
-	update_mission_ui()
 
 func complete_mission(mission_id: String):
 	if not active_missions.has(mission_id):
@@ -376,8 +255,8 @@ func complete_mission(mission_id: String):
 	print("Handling structure unlocking for mission: " + mission.id)
 	_handle_structure_unlocking(mission)
 	
-	# Remove from active missions
-	active_missions.erase(mission_id)
+	# Keep a copy of the mission for UI display during transition
+	var completed_mission = mission
 	
 	# Figure out if there's a next mission
 	var next_mission: MissionData
@@ -391,45 +270,74 @@ func complete_mission(mission_id: String):
 	# Emit mission completed signal
 	mission_completed.emit(mission)
 	
-	# Start the next mission if one is available
+	# Only remove from active missions after we're ready to show the next one
+	# This ensures the UI always has a mission to display
 	if next_mission:
-		# Start the next mission after a short delay
+		# Keep the active mission during the delay
 		await get_tree().create_timer(2.0).timeout
+		
+		# Only now remove the old mission
+		active_missions.erase(mission_id)
+		
+		# Start the next mission
 		start_mission(next_mission)
 	else:
+		# Only remove after delay for last mission too
+		await get_tree().create_timer(2.0).timeout
+		active_missions.erase(mission_id)
+		
 		all_missions_completed.emit()
 		print("No more missions available - all complete!")
 		
 		# Send the "end" event to the companion
 		await get_tree().create_timer(2.0).timeout
 	
-func update_objective_progress(mission_id, objective_type, count_change = 1):
-	if not active_missions.has(mission_id):
-		return
+func update_objective_progress(structure:Structure = null):
+	match current_objective.type:
+		ObjectiveType.BUILD_RESIDENTIAL:
+			current_objective.current_count += structure.population_count
+			if current_objective.target_count <= current_objective.current_count:
+				current_objective.completed = true
+				objective_completed.emit(current_objective)
+				var dialog_key = "objective_completed_" + str(current_objective.type)
+				_send_companion_dialog(dialog_key, current_mission) ## So Companion can react
+				update_current_objective(current_mission)
+		ObjectiveType.BUILD_STRUCTURE:
+			current_objective.current_count += 1
+			if current_objective.target_count <= current_objective.current_count:
+				current_objective.completed = true
+				objective_completed.emit(current_objective)
+				var dialog_key = "objective_completed_" + str(current_objective.type)
+				_send_companion_dialog(dialog_key, current_mission) ## So Companion can react
+				update_current_objective(current_mission)  # Go ahead and progress to nex objective if it exists.
+		ObjectiveType.REACH_POPULATION:
+			if Globals.population >= current_objective.target_count:
+				current_objective.completed = true
+				objective_completed.emit(current_objective)
+				var dialog_key = "objective_completed_" + str(current_objective.type)
+				_send_companion_dialog(dialog_key, current_mission) ## So Companion can react
+				update_current_objective(current_mission)  # Go ahead and progress to nex objective if it exists.
+
+	# IF this is true then objectives are completed
+	
 		
-	var mission = active_missions[mission_id]
-	for objective in mission.objectives:
-		if objective.type == objective_type:
-			objective.current_count += count_change
-			
-			# Only update to completed if we've reached the target
-			if objective.current_count >= objective.target_count and not objective.completed:
-				objective.completed = true
-				objective_completed.emit(objective)
-				
-				# Send dialog event if available
-				var dialog_key = "objective_completed_" + str(objective.type)
-				_send_companion_dialog(dialog_key, mission)
-			
-			# Update UI
-			update_mission_ui()
-			
-			# Emit progress signal for objective
-			objective_progress.emit(objective, objective.current_count)
-			
-			# Check if the mission is complete
-			check_mission_completion(mission_id)
-			break
+		
+	update_mission_ui()
+	objective_progress.emit(current_objective, current_objective.current_count)
+
+	
+	
+
+
+func is_structure_of_current_mission(structure:Structure):
+	if not current_mission:
+		print("ERROR: No current mission to check structure against")
+		return false
+	if current_objective.structure == structure:
+		return true
+	else:
+		return false
+	
 			
 func check_objective_completion(mission_id, objective_type):
 	if not active_missions.has(mission_id):
@@ -469,6 +377,9 @@ func reset_objective_count(objective_type, new_count):
 				# Send dialog event if available
 				var dialog_key = "objective_completed_" + str(objective.type)
 				_send_companion_dialog(dialog_key, mission)
+				
+				# Update current objective to next incomplete one
+				update_current_objective(mission)
 			
 			# Update UI
 			update_mission_ui()
@@ -511,16 +422,18 @@ func _on_structure_placed(structure_index, position):
 	var structure = builder.structures[structure_index]
 	print("Structure placed: " + structure.model.resource_path)
 	
-	# Update objectives based on structure type
+	# Check if this structure is needed for the current objective
+	if current_mission and is_structure_of_current_mission(structure):
+		# Update the objective progress
+		update_objective_progress(structure)
+			
 	if current_mission:
-		if structure.type == Structure.StructureType.ROAD:
-			update_objective_progress(current_mission.id, MissionObjective.ObjectiveType.BUILD_ROAD)
-		elif structure.type == Structure.StructureType.RESIDENTIAL_BUILDING:
+		if structure.type == Structure.StructureType.RESIDENTIAL_BUILDING:
 			# Note: for mission 3, the objective update happens after construction is complete
 			# See builder.gd -> _on_construction_completed
 			
 			# Special check for mission 1 since we might need to manually spawn a character
-			if current_mission.id == "1" and not character_spawned:
+			if character_spawned:
 				# Only spawn a new character if:
 				# 1. This is mission 1
 				# 2. We haven't spawned a character yet
@@ -535,16 +448,6 @@ func _on_structure_placed(structure_index, position):
 				if spawn_character:
 					# This will be done after construction completes in mission_manager._on_construction_completed
 					print("Character will be spawned after construction completes")
-				else:
-					# Update the objective progress for building a residential structure
-					update_objective_progress(current_mission.id, MissionObjective.ObjectiveType.BUILD_RESIDENTIAL)
-			else:
-				# Normal case - not mission 1 or character already spawned
-				update_objective_progress(current_mission.id, MissionObjective.ObjectiveType.BUILD_RESIDENTIAL)
-		elif structure.type == Structure.StructureType.POWER_PLANT:
-			# For mission 5, we update the economy/power objective when a power plant is built
-			if current_mission.id == "6":
-				update_objective_progress(current_mission.id, MissionObjective.ObjectiveType.ECONOMY)
 			
 	# Check for power plant unlocking in normal gameplay
 	if structure.type == Structure.StructureType.POWER_PLANT:
@@ -558,21 +461,6 @@ func _on_structure_placed(structure_index, position):
 				hud.total_kW_production += power_produced
 				hud.update_hud()
 				
-#	# Check for residential building placement to update population
-#	if structure.type == Structure.StructureType.RESIDENTIAL_BUILDING:
-#		# This should increase the city's population
-#		var population_added = structure.population_count
-#		if population_added > 0:
-#			# Get the HUD if available
-#			var hud = get_node_or_null("/root/Main/CanvasLayer/HUD")
-#			if hud:
-#				# Update the population display
-#				hud.total_population += population_added
-#				hud.update_hud()
-#				
-#				# Emit signal for population update
-#				hud.population_updated.emit(hud.total_population)
-
 # Only used for mission 3, to disable builder functionality during the companion dialog
 func _on_learning_panel_opened():
 	if builder:
@@ -765,9 +653,6 @@ func _spawn_character_on_road(building_position: Vector3):
 	# Set character as spawned to prevent multiple spawns
 	character_spawned = true
 	
-	# Update the objective progress for meeting a character
-	if current_mission and current_mission.id == "1":
-		update_objective_progress(current_mission.id, MissionObjective.ObjectiveType.MEET_CHARACTER)
 	
 	# Make sure the character has auto-patrol is enabled if the character supports it
 	if character.get("auto_patrol") != null:
@@ -998,33 +883,13 @@ func _handle_structure_unlocking(mission):
 	# If we already have explicit unlocked items defined, skip the hardcoded rules
 	var has_explicit_unlocks = mission is Resource and "unlocked_items" in mission and mission.unlocked_items.size() > 0
 	
-	# Check for power plant unlocking in power-related missions (only if no explicit unlocks)
-	if (not has_explicit_unlocks) and (mission.id == "4" or mission.id == "5" or mission.power_math_content != ""):
-		print("Using hardcoded power plant unlocks for mission: " + mission.id)
-		for structure in builder.structures:
-			if structure.model and structure.model.resource_path.contains("power_plant"):
-				# Make sure structure has the unlocked property before setting it
-				if "unlocked" in structure:
-					structure.unlocked = true
-					# Only add to unlocked_structures if not already there
-					if not unlocked_structures.has(structure):
-						unlocked_structures.append(structure)
-				else:
-					print("WARNING: Power plant structure doesn't have an 'unlocked' property")
+	# Commented out hardcoded power plant unlocking
+	# Only use explicit unlocks from the mission data's unlocked_items array
+	# No more hardcoded behavior for specific mission IDs
 	
-	# Check for curved roads and decorations in city expansion missions (only if no explicit unlocks)
-	if (not has_explicit_unlocks) and (mission.id == "2" or mission.id == "3"):
-		print("Using hardcoded curved roads and decorations for mission: " + mission.id)
-		for structure in builder.structures:
-			if structure.model and (structure.model.resource_path.contains("road-corner") or structure.model.resource_path.contains("grass-trees-tall")):
-				# Make sure structure has the unlocked property before setting it
-				if "unlocked" in structure:
-					structure.unlocked = true
-					# Only add to unlocked_structures if not already there
-					if not unlocked_structures.has(structure):
-						unlocked_structures.append(structure)
-				else:
-					print("WARNING: Road/decoration structure doesn't have an 'unlocked' property")
+	# Commented out hardcoded curved roads and decorations unlocking
+	# Only use explicit unlocks from the mission data's unlocked_items array
+	# No more hardcoded behavior for specific mission IDs
 	
 	# Make sure the builder starts with a valid unlocked structure selected
 	var found_unlocked = false
@@ -1223,6 +1088,30 @@ func _send_companion_dialog(dialog_key, mission):
 		JSBridge.get_interface().sendCompanionDialog(dialog_key, dialog_data)
 		return true
 	return false
+	
+# Helper function to update the current objective to the next incomplete one
+func update_current_objective(mission = null):
+	# If no mission was provided, use the current mission
+	if mission == null:
+		mission = current_mission
+	
+	if not mission:
+		return
+	
+	# Look for the first incomplete objective
+	for objective in mission.objectives:
+		if not objective.completed:
+			current_objective = objective
+			print("Updated current objective: " + str(current_objective.type) + " - " + current_objective.description)
+			return
+			
+	# If all objectives are complete, keep the last one as current and complete the mission
+	if mission.objectives.size() > 0:
+		current_objective = mission.objectives[-1]
+		print("All objectives complete, keeping last one as current objective")
+		# Complete the mission when we've found that all objectives are complete
+		if mission.id in active_missions:
+			check_mission_completion(mission.id)
 
 # Fallback to force a connection if the normal method doesn't work
 func _force_learning_companion_connection():
@@ -1239,3 +1128,8 @@ func _force_learning_companion_connection():
 		# Send initial event if we've already started
 		if current_mission:
 			_on_mission_started_for_companion(current_mission)
+
+
+func population_updated(new_population: Variant) -> void:
+	if current_objective.type == ObjectiveType.REACH_POPULATION:
+		update_objective_progress()

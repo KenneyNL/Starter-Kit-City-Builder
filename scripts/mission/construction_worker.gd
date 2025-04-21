@@ -216,24 +216,21 @@ func loop_construction_sound():
 		
 		# Play the sound again
 		construction_sound.play()
-		print("DEBUG: Looping sound for worker " + str(my_sound_id))
-	else:
-		print("DEBUG: Cannot loop sound - either worker not active or sound not set up")
+	
 
 func finish_construction():
-	print("DEBUG: Worker " + str(my_sound_id) + " finishing construction")
 	is_construction_active = false
 	construction_finished = true
 	
 	# Stop the construction sound
 	if construction_sound and construction_sound.playing:
 		construction_sound.stop()
-		print("DEBUG: Stopped sound for worker " + str(my_sound_id))
+
 	
 	# Stop the sound loop timer
 	if loop_timer and loop_timer.is_inside_tree():
 		loop_timer.stop()
-		print("DEBUG: Stopped timer for worker " + str(my_sound_id))
+
 	
 	# Emit signal for compatibility
 	construction_ended.emit()

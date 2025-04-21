@@ -1,26 +1,16 @@
 extends Resource
 class_name MissionObjective
 
-enum ObjectiveType {
-	BUILD_STRUCTURE,
-	BUILD_SPECIFIC_STRUCTURE,
-	BUILD_ROAD,
-	BUILD_RESIDENTIAL,
-	BUILD_COMMERCIAL,
-	BUILD_INDUSTRIAL,
-	REACH_CASH_AMOUNT,
-	LEARNING,
-	CUSTOM,
-	MEET_CHARACTER,
-	ECONOMY
-}
+const ObjectiveType = preload("res://configs/data.config.gd").ObjectiveType
 
 @export var type: ObjectiveType
 @export var target_count: int = 1
 @export var current_count: int = 0
 @export var description: String = ""
-@export var structure_index: int = -1  # For BUILD_SPECIFIC_STRUCTURE type
 @export var completed: bool = false
+
+@export_subgroup("Structure")
+@export var structure: Structure
 
 func is_completed() -> bool:
 	return current_count >= target_count

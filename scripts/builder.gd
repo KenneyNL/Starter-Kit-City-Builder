@@ -66,7 +66,7 @@ func _ready():
 		if structure.model.resource_path.contains("power_plant"):
 			# Scale power plant model to be much smaller (0.5x)
 			transform = transform.scaled(Vector3(0.5, 0.5, 0.5))
-		elif structure.type == Structure.StructureType.RESIDENTIAL_BUILDING or structure.type == Structure.StructureType.ROAD:
+		else:
 			# Scale buildings and roads to be consistent (3x)
 			transform = transform.scaled(Vector3(3.0, 3.0, 3.0))
 		
@@ -254,8 +254,7 @@ func action_build(gridmap_position):
 			# Make sure any existing NPCs are children of the navigation region
 			_move_characters_to_navregion()
 		elif is_power_plant:
-			# Special handling for power plants - add directly as a child of the builder
-			_add_power_plant(gridmap_position, index)
+			#add_power_plant(gridmap_position, index)
 			
 			# We still set the cell item for collision detection
 			gridmap.set_cell_item(gridmap_position, index, gridmap.get_orthogonal_index_from_basis(selector.basis))
@@ -493,16 +492,10 @@ func update_structure():
 		_model.scale = Vector3(0.5, 0.5, 0.5)
 		# Center the power plant model within the selector
 		_model.position = Vector3(-3.0, 0.0, 3.0)  # Reset position
-	elif (structures[index].type == Structure.StructureType.RESIDENTIAL_BUILDING
-	   or structures[index].type == Structure.StructureType.ROAD
-	   or structures[index].type == Structure.StructureType.TERRAIN
-	   or structures[index].model.resource_path.contains("grass")):
+	else:
 		# Scale buildings, roads, and decorative terrain to match (3x)
 		_model.scale = Vector3(3.0, 3.0, 3.0)
 		_model.position.y += 0.0 # No need for Y adjustment with scaling
-	else:
-		# Standard positioning for other structures
-		_model.position.y += 0.25
 	
 	# Get the selector scale from the structure resource
 	var scale_factor = structures[index].selector_scale
@@ -646,11 +639,9 @@ func _update_mission_objective_on_demolish():
 	var mission_manager = get_node_or_null("/root/Main/MissionManager")
 	
 	if mission_manager and mission_manager.current_mission:
-		# Check if we're in mission 3 (build 40 residential buildings)
-		if mission_manager.current_mission.id != "3":
 			# For other missions, use the normal method
 			var mission_id = mission_manager.current_mission.id
-			mission_manager.update_objective_progress(mission_id, MissionObjective.ObjectiveType.BUILD_RESIDENTIAL, -1)
+			mission_manager.update_objective_progress(mission_id, MissionObjective.ObjectiveType, -1)
 		
 # Function to remove terrain (grass or trees)
 func _remove_terrain(position: Vector3):

@@ -11,7 +11,7 @@ var react_sound_bridge = null # Will be instantiated from a script
 var audio_bridge = null # Will be instantiated from a script
 
 # Volume ranges from 0.0 to 1.0
-var music_volume: float = 0.1
+var music_volume: float = 0.0
 var sfx_volume: float = 0.1
 
 # Mute states
