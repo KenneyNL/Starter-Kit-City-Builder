@@ -1,24 +1,35 @@
-[gd_resource type="Resource" script_class="MissionData" load_steps=5 format=3 uid="uid://dm2o4dq2oml53"]
+[gd_resource type="Resource" script_class="MissionData" load_steps=7 format=3 uid="uid://dm2o4dq2oml53"]
 
 [ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_x4c68"]
-[ext_resource type="Resource" uid="uid://ccb475jeg7ym5" path="res://structures/grass-trees.tres" id="2_hcf87"]
+[ext_resource type="Resource" uid="uid://tm532uesguhk" path="res://structures/grass.tres" id="2_ckbw6"]
+[ext_resource type="Resource" uid="uid://y6jafhfnhbrp" path="res://structures/grass-trees-tall.tres" id="3_i0070"]
 [ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="3_mjpfs"]
 
 [sub_resource type="Resource" id="Resource_mldwf"]
 script = ExtResource("1_x4c68")
 type = 0
-target_count = 4
+target_count = 5
 current_count = 0
-description = "Add 4 grass tiles with trees"
+description = "Create 5 grass tiles"
 completed = false
-structure = ExtResource("2_hcf87")
+structure = ExtResource("2_ckbw6")
+
+[sub_resource type="Resource" id="Resource_ckbw6"]
+script = ExtResource("1_x4c68")
+type = 0
+target_count = 5
+current_count = 0
+description = "Create 5 tree tiles"
+completed = false
+structure = ExtResource("3_i0070")
+metadata/_custom_type_script = "uid://be2nkvjhpebhi"
 
 [resource]
 script = ExtResource("3_mjpfs")
 id = "11"
 title = "Grid Growth"
 description = "Complete your grid pattern with green spaces! Add trees and grass to create a more balanced and livable city pattern."
-objectives = Array[ExtResource("1_x4c68")]([SubResource("Resource_mldwf")])
+objectives = Array[ExtResource("1_x4c68")]([SubResource("Resource_mldwf"), SubResource("Resource_ckbw6")])
 rewards = {
 "cash": 300
 }

@@ -1,8 +1,7 @@
-[gd_resource type="Resource" script_class="MissionData" load_steps=7 format=3 uid="uid://fuxb3pfbbwjm"]
+[gd_resource type="Resource" script_class="MissionData" load_steps=5 format=3 uid="uid://fuxb3pfbbwjm"]
 
 [ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_75i2t"]
 [ext_resource type="Resource" uid="uid://cntgl86ianngh" path="res://structures/building-small-a.tres" id="2_lh8y5"]
-[ext_resource type="Resource" uid="uid://dtal0tl2ee336" path="res://structures/store.tres" id="3_3t66o"]
 [ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="4_30pdy"]
 
 [sub_resource type="Resource" id="Resource_qb5w1"]
@@ -14,28 +13,19 @@ description = "Have 6 residential buildings"
 completed = false
 structure = ExtResource("2_lh8y5")
 
-[sub_resource type="Resource" id="Resource_vcbou"]
-script = ExtResource("1_75i2t")
-type = 0
-target_count = 3
-current_count = 0
-description = "Have 3 store buildings"
-completed = false
-structure = ExtResource("3_3t66o")
-
 [resource]
 script = ExtResource("4_30pdy")
 id = "17"
-title = "Sustainable Development"
-description = "A balanced mix of residential and commercial zones is key to sustainable development. Model the ideal ratio for your city."
-objectives = Array[ExtResource("1_75i2t")]([SubResource("Resource_qb5w1"), SubResource("Resource_vcbou")])
+title = "Residential Development"
+description = "Build a residential zone to accommodate growth in your city's population. Adequate housing is the foundation of city planning."
+objectives = Array[ExtResource("1_75i2t")]([SubResource("Resource_qb5w1")])
 rewards = {
-"cash": 600
+"cash": 300
 }
-next_mission_id = "18"
+next_mission_id = "17b"
 graph_path = ""
 full_screen_path = ""
-intro_text = "Let's model the perfect balance between homes and businesses! You need 6 residential buildings and 3 store buildings."
+intro_text = "Let's focus on developing the residential area first! You need to build 6 residential buildings to accommodate your growing population."
 question_text = ""
 correct_answer = ""
 feedback_text = ""
@@ -48,12 +38,12 @@ companion_dialog = {
 "mission_completed": {
 "animation": "happy",
 "duration": 6000,
-"text": ["Perfect balance! This ratio of homes to businesses creates a sustainable economic model."]
+"text": ["Great job creating housing for your citizens! Now we can think about commercial needs."]
 },
 "mission_started": {
 "animation": "excited",
 "duration": 6000,
-"text": ["Time to model the perfect ratio! A sustainable city needs the right balance of homes and businesses."]
+"text": ["Every city needs housing first! Let's build our residential zone to support our growing population."]
 }
 }
 unlocked_items = Array[String]([])

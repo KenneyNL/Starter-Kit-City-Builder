@@ -1,0 +1,80 @@
+[gd_scene load_steps=3 format=3 uid="uid://btfwonjc8uj0w"]
+
+[ext_resource type="Script" uid="uid://cm44v0080tvuo" path="res://scripts/mission_select_menu.gd" id="1_h1yuf"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bprw3"]
+bg_color = Color(0.145098, 0.172549, 0.231373, 0.941176)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.356863, 0.670588, 0.768627, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="MissionSelectMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_h1yuf")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -200.0
+offset_top = 40.0
+offset_right = 200.0
+offset_bottom = 560.0
+grow_horizontal = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bprw3")
+
+[node name="Label" type="Label" parent="Panel"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -150.0
+offset_top = 10.0
+offset_right = 150.0
+offset_bottom = 50.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 24
+text = "Mission Select (Debug)"
+horizontal_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -180.0
+offset_top = 80.0
+offset_right = 180.0
+offset_bottom = 540.0
+grow_horizontal = 2
+
+[node name="MissionContainer" type="VBoxContainer" parent="ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="CloseButton" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -620.0
+offset_top = 40.0
+offset_right = -580.0
+offset_bottom = 80.0
+grow_horizontal = 0
+text = "X"
+
+[connection signal="pressed" from="CloseButton" to="." method="hide"]

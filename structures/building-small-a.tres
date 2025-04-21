@@ -14,5 +14,6 @@ kW_usage = 1.0
 kW_production = 0.0
 selector_scale = 2.8
 unlocked = false
+spawn_builder = true
 description = "A small residential building that can house 1 person. Perfect for getting your city started!"
 thumbnail = "res://sprites/residential/residential-building-red.png"

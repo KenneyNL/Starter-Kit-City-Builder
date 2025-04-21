@@ -15,4 +15,4 @@ kW_production = 0.0
 selector_scale = 2.8
 unlocked = false
 description = "Some cool trees and grass!"
-thumbnail = "res://sprites/residential/trees.png"
+thumbnail = "res://sprites/terrain/grass-trees.png"

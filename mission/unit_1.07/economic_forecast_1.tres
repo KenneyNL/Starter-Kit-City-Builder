@@ -44,4 +44,4 @@ companion_dialog = {
 "text": ["Time to forecast economic growth! Population trends are key indicators for economic planning."]
 }
 }
-unlocked_items = Array[String]([])
+unlocked_items = Array[String](["res://models/building-small-c.glb"])

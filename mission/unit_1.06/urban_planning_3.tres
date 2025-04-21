@@ -46,4 +46,4 @@ companion_dialog = {
 "text": ["Time to plan street lighting! Good urban planning includes well-lit public spaces."]
 }
 }
-unlocked_items = Array[String]([])
+unlocked_items = Array[String](["res://models/pavement-fountain.glb"])

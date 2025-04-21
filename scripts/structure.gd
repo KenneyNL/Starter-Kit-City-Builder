@@ -36,6 +36,9 @@ enum StructureType {
 @export_subgroup("Game Progression")
 @export var unlocked:bool = false # Whether this structure is available to the player
 
+@export_subgroup("Construction")
+@export var spawn_builder:bool = false # Whether to spawn construction workers for this structure
+
 @export_subgroup("Game Progression")
 @export var description: String = "Description" # Whether this structure is available to the player
 

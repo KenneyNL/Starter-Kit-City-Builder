@@ -14,5 +14,5 @@ kW_usage = 0.0
 kW_production = 40.0
 selector_scale = 13
 unlocked = false
-description = "Not the most efficient way to produce energy, but it works. Produces 40 kW of energy."
+description = "A power-generating facility that produces electricity to keep your city's buildings operational and citizens happy. Produces 40 kW of energy."
 thumbnail = "res://sprites/power_plants/coal_power_plant.png"

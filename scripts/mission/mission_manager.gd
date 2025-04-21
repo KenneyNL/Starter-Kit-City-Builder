@@ -337,6 +337,22 @@ func is_structure_of_current_mission(structure:Structure):
 		return true
 	else:
 		return false
+	if not current_mission:
+		print("ERROR: No current mission to check structure against")
+		return false
+		
+	# Handle BUILD_STRUCTURE objective type with COMMERCIAL_BUILDING type
+	if current_objective.type == ObjectiveType.BUILD_STRUCTURE and current_objective.structure.type == Structure.StructureType.COMMERCIAL_BUILDING:
+		# For commercial buildings, check if the placed structure is also a commercial building
+		if structure.type == Structure.StructureType.COMMERCIAL_BUILDING:
+			print("Commercial building match for store objective")
+			return true
+			
+	# Exact match check (original behavior)
+	if current_objective.structure == structure:
+		return true
+	else:
+		return false
 	
 			
 func check_objective_completion(mission_id, objective_type):
