@@ -1,4 +1,4 @@
-[gd_scene load_steps=33 format=3 uid="uid://vgwrcfy1qawf"]
+[gd_scene load_steps=34 format=3 uid="uid://vgwrcfy1qawf"]
 
 [ext_resource type="Script" path="res://scripts/builder.gd" id="1_jybm7"]
 [ext_resource type="Environment" uid="uid://jbptgqvstei3" path="res://scenes/main-environment.tres" id="1_yndf3"]
@@ -26,6 +26,7 @@
 [ext_resource type="Script" path="res://scripts/game_manager.gd" id="20_game_manager"]
 [ext_resource type="Resource" uid="uid://bv4r7ebpjdce4" path="res://mission/sixth_mission.tres" id="20_r0ysx"]
 [ext_resource type="PackedScene" uid="uid://b4s46k58ddpyc" path="res://scenes/sound_panel.tscn" id="21_sound_panel"]
+[ext_resource type="PackedScene" uid="uid://cb2rylpbex3ep" path="res://models/building-arcology.glb" id="27_m8wco"]
 
 [sub_resource type="Resource" id="Resource_1gdbm"]
 script = ExtResource("14_76jlq")
@@ -157,7 +158,10 @@ cell_center_y = false
 cell_center_z = false
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
-transform = Transform3D(-0.422618, -0.694272, 0.582563, 0, 0.642788, 0.766044, -0.906308, 0.323744, -0.271654, 0, 0, 0)
+transform = Transform3D(1, 0, 0, 0, 0.642788, 0.766044, 0, -0.766045, 0.642787, 0, 0, 0)
+light_energy = 2.0
+light_indirect_energy = 3.0
+light_volumetric_fog_energy = 3.07
 shadow_enabled = true
 shadow_opacity = 0.75
 
@@ -360,6 +364,9 @@ text = "Complete"
 [node name="ObjectiveLabel" type="Label" parent="MissionManager"]
 offset_right = 40.0
 offset_bottom = 23.0
+
+[node name="building-arcology2" parent="." instance=ExtResource("27_m8wco")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, -16, -14)
 
 [connection signal="all_missions_completed" from="MissionManager" to="." method="_on_mission_manager_all_missions_completed"]
 [connection signal="pressed" from="MissionManager/LearningPanel/MarginContainer/VBoxContainer/HBoxContainer/CompleteButton" to="MissionManager/LearningPanel" method="_on_complete_button_pressed"]

@@ -47,7 +47,7 @@ input_name = "time"
 texture = ExtResource("1_kghfq")
 
 [sub_resource type="VisualShaderNodeUVFunc" id="VisualShaderNodeUVFunc_3pkrv"]
-default_input_values = [1, Vector2(0.05, 0.05), 2, Vector2(0, 0)]
+default_input_values = [1, Vector2(0.1, 0.1), 2, Vector2(0, 0)]
 
 [sub_resource type="VisualShaderNodeMultiplyAdd" id="VisualShaderNodeMultiplyAdd_1o8xi"]
 default_input_values = [0, Vector3(0, 0, 0), 1, Vector3(1, 1, 1), 2, Vector3(0, 0, 0)]
@@ -80,7 +80,7 @@ void vertex() {
 
 
 // UVFunc:18
-	vec2 n_in18p1 = vec2(0.05000, 0.05000);
+	vec2 n_in18p1 = vec2(0.10000, 0.10000);
 	vec2 n_out18p0 = vec2(n_out15p0) * n_in18p1 + UV;
 
 
@@ -155,7 +155,6 @@ void fragment() {
 
 }
 "
-graph_offset = Vector2(-470.721, 57.9126)
 nodes/vertex/0/position = Vector2(1960, 180)
 nodes/vertex/12/node = SubResource("VisualShaderNodeInput_75lt8")
 nodes/vertex/12/position = Vector2(-380, 1100)

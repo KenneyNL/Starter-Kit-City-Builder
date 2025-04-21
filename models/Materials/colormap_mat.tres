@@ -8,8 +8,7 @@
 
 [resource]
 albedo_texture = ExtResource("1_poylw")
-metallic = 0.95
-metallic_specular = 1.0
+metallic = 0.3
 roughness_texture = ExtResource("5_lkfth")
 emission_enabled = true
 emission = Color(0, 0.694118, 1, 1)

@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://do24bjaohw3vy"
-path="res://.godot/imported/road-straight.glb-31d31cca3c90d98620d476ef869ee90d.scn"
+uid="uid://cb2rylpbex3ep"
+path="res://.godot/imported/building-arcology.glb-73201283030a24cbb9a06bc7db7f270c.scn"
 
 [deps]
 
-source_file="res://models/road-straight.glb"
-dest_files=["res://.godot/imported/road-straight.glb-31d31cca3c90d98620d476ef869ee90d.scn"]
+source_file="res://models/building-arcology.glb"
+dest_files=["res://.godot/imported/building-arcology.glb-73201283030a24cbb9a06bc7db7f270c.scn"]
 
 [params]
 
@@ -36,6 +36,10 @@ _subresources={
 "colormap": {
 "use_external/enabled": true,
 "use_external/path": "res://models/Materials/colormap_mat.tres"
+},
+"transparent": {
+"use_external/enabled": true,
+"use_external/path": "res://models/Materials/orb_outershell.tres"
 }
 }
 }
