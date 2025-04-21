@@ -1,0 +1,47 @@
+[gd_resource type="Resource" script_class="MissionData" load_steps=4 format=3 uid="uid://csrqvfwp63ygr"]
+
+[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_a8iy6"]
+[ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="2_5q4dp"]
+
+[sub_resource type="Resource" id="Resource_m1jev"]
+script = ExtResource("1_a8iy6")
+type = 3
+target_count = 75
+current_count = 0
+description = "Reach a population of 75 citizens"
+completed = false
+
+[resource]
+script = ExtResource("2_5q4dp")
+id = "6"
+title = "Market Research"
+description = "Your commercial district needs more customers! Grow your city's population to support local businesses."
+objectives = Array[ExtResource("1_a8iy6")]([SubResource("Resource_m1jev")])
+rewards = {
+"cash": 400
+}
+next_mission_id = "7"
+graph_path = ""
+full_screen_path = ""
+intro_text = "Businesses need customers! Increase your city population to 75 citizens to support your commercial sector."
+question_text = ""
+correct_answer = ""
+feedback_text = ""
+incorrect_feedback = ""
+company_data = ""
+power_math_content = ""
+num_of_user_inputs = 1
+input_labels = Array[String]([])
+companion_dialog = {
+"mission_completed": {
+"animation": "happy",
+"duration": 6000,
+"text": ["Your city has reached 75 citizens! That's a great boost for your local economy and businesses."]
+},
+"mission_started": {
+"animation": "excited",
+"duration": 6000,
+"text": ["Let's grow our city population to support our new businesses! More people means more customers."]
+}
+}
+unlocked_items = Array[String](["res://models/road-straight-lightposts.glb"])

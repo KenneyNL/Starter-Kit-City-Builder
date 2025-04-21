@@ -1,6 +1,7 @@
 [gd_scene load_steps=2 format=3 uid="uid://bb04k2hkfmls6"]
 
-[ext_resource type="Script" path="res://scripts/mission/improved_unlocked_panel.gd" id="1_r3fws"]
+[sub_resource type="Resource" id="Resource_0aveo"]
+metadata/__load_path__ = "res://scripts/mission/improved_unlocked_panel.gd"
 
 [node name="ImprovedUnlockedPanel" type="Control"]
 layout_mode = 3
@@ -9,7 +10,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_r3fws")
+script = SubResource("Resource_0aveo")
 
 [node name="ColorRect" type="ColorRect" parent="."]
 layout_mode = 1

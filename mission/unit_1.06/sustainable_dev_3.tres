@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="MissionData" load_steps=5 format=3 uid="uid://byd5jxiutxpky"]
+
+[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_3s3sm"]
+[ext_resource type="Resource" uid="uid://c4qbn3d85prxx" path="res://structures/power-plant.tres" id="2_5l1dw"]
+[ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="3_w8jc7"]
+
+[sub_resource type="Resource" id="Resource_d7jw4"]
+script = ExtResource("1_3s3sm")
+type = 0
+target_count = 1
+current_count = 0
+description = "Ensure positive electricity production"
+completed = false
+structure = ExtResource("2_5l1dw")
+
+[resource]
+script = ExtResource("3_w8jc7")
+id = "18"
+title = "Sustainable Development"
+description = "Energy sustainability is crucial for long-term growth. Model your city's power needs to ensure you have enough electricity for everyone."
+objectives = Array[ExtResource("1_3s3sm")]([SubResource("Resource_d7jw4")])
+rewards = {
+"cash": 450
+}
+next_mission_id = "19"
+graph_path = ""
+full_screen_path = ""
+intro_text = "Let's model energy sustainability! Ensure your city has a positive electricity balance as it grows."
+question_text = ""
+correct_answer = ""
+feedback_text = ""
+incorrect_feedback = ""
+company_data = ""
+power_math_content = ""
+num_of_user_inputs = 1
+input_labels = Array[String]([])
+companion_dialog = {
+"mission_completed": {
+"animation": "happy",
+"duration": 6000,
+"text": ["Great job balancing energy production! Sustainable power is essential for long-term growth."]
+},
+"mission_started": {
+"animation": "excited",
+"duration": 6000,
+"text": ["Time to model energy sustainability! Can we meet everyone's power needs while still growing?"]
+}
+}
+unlocked_items = Array[String]([])

@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="MissionData" load_steps=5 format=3 uid="uid://cp7tcpktwlrkt"]
+
+[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_fywct"]
+[ext_resource type="Resource" uid="uid://dtal0tl2ee336" path="res://structures/store.tres" id="2_a71iq"]
+[ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="3_38y5t"]
+
+[sub_resource type="Resource" id="Resource_wq8mf"]
+script = ExtResource("1_fywct")
+type = 0
+target_count = 3
+current_count = 0
+description = "Build 3 store buildings"
+completed = false
+structure = ExtResource("2_a71iq")
+
+[resource]
+script = ExtResource("3_38y5t")
+id = "20"
+title = "Urban Planning"
+description = "Good urban planning requires commercial zones strategically placed throughout the city. Plan and build new commercial districts."
+objectives = Array[ExtResource("1_fywct")]([SubResource("Resource_wq8mf")])
+rewards = {
+"cash": 450
+}
+next_mission_id = "21"
+graph_path = ""
+full_screen_path = ""
+intro_text = "Let's create a commercial district! Build 3 store buildings as part of your urban planning model."
+question_text = ""
+correct_answer = ""
+feedback_text = ""
+incorrect_feedback = ""
+company_data = ""
+power_math_content = ""
+num_of_user_inputs = 1
+input_labels = Array[String]([])
+companion_dialog = {
+"mission_completed": {
+"animation": "happy",
+"duration": 6000,
+"text": ["Excellent commercial planning! These stores will serve as hubs for economic activity in your city."]
+},
+"mission_started": {
+"animation": "excited",
+"duration": 6000,
+"text": ["Time to plan commercial zones! Strategic store placement is key to good urban planning."]
+}
+}
+unlocked_items = Array[String]([])

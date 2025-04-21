@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="MissionData" load_steps=5 format=3 uid="uid://cfgw8dblm55c5"]
+
+[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_fvshb"]
+[ext_resource type="Resource" uid="uid://dv14kkhb6umkv" path="res://structures/road-straight.tres" id="2_evy85"]
+[ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="3_mtrpd"]
+
+[sub_resource type="Resource" id="Resource_pj2vg"]
+script = ExtResource("1_fvshb")
+type = 0
+target_count = 5
+current_count = 0
+description = "Build 5 road segments"
+completed = false
+structure = ExtResource("2_evy85")
+
+[resource]
+script = ExtResource("3_mtrpd")
+id = "8"
+title = "Grid Growth"
+description = "City planners have proposed a grid-based layout for efficient city expansion. Begin implementing this pattern with strategic road placement."
+objectives = Array[ExtResource("1_fvshb")]([SubResource("Resource_pj2vg")])
+rewards = {
+"cash": 300
+}
+next_mission_id = "9"
+graph_path = ""
+full_screen_path = ""
+intro_text = "Let's start implementing a grid pattern for your city! Begin by placing 5 road segments in a grid layout."
+question_text = ""
+correct_answer = ""
+feedback_text = ""
+incorrect_feedback = ""
+company_data = ""
+power_math_content = ""
+num_of_user_inputs = 1
+input_labels = Array[String]([])
+companion_dialog = {
+"mission_completed": {
+"animation": "happy",
+"duration": 6000,
+"text": ["Great work establishing a grid pattern! This layout will make future city expansion more organized."]
+},
+"mission_started": {
+"animation": "excited",
+"duration": 6000,
+"text": ["Time to think about city patterns! Grid layouts help organize urban development effectively."]
+}
+}
+unlocked_items = Array[String]([])

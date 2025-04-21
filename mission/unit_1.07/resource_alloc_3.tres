@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="MissionData" load_steps=5 format=3 uid="uid://cxh8dgf54oimx"]
+
+[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_c76o5"]
+[ext_resource type="Resource" uid="uid://dv14kkhb6umkv" path="res://structures/road-straight.tres" id="2_4rkoa"]
+[ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="3_iqaae"]
+
+[sub_resource type="Resource" id="Resource_r01e3"]
+script = ExtResource("1_c76o5")
+type = 0
+target_count = 8
+current_count = 0
+description = "Add 8 total road segments"
+completed = false
+structure = ExtResource("2_4rkoa")
+
+[resource]
+script = ExtResource("3_iqaae")
+id = "30"
+title = "Resource Allocation"
+description = "Transportation infrastructure requires careful resource allocation. Develop an efficient road network that connects all parts of your city."
+objectives = Array[ExtResource("1_c76o5")]([SubResource("Resource_r01e3")])
+rewards = {
+"cash": 700
+}
+next_mission_id = "31"
+graph_path = ""
+full_screen_path = ""
+intro_text = "Let's optimize transportation resource allocation! Build 8 road segments to create an efficient transit network."
+question_text = ""
+correct_answer = ""
+feedback_text = ""
+incorrect_feedback = ""
+company_data = ""
+power_math_content = ""
+num_of_user_inputs = 1
+input_labels = Array[String]([])
+companion_dialog = {
+"mission_completed": {
+"animation": "happy",
+"duration": 6000,
+"text": ["Great transportation planning! You've allocated road resources efficiently for optimal city connectivity."]
+},
+"mission_started": {
+"animation": "excited",
+"duration": 6000,
+"text": ["Time to allocate transportation resources! Efficient road networks require careful planning."]
+}
+}
+unlocked_items = Array[String]([])

@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="MissionData" load_steps=5 format=3 uid="uid://doxd30r8qbgdq"]
+
+[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_kdkdo"]
+[ext_resource type="Resource" uid="uid://mxrnqinnsqnt" path="res://structures/road-straight-lightposts.tres" id="2_0dtbf"]
+[ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="3_uodr7"]
+
+[sub_resource type="Resource" id="Resource_uq2hw"]
+script = ExtResource("1_kdkdo")
+type = 0
+target_count = 3
+current_count = 0
+description = "Install 3 lamp posts on roads"
+completed = false
+structure = ExtResource("2_0dtbf")
+
+[resource]
+script = ExtResource("3_uodr7")
+id = "15"
+title = "Traffic Flow Analysis"
+description = "Night traffic requires special consideration. Add roads with lamp posts to analyze how lighting affects traffic flow and safety."
+objectives = Array[ExtResource("1_kdkdo")]([SubResource("Resource_uq2hw")])
+rewards = {
+"cash": 400
+}
+next_mission_id = "16"
+graph_path = ""
+full_screen_path = ""
+intro_text = "Let's study night traffic patterns! Add 3 roads with lamp posts to analyze how lighting affects traffic flow."
+question_text = ""
+correct_answer = ""
+feedback_text = ""
+incorrect_feedback = ""
+company_data = ""
+power_math_content = ""
+num_of_user_inputs = 1
+input_labels = Array[String]([])
+companion_dialog = {
+"mission_completed": {
+"animation": "happy",
+"duration": 6000,
+"text": ["Perfect! These lamp posts will help us analyze night traffic patterns and safety improvements."]
+},
+"mission_started": {
+"animation": "excited",
+"duration": 6000,
+"text": ["Time to study night traffic! Proper lighting is essential for traffic safety after dark."]
+}
+}
+unlocked_items = Array[String]([])

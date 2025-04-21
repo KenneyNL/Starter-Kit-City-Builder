@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="MissionData" load_steps=5 format=3 uid="uid://qwiwim2pg88f"]
+
+[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_lsd8i"]
+[ext_resource type="Resource" uid="uid://mxrnqinnsqnt" path="res://structures/road-straight-lightposts.tres" id="2_v2q1j"]
+[ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="3_gtu3s"]
+
+[sub_resource type="Resource" id="Resource_mhw3l"]
+script = ExtResource("1_lsd8i")
+type = 0
+target_count = 2
+current_count = 0
+description = "Add 2 roads with lamp posts"
+completed = false
+structure = ExtResource("2_v2q1j")
+
+[resource]
+script = ExtResource("3_gtu3s")
+id = "7"
+title = "Market Research"
+description = "The Chamber of Commerce has requested better lighting for the commercial district to attract evening shoppers."
+objectives = Array[ExtResource("1_lsd8i")]([SubResource("Resource_mhw3l")])
+rewards = {
+"cash": 350
+}
+next_mission_id = "8"
+graph_path = ""
+full_screen_path = ""
+intro_text = "Let's improve the shopping experience! Add roads with lamp posts to make the commercial district more inviting at night."
+question_text = ""
+correct_answer = ""
+feedback_text = ""
+incorrect_feedback = ""
+company_data = ""
+power_math_content = ""
+num_of_user_inputs = 1
+input_labels = Array[String]([])
+companion_dialog = {
+"mission_completed": {
+"animation": "happy",
+"duration": 6000,
+"text": ["Excellent! These lamp posts will help businesses attract customers even in the evening hours."]
+},
+"mission_started": {
+"animation": "excited",
+"duration": 6000,
+"text": ["Let's light up the commercial district! Well-lit streets attract more shoppers in the evening."]
+}
+}
+unlocked_items = Array[String]([])

@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="MissionData" load_steps=5 format=3 uid="uid://bwrkqv42wk8f"]
+
+[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_1k37f"]
+[ext_resource type="Resource" uid="uid://cntgl86ianngh" path="res://structures/building-small-a.tres" id="2_qlnvj"]
+[ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="3_4udbq"]
+
+[sub_resource type="Resource" id="Resource_0fxto"]
+script = ExtResource("1_1k37f")
+type = 1
+target_count = 5
+current_count = 0
+description = "Build 5 residential buildings"
+completed = false
+structure = ExtResource("2_qlnvj")
+
+[resource]
+script = ExtResource("3_4udbq")
+id = "28"
+title = "Resource Allocation"
+description = "Efficient resource allocation starts with housing. Create a residential expansion plan that maximizes land use efficiency."
+objectives = Array[ExtResource("1_1k37f")]([SubResource("Resource_0fxto")])
+rewards = {
+"cash": 600
+}
+next_mission_id = "29"
+graph_path = ""
+full_screen_path = ""
+intro_text = "Let's practice residential resource allocation! Build 5 residential buildings while optimizing land use patterns."
+question_text = ""
+correct_answer = ""
+feedback_text = ""
+incorrect_feedback = ""
+company_data = ""
+power_math_content = ""
+num_of_user_inputs = 1
+input_labels = Array[String]([])
+companion_dialog = {
+"mission_completed": {
+"animation": "happy",
+"duration": 6000,
+"text": ["Great residential planning! You've allocated resources efficiently for your housing needs."]
+},
+"mission_started": {
+"animation": "excited",
+"duration": 6000,
+"text": ["Time to allocate land resources! Efficient housing placement is key to city planning."]
+}
+}
+unlocked_items = Array[String]([])

@@ -1,0 +1,64 @@
+[gd_resource type="Resource" script_class="MissionData" load_steps=5 format=3 uid="uid://x5h4xutbldq3"]
+
+[ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="1_nv6c6"]
+[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_yfbrc"]
+[ext_resource type="Resource" uid="uid://dv14kkhb6umkv" path="res://structures/road-straight.tres" id="2_d0ffl"]
+
+[sub_resource type="Resource" id="Resource_ywws1"]
+script = ExtResource("1_yfbrc")
+type = 0
+target_count = 3
+current_count = 0
+description = "Build 3 connecting roads"
+completed = false
+structure = ExtResource("2_d0ffl")
+
+[resource]
+script = ExtResource("1_nv6c6")
+id = "1"
+title = "Census Planning"
+description = "As the new city planner, you need to establish a baseline understanding of your growing community. The mayor has requested a comprehensive census to guide future development."
+objectives = Array[ExtResource("1_yfbrc")]([SubResource("Resource_ywws1")])
+rewards = {
+"cash": 250
+}
+next_mission_id = "2"
+graph_path = ""
+full_screen_path = ""
+intro_text = "Welcome to Stem City! Let's learn how to build a city from the ground up. Start by building a road."
+question_text = ""
+correct_answer = ""
+feedback_text = ""
+incorrect_feedback = ""
+company_data = ""
+power_math_content = ""
+num_of_user_inputs = 1
+input_labels = Array[String]([])
+companion_dialog = {
+"correct_answer": {
+"animation": "happy",
+"duration": 5000,
+"text": ["Great job! That's the right answer!", "Perfect! You got it right!"]
+},
+"incorrect_answer": {
+"animation": "sad",
+"duration": 5000,
+"text": ["Hmm, that doesn't look right. Let's try again.", "Not quite right. Don't worry, you can try again!"]
+},
+"mission_completed": {
+"animation": "happy",
+"duration": 6000,
+"text": ["You've completed your first mission! Great job building your first road!"]
+},
+"mission_started": {
+"animation": "excited",
+"duration": 6000,
+"text": ["Welcome to Stem City! I'm your learning companion. Let's build a city together!", "Time to start our adventure in Stem City! I'll help you build your first city."]
+},
+"objective_completed_2": {
+"animation": "happy",
+"duration": 5000,
+"text": ["You built a road! Now your citizens can move around the city.", "Nice work on that road! Roads help connect different parts of your city."]
+}
+}
+unlocked_items = Array[String](["res://models/building-small-a.glb"])

@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="MissionData" load_steps=5 format=3 uid="uid://dm2o4dq2oml53"]
+
+[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_x4c68"]
+[ext_resource type="Resource" uid="uid://ccb475jeg7ym5" path="res://structures/grass-trees.tres" id="2_hcf87"]
+[ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="3_mjpfs"]
+
+[sub_resource type="Resource" id="Resource_mldwf"]
+script = ExtResource("1_x4c68")
+type = 0
+target_count = 4
+current_count = 0
+description = "Add 4 grass tiles with trees"
+completed = false
+structure = ExtResource("2_hcf87")
+
+[resource]
+script = ExtResource("3_mjpfs")
+id = "11"
+title = "Grid Growth"
+description = "Complete your grid pattern with green spaces! Add trees and grass to create a more balanced and livable city pattern."
+objectives = Array[ExtResource("1_x4c68")]([SubResource("Resource_mldwf")])
+rewards = {
+"cash": 300
+}
+next_mission_id = "12"
+graph_path = ""
+full_screen_path = ""
+intro_text = "Let's add some green spaces to our grid pattern! Place 4 grass tiles with trees to improve city aesthetics."
+question_text = ""
+correct_answer = ""
+feedback_text = ""
+incorrect_feedback = ""
+company_data = ""
+power_math_content = ""
+num_of_user_inputs = 1
+input_labels = Array[String]([])
+companion_dialog = {
+"mission_completed": {
+"animation": "happy",
+"duration": 6000,
+"text": ["Wonderful! These green spaces create a pattern of balance between urban development and nature."]
+},
+"mission_started": {
+"animation": "excited",
+"duration": 6000,
+"text": ["Time to add natural elements to our grid! Green spaces are an important part of city planning patterns."]
+}
+}
+unlocked_items = Array[String]([])

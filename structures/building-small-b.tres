@@ -1,10 +1,11 @@
 [gd_resource type="Resource" script_class="Structure" load_steps=3 format=3 uid="uid://c5fveedgvunju"]
 
 [ext_resource type="PackedScene" uid="uid://d2h51qlls136h" path="res://models/building-small-b.glb" id="1_klt7o"]
-[ext_resource type="Script" uid="uid://smbpvh2nwds4" path="res://scripts/structure.gd" id="2_a2t3e"]
+[ext_resource type="Script" uid="uid://uxn26t1x4ehr" path="res://scripts/structure.gd" id="2_a2t3e"]
 
 [resource]
 script = ExtResource("2_a2t3e")
+title = ""
 model = ExtResource("1_klt7o")
 type = 1
 price = 60
@@ -12,3 +13,6 @@ population_count = 1
 kW_usage = 1.0
 kW_production = 0.0
 selector_scale = 2.8
+unlocked = false
+description = "Description"
+thumbnail = "Thumbnail"

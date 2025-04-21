@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="MissionData" load_steps=5 format=3 uid="uid://d0nblitd4ixir"]
+
+[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_vdhxy"]
+[ext_resource type="Resource" uid="uid://dtal0tl2ee336" path="res://structures/store.tres" id="2_hh0xb"]
+[ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="3_k5ivn"]
+
+[sub_resource type="Resource" id="Resource_21csl"]
+script = ExtResource("1_vdhxy")
+type = 0
+target_count = 4
+current_count = 0
+description = "Build 4 store buildings"
+completed = false
+structure = ExtResource("2_hh0xb")
+
+[resource]
+script = ExtResource("3_k5ivn")
+id = "29"
+title = "Resource Allocation"
+description = "Commercial resource allocation requires strategic planning. Develop a commercial sector that balances land use with economic benefits."
+objectives = Array[ExtResource("1_vdhxy")]([SubResource("Resource_21csl")])
+rewards = {
+"cash": 650
+}
+next_mission_id = "30"
+graph_path = ""
+full_screen_path = ""
+intro_text = "Let's practice commercial resource allocation! Build 4 store buildings in locations that maximize their effectiveness."
+question_text = ""
+correct_answer = ""
+feedback_text = ""
+incorrect_feedback = ""
+company_data = ""
+power_math_content = ""
+num_of_user_inputs = 1
+input_labels = Array[String]([])
+companion_dialog = {
+"mission_completed": {
+"animation": "happy",
+"duration": 6000,
+"text": ["Excellent commercial planning! You've allocated business resources optimally in your city."]
+},
+"mission_started": {
+"animation": "excited",
+"duration": 6000,
+"text": ["Time to allocate commercial resources! Strategic store placement maximizes economic benefits."]
+}
+}
+unlocked_items = Array[String]([])

@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="MissionData" load_steps=5 format=3 uid="uid://ddmxjjyxgxyxo"]
+
+[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_1hl01"]
+[ext_resource type="Resource" uid="uid://dv14kkhb6umkv" path="res://structures/road-straight.tres" id="2_i3hgc"]
+[ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="3_6fq1p"]
+
+[sub_resource type="Resource" id="Resource_h6f0e"]
+script = ExtResource("1_1hl01")
+type = 0
+target_count = 4
+current_count = 0
+description = "Add 4 additional road segments"
+completed = false
+structure = ExtResource("2_i3hgc")
+
+[resource]
+script = ExtResource("3_6fq1p")
+id = "14"
+title = "Traffic Flow Analysis"
+description = "Our traffic study needs more data! Expand the road network to create more complex traffic patterns for analysis."
+objectives = Array[ExtResource("1_1hl01")]([SubResource("Resource_h6f0e")])
+rewards = {
+"cash": 350
+}
+next_mission_id = "15"
+graph_path = ""
+full_screen_path = ""
+intro_text = "Let's expand our traffic study! Add 4 more road segments to create a more complex network for analysis."
+question_text = ""
+correct_answer = ""
+feedback_text = ""
+incorrect_feedback = ""
+company_data = ""
+power_math_content = ""
+num_of_user_inputs = 1
+input_labels = Array[String]([])
+companion_dialog = {
+"mission_completed": {
+"animation": "happy",
+"duration": 6000,
+"text": ["Excellent work expanding the road network! Now we can analyze more complex traffic patterns."]
+},
+"mission_started": {
+"animation": "excited",
+"duration": 6000,
+"text": ["Time to create more complex traffic patterns! More roads means more data to analyze."]
+}
+}
+unlocked_items = Array[String]([])

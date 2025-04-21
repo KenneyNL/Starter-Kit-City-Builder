@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="MissionData" load_steps=5 format=3 uid="uid://dgimr2v12rjqu"]
+
+[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_8rvyb"]
+[ext_resource type="Resource" uid="uid://c4qbn3d85prxx" path="res://structures/power-plant.tres" id="2_0kbkj"]
+[ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="3_8cjg3"]
+
+[sub_resource type="Resource" id="Resource_fmshv"]
+script = ExtResource("1_8rvyb")
+type = 0
+target_count = 1
+current_count = 0
+description = "Maintain positive electricity balance"
+completed = false
+structure = ExtResource("2_0kbkj")
+
+[resource]
+script = ExtResource("3_8cjg3")
+id = "10"
+title = "Grid Growth"
+description = "Your growing city needs more power! Ensure you have enough electricity production to support your expanding grid."
+objectives = Array[ExtResource("1_8rvyb")]([SubResource("Resource_fmshv")])
+rewards = {
+"cash": 400
+}
+next_mission_id = "11"
+graph_path = ""
+full_screen_path = ""
+intro_text = "Your city needs power to grow! Make sure you have a positive electricity balance by adding power infrastructure."
+question_text = ""
+correct_answer = ""
+feedback_text = ""
+incorrect_feedback = ""
+company_data = ""
+power_math_content = ""
+num_of_user_inputs = 1
+input_labels = Array[String]([])
+companion_dialog = {
+"mission_completed": {
+"animation": "happy",
+"duration": 6000,
+"text": ["Great job securing power for your city! Balanced infrastructure is key to sustainable growth."]
+},
+"mission_started": {
+"animation": "excited",
+"duration": 6000,
+"text": ["Let's ensure our grid has enough power! Every growing city needs reliable electricity."]
+}
+}
+unlocked_items = Array[String]([])

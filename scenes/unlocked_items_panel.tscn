@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://cc3c30ioo11if"]
 
-[ext_resource type="Script" path="res://scripts/mission/unlocked_items_panel.gd" id="1_j0tih"]
+[ext_resource type="Script" uid="uid://dkmsixil2a7ur" path="res://scripts/mission/unlocked_items_panel.gd" id="1_j0tih"]
 [ext_resource type="FontFile" uid="uid://d0cxd77jybrcn" path="res://fonts/lilita_one_regular.ttf" id="2_exmr5"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2q5cr"]
@@ -86,8 +86,8 @@ theme_override_constants/margin_top = 8
 [node name="CloseButton" type="Button" parent="PanelContainer/VBoxContainer/MarginContainer"]
 layout_mode = 2
 theme_override_colors/font_hover_color = Color(1, 0.921569, 0.231373, 1)
-theme_override_colors/font_pressed_color = Color(0.87451, 0.87451, 0.87451, 1)
 theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(0.87451, 0.87451, 0.87451, 1)
 theme_override_fonts/font = ExtResource("2_exmr5")
 theme_override_font_sizes/font_size = 20
 text = "CONTINUE"
