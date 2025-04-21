@@ -2,21 +2,18 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://du3u60s01ni0e"
-path.s3tc="res://.godot/imported/building-small-b_colormap.png-88fece0a14f60320dabbfa87ba219d29.s3tc.ctex"
-path.etc2="res://.godot/imported/building-small-b_colormap.png-88fece0a14f60320dabbfa87ba219d29.etc2.ctex"
+uid="uid://fux13nshdwi4"
+path.s3tc="res://.godot/imported/rainbow.png-dcd47698ecc41924b32b4de6ec2ddf50.s3tc.ctex"
+path.etc2="res://.godot/imported/rainbow.png-dcd47698ecc41924b32b4de6ec2ddf50.etc2.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
-generator_parameters={
-"md5": "6cb3446cd14edd128e0040af70e0dd5a"
-}
 
 [deps]
 
-source_file="res://models/building-small-b_colormap.png"
-dest_files=["res://.godot/imported/building-small-b_colormap.png-88fece0a14f60320dabbfa87ba219d29.s3tc.ctex", "res://.godot/imported/building-small-b_colormap.png-88fece0a14f60320dabbfa87ba219d29.etc2.ctex"]
+source_file="res://models/Textures/rainbow.png"
+dest_files=["res://.godot/imported/rainbow.png-dcd47698ecc41924b32b4de6ec2ddf50.s3tc.ctex", "res://.godot/imported/rainbow.png-dcd47698ecc41924b32b4de6ec2ddf50.etc2.ctex"]
 
 [params]
 

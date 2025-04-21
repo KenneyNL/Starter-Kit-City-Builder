@@ -2,21 +2,18 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cwmxak3hokb58"
-path.s3tc="res://.godot/imported/building-small-a_colormap.png-5c3df3cd6e4a6c3a9b3ecf5882af7d0c.s3tc.ctex"
-path.etc2="res://.godot/imported/building-small-a_colormap.png-5c3df3cd6e4a6c3a9b3ecf5882af7d0c.etc2.ctex"
+uid="uid://bbu7h8p31naip"
+path.s3tc="res://.godot/imported/clouds.png-7faa8dde34776d0a7ef61cac54583850.s3tc.ctex"
+path.etc2="res://.godot/imported/clouds.png-7faa8dde34776d0a7ef61cac54583850.etc2.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
-generator_parameters={
-"md5": "6cb3446cd14edd128e0040af70e0dd5a"
-}
 
 [deps]
 
-source_file="res://models/building-small-a_colormap.png"
-dest_files=["res://.godot/imported/building-small-a_colormap.png-5c3df3cd6e4a6c3a9b3ecf5882af7d0c.s3tc.ctex", "res://.godot/imported/building-small-a_colormap.png-5c3df3cd6e4a6c3a9b3ecf5882af7d0c.etc2.ctex"]
+source_file="res://models/Textures/clouds.png"
+dest_files=["res://.godot/imported/clouds.png-7faa8dde34776d0a7ef61cac54583850.s3tc.ctex", "res://.godot/imported/clouds.png-7faa8dde34776d0a7ef61cac54583850.etc2.ctex"]
 
 [params]
 
