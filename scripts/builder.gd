@@ -254,8 +254,7 @@ func action_build(gridmap_position):
 			# Make sure any existing NPCs are children of the navigation region
 			_move_characters_to_navregion()
 		elif is_power_plant:
-			# Special handling for power plants - add directly as a child of the builder
-			_add_power_plant(gridmap_position, index)
+			#add_power_plant(gridmap_position, index)
 			
 			# We still set the cell item for collision detection
 			gridmap.set_cell_item(gridmap_position, index, gridmap.get_orthogonal_index_from_basis(selector.basis))

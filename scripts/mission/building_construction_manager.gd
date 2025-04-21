@@ -21,14 +21,18 @@ var nav_region: NavigationRegion3D
 var builder: Node3D
 var building_plot_scene: PackedScene
 var final_building_scene: PackedScene
+var mission_manager: MissionManager
 
 # Keep track of all construction sites
 var construction_sites = {}  # position (Vector3) -> construction data (dict)
 
 func _ready():
+	
 	# Load the worker character scene - add more fallbacks to ensure we get a valid model
+	builder = get_node_or_null('/root/Main/Builder')
 	worker_scene = load("res://people/character-male-a.glb")
 	hud_manager = get_node_or_null("/root/Main/CanvasLayer/HUD")
+	mission_manager = builder.get_node_or_null("/root/Main/MissionManager")
 	if not worker_scene:
 		worker_scene = load("res://people/character-female-a.glb")
 	if not worker_scene:
@@ -299,7 +303,7 @@ func _complete_construction(position: Vector3):
 	_place_final_building(position, site["structure_index"])
 	
 	# Update mission objective now that construction is complete
-	_update_mission_objective_on_completion(site["structure_index"])
+#	_update_mission_objective_on_completion(site["structure_index"])
 	
 	# Check if we should spawn a resident
 	var mission_manager = builder.get_node_or_null("/root/Main/MissionManager")
@@ -342,23 +346,8 @@ func handle_demolition(position: Vector3):
 			
 		# Remove the entry from the dictionary
 		construction_sites.erase(position)
-
-# Function to update mission objective when construction is complete
-func _update_mission_objective_on_completion(structure_index: int):
-	# Get reference to mission manager
-	var mission_manager = builder.get_node_or_null("/root/Main/MissionManager")
+		
 	
-	if mission_manager and mission_manager.current_mission:
-		# Check if this is a residential building
-		if structure_index >= 0 and structure_index < builder.structures.size():
-			var structure = builder.structures[structure_index]
-
-			if mission_manager.current_objective.type == ObjectiveType.BUILD_RESIDENTIAL && structure.type == Structure.StructureType.RESIDENTIAL_BUILDING:
-				mission_manager.update_objective_progress(
-						mission_manager.current_mission.id,
-						1
-					)
-				mission_manager.check_mission_progress(mission_manager.current_mission.id)
 
 # Place the final building at the construction site
 func _place_final_building(position: Vector3, structure_index: int):
