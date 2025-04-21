@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="MissionData" load_steps=5 format=3 uid="uid://ba3ndftq7dht7"]
+
+[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_miqck"]
+[ext_resource type="Resource" uid="uid://cntgl86ianngh" path="res://structures/building-small-a.tres" id="2_r3vpw"]
+[ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="3_mdu3m"]
+
+[sub_resource type="Resource" id="Resource_utswr"]
+script = ExtResource("1_miqck")
+type = 1
+target_count = 3
+current_count = 0
+description = "Place 3 residential buildings"
+completed = false
+structure = ExtResource("2_r3vpw")
+
+[resource]
+script = ExtResource("3_mdu3m")
+id = "9"
+title = "Grid Growth"
+description = "Now that you've established your grid pattern, it's time to add residential zones to the grid. This will demonstrate how building placement follows the road network."
+objectives = Array[ExtResource("1_miqck")]([SubResource("Resource_utswr")])
+rewards = {
+"cash": 350
+}
+next_mission_id = "10"
+graph_path = ""
+full_screen_path = ""
+intro_text = "Let's add residents to our grid pattern! Place 3 residential buildings along your road network."
+question_text = ""
+correct_answer = ""
+feedback_text = ""
+incorrect_feedback = ""
+company_data = ""
+power_math_content = ""
+num_of_user_inputs = 1
+input_labels = Array[String]([])
+companion_dialog = {
+"mission_completed": {
+"animation": "happy",
+"duration": 6000,
+"text": ["Excellent job placing those residential buildings! Notice how they align with your grid pattern."]
+},
+"mission_started": {
+"animation": "excited",
+"duration": 6000,
+"text": ["Time to add people to our grid! Watch how building placement creates patterns in urban development."]
+}
+}
+unlocked_items = Array[String](["res://models/power_plant.glb"])

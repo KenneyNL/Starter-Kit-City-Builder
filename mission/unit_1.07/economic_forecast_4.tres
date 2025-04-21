@@ -1,0 +1,47 @@
+[gd_resource type="Resource" script_class="MissionData" load_steps=4 format=3 uid="uid://ct45gjmw5b7pa"]
+
+[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_6j12t"]
+[ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="2_t4o2b"]
+
+[sub_resource type="Resource" id="Resource_f1uf2"]
+script = ExtResource("1_6j12t")
+type = 2
+target_count = 1000
+current_count = 0
+description = "Maintain a minimum of 1000 money"
+completed = false
+
+[resource]
+script = ExtResource("2_t4o2b")
+id = "27"
+title = "Economic Forecasting"
+description = "Financial reserves are critical for economic stability. Use your forecasting model to ensure your city maintains a healthy treasury."
+objectives = Array[ExtResource("1_6j12t")]([SubResource("Resource_f1uf2")])
+rewards = {
+"cash": 500
+}
+next_mission_id = "28"
+graph_path = ""
+full_screen_path = ""
+intro_text = "Let's forecast financial stability! Maintain a minimum treasury of 1000 money to ensure your city's economic health."
+question_text = ""
+correct_answer = ""
+feedback_text = ""
+incorrect_feedback = ""
+company_data = ""
+power_math_content = ""
+num_of_user_inputs = 1
+input_labels = Array[String]([])
+companion_dialog = {
+"mission_completed": {
+"animation": "happy",
+"duration": 6000,
+"text": ["Well done maintaining a healthy treasury! Your financial forecasting model shows strong fiscal health."]
+},
+"mission_started": {
+"animation": "excited",
+"duration": 6000,
+"text": ["Time to focus on fiscal forecasting! A strong treasury indicates good economic management."]
+}
+}
+unlocked_items = Array[String]([])

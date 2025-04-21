@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="MissionData" load_steps=5 format=3 uid="uid://ctyrlnq5cxuiu"]
+
+[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_r0j2r"]
+[ext_resource type="Resource" uid="uid://dtal0tl2ee336" path="res://structures/store.tres" id="2_oqy42"]
+[ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="3_r78ev"]
+
+[sub_resource type="Resource" id="Resource_c21kt"]
+script = ExtResource("1_r0j2r")
+type = 0
+target_count = 5
+current_count = 0
+description = "Build 5 store buildings"
+completed = false
+structure = ExtResource("2_oqy42")
+
+[resource]
+script = ExtResource("3_r78ev")
+id = "26"
+title = "Economic Forecasting"
+description = "Commercial growth drives economic development. Create a robust commercial sector to generate positive economic forecasts."
+objectives = Array[ExtResource("1_r0j2r")]([SubResource("Resource_c21kt")])
+rewards = {
+"cash": 750
+}
+next_mission_id = "27"
+graph_path = ""
+full_screen_path = ""
+intro_text = "Let's boost economic forecasts! Build 5 store buildings to increase commercial activity in your economic model."
+question_text = ""
+correct_answer = ""
+feedback_text = ""
+incorrect_feedback = ""
+company_data = ""
+power_math_content = ""
+num_of_user_inputs = 1
+input_labels = Array[String]([])
+companion_dialog = {
+"mission_completed": {
+"animation": "happy",
+"duration": 6000,
+"text": ["Fantastic commercial expansion! These stores will drive economic growth in your forecasting model."]
+},
+"mission_started": {
+"animation": "excited",
+"duration": 6000,
+"text": ["Time to forecast commercial growth! A strong business sector is key to economic development."]
+}
+}
+unlocked_items = Array[String]([])

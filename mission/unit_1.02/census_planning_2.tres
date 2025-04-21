@@ -1,0 +1,64 @@
+[gd_resource type="Resource" script_class="MissionData" load_steps=5 format=3 uid="uid://cjr36hqnmyn0x"]
+
+[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_dhx01"]
+[ext_resource type="Resource" uid="uid://cntgl86ianngh" path="res://structures/building-small-a.tres" id="2_em5vq"]
+[ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="2_mum3p"]
+
+[sub_resource type="Resource" id="Resource_7c02e"]
+script = ExtResource("1_dhx01")
+type = 0
+target_count = 3
+current_count = 0
+description = "Build 3 residential buildings"
+completed = false
+structure = ExtResource("2_em5vq")
+
+[resource]
+script = ExtResource("2_mum3p")
+id = "2"
+title = "Census Planning"
+description = "Now that we have a road, let's build a residential building for our citizens!"
+objectives = Array[ExtResource("1_dhx01")]([SubResource("Resource_7c02e")])
+rewards = {
+"cash": 250
+}
+next_mission_id = "3"
+graph_path = ""
+full_screen_path = ""
+intro_text = "Great job on the road! Now let's build a residential building where our citizens can live."
+question_text = ""
+correct_answer = ""
+feedback_text = ""
+incorrect_feedback = ""
+company_data = ""
+power_math_content = ""
+num_of_user_inputs = 1
+input_labels = Array[String]([])
+companion_dialog = {
+"correct_answer": {
+"animation": "happy",
+"duration": 5000,
+"text": ["Great job! That's the right answer!", "Perfect! You got it right!"]
+},
+"incorrect_answer": {
+"animation": "sad",
+"duration": 5000,
+"text": ["Hmm, that doesn't look right. Let's try again.", "Not quite right. Don't worry, you can try again!"]
+},
+"mission_completed": {
+"animation": "happy",
+"duration": 6000,
+"text": ["You've completed your second mission! Great job building your first residential building!"]
+},
+"mission_started": {
+"animation": "excited",
+"duration": 6000,
+"text": ["Now it's time to build homes for our citizens!", "Let's add a residential building to our city!"]
+},
+"objective_completed_3": {
+"animation": "excited",
+"duration": 5000,
+"text": ["Amazing! You built your first residential building where people can live.", "You just built a home for your city residents! The population is growing."]
+}
+}
+unlocked_items = Array[String](["res://models/road-corner.glb"])

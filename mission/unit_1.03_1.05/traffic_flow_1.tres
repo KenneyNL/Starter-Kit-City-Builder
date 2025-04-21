@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="MissionData" load_steps=5 format=3 uid="uid://btwrfq37q8vey"]
+
+[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_ajvs5"]
+[ext_resource type="Resource" uid="uid://d2jplegnkl6u2" path="res://structures/road-corner.tres" id="2_exdai"]
+[ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="3_kexcf"]
+
+[sub_resource type="Resource" id="Resource_qykcx"]
+script = ExtResource("1_ajvs5")
+type = 0
+target_count = 2
+current_count = 0
+description = "Create 2 curved road segments"
+completed = false
+structure = ExtResource("2_exdai")
+
+[resource]
+script = ExtResource("3_kexcf")
+id = "12"
+title = "Traffic Flow Analysis"
+description = "The Transportation Department wants to analyze how curved roads affect traffic flow. Add corner roads to create more natural pathways."
+objectives = Array[ExtResource("1_ajvs5")]([SubResource("Resource_qykcx")])
+rewards = {
+"cash": 300
+}
+next_mission_id = "13"
+graph_path = ""
+full_screen_path = ""
+intro_text = "Let's improve traffic flow by adding curved roads! Place 2 corner road segments to create more natural pathways."
+question_text = ""
+correct_answer = ""
+feedback_text = ""
+incorrect_feedback = ""
+company_data = ""
+power_math_content = ""
+num_of_user_inputs = 1
+input_labels = Array[String]([])
+companion_dialog = {
+"mission_completed": {
+"animation": "happy",
+"duration": 6000,
+"text": ["Great job adding those curved roads! These corners help traffic flow more naturally through your city."]
+},
+"mission_started": {
+"animation": "excited",
+"duration": 6000,
+"text": ["Time to analyze traffic patterns! Curved roads create different traffic flow patterns than straight roads."]
+}
+}
+unlocked_items = Array[String]([])

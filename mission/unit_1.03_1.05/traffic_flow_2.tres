@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="MissionData" load_steps=5 format=3 uid="uid://cf7gpb4j7gq1g"]
+
+[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_8k2sf"]
+[ext_resource type="Resource" uid="uid://cntgl86ianngh" path="res://structures/building-small-a.tres" id="2_4a8uo"]
+[ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="3_aihyv"]
+
+[sub_resource type="Resource" id="Resource_fmsjh"]
+script = ExtResource("1_8k2sf")
+type = 1
+target_count = 3
+current_count = 0
+description = "Build 3 more residential buildings"
+completed = false
+structure = ExtResource("2_4a8uo")
+
+[resource]
+script = ExtResource("3_aihyv")
+id = "13"
+title = "Traffic Flow Analysis"
+description = "To better analyze traffic patterns, we need more residents using the road network. Add residential buildings to generate traffic flow."
+objectives = Array[ExtResource("1_8k2sf")]([SubResource("Resource_fmsjh")])
+rewards = {
+"cash": 350
+}
+next_mission_id = "14"
+graph_path = ""
+full_screen_path = ""
+intro_text = "Let's add more traffic to analyze flow patterns! Build 3 more residential buildings along your road network."
+question_text = ""
+correct_answer = ""
+feedback_text = ""
+incorrect_feedback = ""
+company_data = ""
+power_math_content = ""
+num_of_user_inputs = 1
+input_labels = Array[String]([])
+companion_dialog = {
+"mission_completed": {
+"animation": "happy",
+"duration": 6000,
+"text": ["Well done! These new residences will generate traffic patterns for us to analyze."]
+},
+"mission_started": {
+"animation": "excited",
+"duration": 6000,
+"text": ["Time to add more residents to our road network! More people means more traffic to analyze."]
+}
+}
+unlocked_items = Array[String]([])

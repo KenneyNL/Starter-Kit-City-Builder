@@ -1,0 +1,59 @@
+[gd_resource type="Resource" script_class="MissionData" load_steps=7 format=3 uid="uid://bj7tjuknfaeyg"]
+
+[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_t87pd"]
+[ext_resource type="Resource" uid="uid://cntgl86ianngh" path="res://structures/building-small-a.tres" id="2_ys3mw"]
+[ext_resource type="Resource" uid="uid://bh65eqgid4kxy" path="res://structures/building-small-c.tres" id="3_jl18p"]
+[ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="4_2h1ol"]
+
+[sub_resource type="Resource" id="Resource_mht7j"]
+script = ExtResource("1_t87pd")
+type = 1
+target_count = 3
+current_count = 0
+description = "Build 3 small residential buildings"
+completed = false
+structure = ExtResource("2_ys3mw")
+
+[sub_resource type="Resource" id="Resource_vvuiq"]
+script = ExtResource("1_t87pd")
+type = 1
+target_count = 2
+current_count = 0
+description = "Build 2 large residential buildings"
+completed = false
+structure = ExtResource("3_jl18p")
+
+[resource]
+script = ExtResource("4_2h1ol")
+id = "25"
+title = "Economic Forecasting"
+description = "Housing diversity is important for economic resilience. Create a mix of small and large residential buildings to model housing market forecasts."
+objectives = Array[ExtResource("1_t87pd")]([SubResource("Resource_mht7j"), SubResource("Resource_vvuiq")])
+rewards = {
+"cash": 800
+}
+next_mission_id = "26"
+graph_path = ""
+full_screen_path = ""
+intro_text = "Let's model housing market forecasts! Build a mix of small and large residential buildings to create a diverse housing market."
+question_text = ""
+correct_answer = ""
+feedback_text = ""
+incorrect_feedback = ""
+company_data = ""
+power_math_content = ""
+num_of_user_inputs = 1
+input_labels = Array[String]([])
+companion_dialog = {
+"mission_completed": {
+"animation": "happy",
+"duration": 6000,
+"text": ["Excellent housing diversity! This mix of building types creates a more resilient housing market."]
+},
+"mission_started": {
+"animation": "excited",
+"duration": 6000,
+"text": ["Time to forecast housing needs! Different types of residences serve different economic segments."]
+}
+}
+unlocked_items = Array[String]([])

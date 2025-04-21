@@ -519,18 +519,8 @@ func _add_road_to_navregion(position: Vector3, structure_index: int):
 	if nav_region.has_node(road_name):
 		return
 	
-	# Instantiate the road model - get the actual model based on road type
-	var road_model
-	var model_path = structures[structure_index].model.resource_path
-	if model_path.contains("road-straight"):
-		# Use the specific road-straight model that works with navmesh
-		road_model = load("res://models/road-straight.glb").instantiate()
-	elif model_path.contains("road-corner"):
-		# Use the specific road-corner model
-		road_model = load("res://models/road-corner.glb").instantiate()
-	else:
-		# Fall back to the structure's model for other road types
-		road_model = structures[structure_index].model.instantiate()
+	# Instantiate the road model using the actual selected structure
+	var road_model = structures[structure_index].model.instantiate()
 	
 	road_model.name = road_name
 	

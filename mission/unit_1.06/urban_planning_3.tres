@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="MissionData" load_steps=5 format=3 uid="uid://ct1k7n2oopwdu"]
+
+[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_40klq"]
+[ext_resource type="Resource" uid="uid://mxrnqinnsqnt" path="res://structures/road-straight-lightposts.tres" id="2_u46hd"]
+[ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="3_j3mtn"]
+
+[sub_resource type="Resource" id="Resource_fai8r"]
+script = ExtResource("1_40klq")
+type = 0
+target_count = 4
+current_count = 0
+description = "Add 4 roads with lamp posts"
+completed = false
+structure = ExtResource("2_u46hd")
+
+[resource]
+script = ExtResource("3_j3mtn")
+id = "22"
+title = "Urban Planning"
+description = "Well-lit streets are essential for safety and walkability. Plan and implement street lighting in your urban development model."
+objectives = Array[ExtResource("1_40klq")]([SubResource("Resource_fai8r")])
+rewards = {
+"cash": 450
+}
+next_mission_id = "23"
+graph_path = ""
+full_screen_path = ""
+intro_text = "Let's improve street safety! Add 4 roads with lamp posts as part of your urban infrastructure plan."
+question_text = ""
+correct_answer = ""
+feedback_text = ""
+incorrect_feedback = ""
+company_data = ""
+power_math_content = ""
+num_of_user_inputs = 1
+input_labels = Array[String]([])
+companion_dialog = {
+"mission_completed": {
+"animation": "happy",
+"duration": 6000,
+"text": ["Excellent lighting plan! Well-lit streets make your city safer and more accessible at night."]
+},
+"mission_started": {
+"animation": "excited",
+"duration": 6000,
+"text": ["Time to plan street lighting! Good urban planning includes well-lit public spaces."]
+}
+}
+unlocked_items = Array[String]([])

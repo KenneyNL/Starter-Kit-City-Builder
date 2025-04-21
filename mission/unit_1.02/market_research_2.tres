@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="MissionData" load_steps=5 format=3 uid="uid://bom5bu47dy5kp"]
+
+[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_pfd6v"]
+[ext_resource type="Resource" uid="uid://dv14kkhb6umkv" path="res://structures/road-straight.tres" id="2_ktjdq"]
+[ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="3_w1cq1"]
+
+[sub_resource type="Resource" id="Resource_a42kn"]
+script = ExtResource("1_pfd6v")
+type = 0
+target_count = 3
+current_count = 0
+description = "Build 3 additional road segments"
+completed = false
+structure = ExtResource("2_ktjdq")
+
+[resource]
+script = ExtResource("3_w1cq1")
+id = "5"
+title = "Market Research"
+description = "To support the growing commercial district, you need to improve city infrastructure by adding more roads."
+objectives = Array[ExtResource("1_pfd6v")]([SubResource("Resource_a42kn")])
+rewards = {
+"cash": 300
+}
+next_mission_id = "6"
+graph_path = ""
+full_screen_path = ""
+intro_text = "Your businesses need better access! Add 3 more road segments to improve city connectivity."
+question_text = ""
+correct_answer = ""
+feedback_text = ""
+incorrect_feedback = ""
+company_data = ""
+power_math_content = ""
+num_of_user_inputs = 1
+input_labels = Array[String]([])
+companion_dialog = {
+"mission_completed": {
+"animation": "happy",
+"duration": 6000,
+"text": ["Great job expanding the road network! Better roads mean better business for your stores."]
+},
+"mission_started": {
+"animation": "excited",
+"duration": 6000,
+"text": ["Time to improve city infrastructure! Let's add more roads to support your growing commercial district."]
+}
+}
+unlocked_items = Array[String]([])

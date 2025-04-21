@@ -1,0 +1,59 @@
+[gd_resource type="Resource" script_class="MissionData" load_steps=7 format=3 uid="uid://d1fykuxfmh2q1"]
+
+[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_wnlf0"]
+[ext_resource type="Resource" uid="uid://dqqe3iofnleup" path="res://structures/pavement-fountain.tres" id="2_bmmdj"]
+[ext_resource type="Resource" uid="uid://ccb475jeg7ym5" path="res://structures/grass-trees.tres" id="3_ycm66"]
+[ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="4_8gmvv"]
+
+[sub_resource type="Resource" id="Resource_1ht3m"]
+script = ExtResource("1_wnlf0")
+type = 0
+target_count = 1
+current_count = 0
+description = "Create 1 fountain"
+completed = false
+structure = ExtResource("2_bmmdj")
+
+[sub_resource type="Resource" id="Resource_5f31m"]
+script = ExtResource("1_wnlf0")
+type = 0
+target_count = 4
+current_count = 0
+description = "Add 4 grass tiles with trees surrounding the fountain"
+completed = false
+structure = ExtResource("3_ycm66")
+
+[resource]
+script = ExtResource("4_8gmvv")
+id = "23"
+title = "Urban Planning"
+description = "Public spaces like parks and fountains improve quality of life. Plan and create a beautiful public square in your city."
+objectives = Array[ExtResource("1_wnlf0")]([SubResource("Resource_1ht3m"), SubResource("Resource_5f31m")])
+rewards = {
+"cash": 600
+}
+next_mission_id = "24"
+graph_path = ""
+full_screen_path = ""
+intro_text = "Let's create a public square! Build a fountain surrounded by 4 grass tiles with trees for your citizens to enjoy."
+question_text = ""
+correct_answer = ""
+feedback_text = ""
+incorrect_feedback = ""
+company_data = ""
+power_math_content = ""
+num_of_user_inputs = 1
+input_labels = Array[String]([])
+companion_dialog = {
+"mission_completed": {
+"animation": "happy",
+"duration": 6000,
+"text": ["Beautiful public space! This fountain plaza will be a favorite gathering spot for your citizens."]
+},
+"mission_started": {
+"animation": "excited",
+"duration": 6000,
+"text": ["Time to plan public spaces! Good urban design includes beautiful areas for people to gather."]
+}
+}
+unlocked_items = Array[String]([])

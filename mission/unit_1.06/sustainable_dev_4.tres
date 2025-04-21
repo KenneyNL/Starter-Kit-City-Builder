@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="MissionData" load_steps=5 format=3 uid="uid://daug1o7kppqit"]
+
+[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_oa16m"]
+[ext_resource type="Resource" uid="uid://ccb475jeg7ym5" path="res://structures/grass-trees.tres" id="2_wudjj"]
+[ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="3_3tpnw"]
+
+[sub_resource type="Resource" id="Resource_8dxyl"]
+script = ExtResource("1_oa16m")
+type = 0
+target_count = 5
+current_count = 0
+description = "Add 5 grass tiles with trees"
+completed = false
+structure = ExtResource("2_wudjj")
+
+[resource]
+script = ExtResource("3_3tpnw")
+id = "19"
+title = "Sustainable Development"
+description = "Environmental sustainability requires green spaces. Model how adding natural elements improves the sustainability of your city."
+objectives = Array[ExtResource("1_oa16m")]([SubResource("Resource_8dxyl")])
+rewards = {
+"cash": 400
+}
+next_mission_id = "20"
+graph_path = ""
+full_screen_path = ""
+intro_text = "Let's model environmental sustainability! Add green spaces to improve air quality and livability."
+question_text = ""
+correct_answer = ""
+feedback_text = ""
+incorrect_feedback = ""
+company_data = ""
+power_math_content = ""
+num_of_user_inputs = 1
+input_labels = Array[String]([])
+companion_dialog = {
+"mission_completed": {
+"animation": "happy",
+"duration": 6000,
+"text": ["Beautiful! These green spaces make your city more environmentally sustainable and livable."]
+},
+"mission_started": {
+"animation": "excited",
+"duration": 6000,
+"text": ["Time to add some nature to our city model! Green spaces are crucial for environmental sustainability."]
+}
+}
+unlocked_items = Array[String]([])
