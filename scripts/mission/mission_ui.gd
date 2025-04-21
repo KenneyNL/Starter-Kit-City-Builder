@@ -54,11 +54,11 @@ func update_mission_display(mission: MissionData):
 		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		
 		# Format the objective text
-		var progress = ""
-		if objective.target_count > 1:
-			progress = " (%d/%d)" % [objective.current_count, objective.target_count]
+#		var progress = ""
+#		if objective.target_count && objective.type  > 1:
+#			progress = " (%d/%d)" % [objective.current_count, objective.target_count]
 		
-		label.text = "%s%s" % [objective.description, progress]
+		label.text = objective.description
 		
 		# Style completed objectives differently
 		if objective.completed:

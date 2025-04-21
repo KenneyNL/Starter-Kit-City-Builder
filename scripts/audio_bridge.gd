@@ -106,7 +106,6 @@ func connect_to_sound_manager() -> bool:
 	})();
 	"""
 	
-	// Set up the callback
 	js.set_callback("godot_audio_state_callback", Callable(self, "_on_audio_state_received"))
 	
 	result = js.eval(post_message_script)

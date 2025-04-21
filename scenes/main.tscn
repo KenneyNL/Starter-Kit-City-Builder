@@ -1,4 +1,4 @@
-[gd_scene load_steps=33 format=3 uid="uid://vgwrcfy1qawf"]
+[gd_scene load_steps=63 format=3 uid="uid://vgwrcfy1qawf"]
 
 [ext_resource type="Script" path="res://scripts/builder.gd" id="1_jybm7"]
 [ext_resource type="Environment" uid="uid://jbptgqvstei3" path="res://scenes/main-environment.tres" id="1_yndf3"]
@@ -8,43 +8,66 @@
 [ext_resource type="Resource" uid="uid://cntgl86ianngh" path="res://structures/building-small-a.tres" id="5_v5o2m"]
 [ext_resource type="Resource" uid="uid://ccb475jeg7ym5" path="res://structures/grass-trees.tres" id="6_fwsy4"]
 [ext_resource type="Script" path="res://scripts/view.gd" id="8_yovpv"]
+[ext_resource type="Resource" uid="uid://tm532uesguhk" path="res://structures/grass.tres" id="9_2t3p4"]
+[ext_resource type="Resource" uid="uid://d2jplegnkl6u2" path="res://structures/road-corner.tres" id="10_ii8xx"]
 [ext_resource type="Script" path="res://scripts/mission/mission_manager.gd" id="10_oe3re"]
+[ext_resource type="Resource" uid="uid://mxrnqinnsqnt" path="res://structures/road-straight-lightposts.tres" id="11_20frt"]
+[ext_resource type="Resource" uid="uid://c4qbn3d85prxx" path="res://structures/power-plant.tres" id="12_xtc7p"]
 [ext_resource type="PackedScene" uid="uid://dmsy06s02tcw4" path="res://scenes/generic_text_panel.tscn" id="13_7i6dj"]
 [ext_resource type="Script" path="res://scripts/mission/mission_ui.gd" id="13_xvw5w"]
 [ext_resource type="Script" path="res://resources/generic_text_panel.resource.gd" id="14_76jlq"]
 [ext_resource type="Script" path="res://scripts/mission/learning_panel.gd" id="14_q2ymb"]
 [ext_resource type="Script" path="res://scripts/mission/mission_data.gd" id="14_vcrh8"]
-[ext_resource type="Resource" uid="uid://x5h4xutbldq3" path="res://mission/first_mission.tres" id="15_obmwc"]
-[ext_resource type="Resource" uid="uid://cjr36hqnmyn0x" path="res://mission/second_mission.tres" id="16_rl54y"]
-[ext_resource type="Resource" uid="uid://dykbopx8n3c3v" path="res://mission/third_mission.tres" id="17_rrdy6"]
+[ext_resource type="Resource" uid="uid://x5h4xutbldq3" path="res://mission/unit_1.02/census_planning_1.tres" id="15_obmwc"]
+[ext_resource type="Resource" uid="uid://cjr36hqnmyn0x" path="res://mission/unit_1.02/census_planning_2.tres" id="16_rl54y"]
+[ext_resource type="Resource" uid="uid://dykbopx8n3c3v" path="res://mission/unit_1.02/census_planning_3.tres" id="17_rrdy6"]
 [ext_resource type="FontFile" uid="uid://d0cxd77jybrcn" path="res://fonts/lilita_one_regular.ttf" id="17_vlub6"]
 [ext_resource type="PackedScene" uid="uid://b4gkfwf4i3ydl" path="res://scenes/character.tscn" id="18_8lrh8"]
-[ext_resource type="Resource" uid="uid://bho4qh41asyk1" path="res://mission/fourth_mission.tres" id="18_h4fpv"]
 [ext_resource type="PackedScene" uid="uid://cgk66f6rg03mj" path="res://scenes/hud.tscn" id="18_hud"]
 [ext_resource type="PackedScene" uid="uid://bqjnp7uypupog" path="res://scenes/controls_panel.tscn" id="19_controls"]
-[ext_resource type="Resource" uid="uid://p3xwn2mp6bm6" path="res://mission/fifth_mission.tres" id="19_e8sub"]
 [ext_resource type="Script" path="res://scripts/game_manager.gd" id="20_game_manager"]
-[ext_resource type="Resource" uid="uid://bv4r7ebpjdce4" path="res://mission/sixth_mission.tres" id="20_r0ysx"]
+[ext_resource type="Resource" uid="uid://442cwthak2pa" path="res://mission/unit_1.02/market_research_1.tres" id="20_ngu16"]
 [ext_resource type="PackedScene" uid="uid://b4s46k58ddpyc" path="res://scenes/sound_panel.tscn" id="21_sound_panel"]
+[ext_resource type="Resource" uid="uid://dtal0tl2ee336" path="res://structures/store.tres" id="21_y11qv"]
+[ext_resource type="Resource" uid="uid://bom5bu47dy5kp" path="res://mission/unit_1.02/market_research_2.tres" id="24_xud6a"]
+[ext_resource type="Resource" uid="uid://csrqvfwp63ygr" path="res://mission/unit_1.02/market_research_3.tres" id="25_6hx7u"]
+[ext_resource type="Resource" uid="uid://qwiwim2pg88f" path="res://mission/unit_1.02/market_research_4.tres" id="26_lvk23"]
+[ext_resource type="Resource" uid="uid://cfgw8dblm55c5" path="res://mission/unit_1.03_1.05/grid_growth_1.tres" id="27_s0e58"]
+[ext_resource type="Resource" uid="uid://ba3ndftq7dht7" path="res://mission/unit_1.03_1.05/grid_growth_2.tres" id="28_hurxs"]
+[ext_resource type="Resource" uid="uid://dgimr2v12rjqu" path="res://mission/unit_1.03_1.05/grid_growth_3.tres" id="29_rhn1n"]
+[ext_resource type="Resource" uid="uid://dm2o4dq2oml53" path="res://mission/unit_1.03_1.05/grid_growth_4.tres" id="30_4rwkv"]
+[ext_resource type="Resource" uid="uid://btwrfq37q8vey" path="res://mission/unit_1.03_1.05/traffic_flow_1.tres" id="31_j2idb"]
+[ext_resource type="Resource" uid="uid://cf7gpb4j7gq1g" path="res://mission/unit_1.03_1.05/traffic_flow_2.tres" id="32_ipu0c"]
+[ext_resource type="Resource" uid="uid://ddmxjjyxgxyxo" path="res://mission/unit_1.03_1.05/traffic_flow_3.tres" id="33_c0l5e"]
+[ext_resource type="Resource" uid="uid://doxd30r8qbgdq" path="res://mission/unit_1.03_1.05/traffic_flow_4.tres" id="34_21t20"]
+[ext_resource type="Resource" uid="uid://duaxn13myfx22" path="res://mission/unit_1.06/sustainable_dev_1.tres" id="35_o0bjh"]
+[ext_resource type="Resource" uid="uid://fuxb3pfbbwjm" path="res://mission/unit_1.06/sustainable_dev_2.tres" id="36_2wodh"]
+[ext_resource type="Resource" uid="uid://byd5jxiutxpky" path="res://mission/unit_1.06/sustainable_dev_3.tres" id="37_psgx1"]
+[ext_resource type="Resource" uid="uid://daug1o7kppqit" path="res://mission/unit_1.06/sustainable_dev_4.tres" id="38_hw762"]
+[ext_resource type="Resource" uid="uid://cp7tcpktwlrkt" path="res://mission/unit_1.06/urban_planning_1.tres" id="39_ymw5p"]
+[ext_resource type="Resource" uid="uid://c3q1afcvwi4rk" path="res://mission/unit_1.06/urban_planning_2.tres" id="40_uggp1"]
+[ext_resource type="Resource" uid="uid://ct1k7n2oopwdu" path="res://mission/unit_1.06/urban_planning_3.tres" id="41_f0dxf"]
+[ext_resource type="Resource" uid="uid://d1fykuxfmh2q1" path="res://mission/unit_1.06/urban_planning_4.tres" id="42_fv8gl"]
+[ext_resource type="Resource" uid="uid://detwnqsq87r30" path="res://mission/unit_1.07/economic_forecast_1.tres" id="43_qvne6"]
+[ext_resource type="Resource" uid="uid://bj7tjuknfaeyg" path="res://mission/unit_1.07/economic_forecast_2.tres" id="44_haub2"]
+[ext_resource type="Resource" uid="uid://ctyrlnq5cxuiu" path="res://mission/unit_1.07/economic_forecast_3.tres" id="45_xs8xk"]
+[ext_resource type="Resource" uid="uid://ct45gjmw5b7pa" path="res://mission/unit_1.07/economic_forecast_4.tres" id="46_pob6d"]
+[ext_resource type="Resource" uid="uid://bwrkqv42wk8f" path="res://mission/unit_1.07/resource_alloc_1.tres" id="47_6w4y8"]
+[ext_resource type="Resource" uid="uid://d0nblitd4ixir" path="res://mission/unit_1.07/resource_alloc_2.tres" id="48_ck35a"]
+[ext_resource type="Resource" uid="uid://cxh8dgf54oimx" path="res://mission/unit_1.07/resource_alloc_3.tres" id="49_cvgxw"]
+[ext_resource type="Resource" uid="uid://cpfr2xnjtpcog" path="res://mission/unit_1.07/resource_alloc_4.tres" id="50_6ke0d"]
 
 [sub_resource type="Resource" id="Resource_1gdbm"]
 script = ExtResource("14_76jlq")
 panel_type = 0
 title = "Welcome to Stem City "
-body_text = "Hi League Community,
+body_text = "Welcome to Stem City!
 
   Your goal is to build a thriving community from the ground up. As you complete missions, you'll unlock new structures to expand and improve your city.
 
-  Each mission introduces important Math concepts used in urban planning and city management. You'll apply mathematics while watching your city grow.
+As the new city planner, you need to establish a baseline understanding of your growing community. The mayor has requested a comprehensive census to guide future development.
 
-You are the very first group of students who get to test this. So keep in mind there will be bugs, but do note them. 
 
-We are aware of the following bugs:
-- Population count may be off by 1
-- Lighting Baking in Web Builds are too bright
-- We don't restrict building off of roads which will cause workers not to reach buildings
-- Building overlap
-- No builders for Power Plant 
 
 
   Ready to start planning your city? Click Close to see the controls and begin your first mission!
@@ -126,7 +149,7 @@ outro_text_resource = SubResource("Resource_ja86h")
 
 [node name="Builder" type="Node3D" parent="." node_paths=PackedStringArray("selector", "selector_container", "view_camera", "gridmap", "cash_display")]
 script = ExtResource("1_jybm7")
-structures = Array[ExtResource("2_54v6r")]([ExtResource("2_bwyku"), ExtResource("5_v5o2m"), ExtResource("6_fwsy4")])
+structures = Array[ExtResource("2_54v6r")]([ExtResource("2_bwyku"), ExtResource("5_v5o2m"), ExtResource("6_fwsy4"), ExtResource("21_y11qv"), ExtResource("9_2t3p4"), ExtResource("10_ii8xx"), ExtResource("11_20frt"), ExtResource("12_xtc7p")])
 selector = NodePath("Selector")
 selector_container = NodePath("Selector/Container")
 view_camera = NodePath("../View/Camera")
@@ -175,7 +198,7 @@ resource_data = ExtResource("14_76jlq")
 
 [node name="MissionManager" type="Node" parent="." node_paths=PackedStringArray("mission_ui", "builder")]
 script = ExtResource("10_oe3re")
-missions = Array[ExtResource("14_vcrh8")]([ExtResource("15_obmwc"), ExtResource("16_rl54y"), ExtResource("17_rrdy6"), ExtResource("18_h4fpv"), ExtResource("19_e8sub"), ExtResource("20_r0ysx")])
+missions = Array[ExtResource("14_vcrh8")]([ExtResource("15_obmwc"), ExtResource("16_rl54y"), ExtResource("17_rrdy6"), ExtResource("20_ngu16"), ExtResource("24_xud6a"), ExtResource("25_6hx7u"), ExtResource("26_lvk23"), ExtResource("27_s0e58"), ExtResource("28_hurxs"), ExtResource("29_rhn1n"), ExtResource("30_4rwkv"), ExtResource("31_j2idb"), ExtResource("32_ipu0c"), ExtResource("33_c0l5e"), ExtResource("34_21t20"), ExtResource("35_o0bjh"), ExtResource("36_2wodh"), ExtResource("37_psgx1"), ExtResource("38_hw762"), ExtResource("39_ymw5p"), ExtResource("40_uggp1"), ExtResource("41_f0dxf"), ExtResource("42_fv8gl"), ExtResource("43_qvne6"), ExtResource("44_haub2"), ExtResource("45_xs8xk"), ExtResource("46_pob6d"), ExtResource("47_6w4y8"), ExtResource("48_ck35a"), ExtResource("49_cvgxw"), ExtResource("50_6ke0d")])
 mission_ui = NodePath("MissionPanel")
 builder = NodePath("../Builder")
 character_scene = ExtResource("18_8lrh8")
@@ -213,6 +236,7 @@ theme_override_fonts/font = ExtResource("17_vlub6")
 theme_override_font_sizes/font_size = 24
 text = "Mission Title"
 horizontal_alignment = 1
+autowrap_mode = 2
 
 [node name="HSeparator" type="HSeparator" parent="MissionManager/MissionPanel/MarginContainer/VBoxContainer"]
 layout_mode = 2
@@ -362,4 +386,5 @@ offset_right = 40.0
 offset_bottom = 23.0
 
 [connection signal="all_missions_completed" from="MissionManager" to="." method="_on_mission_manager_all_missions_completed"]
+[connection signal="mission_started" from="MissionManager" to="." method="_on_mission_manager_mission_started"]
 [connection signal="pressed" from="MissionManager/LearningPanel/MarginContainer/VBoxContainer/HBoxContainer/CompleteButton" to="MissionManager/LearningPanel" method="_on_complete_button_pressed"]

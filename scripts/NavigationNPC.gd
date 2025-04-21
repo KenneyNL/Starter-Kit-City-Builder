@@ -36,7 +36,6 @@ func _ready() -> void:
 func _start_initial_movement():
 	await get_tree().process_frame
 	pick_random_target()
-	print("Initial movement target set for character at ", global_position)
 
 # Force movement to a specific target
 func _unhandled_input(event: InputEvent) -> void:

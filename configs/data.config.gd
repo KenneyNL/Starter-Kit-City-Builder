@@ -1,0 +1,8 @@
+# Mission Configs
+enum ObjectiveType {
+	BUILD_STRUCTURE,
+	BUILD_RESIDENTIAL,
+	REACH_CASH_AMOUNT,
+	REACH_POPULATION,
+	LEARNING,
+}
