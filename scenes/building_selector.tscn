@@ -1,0 +1,233 @@
+[gd_scene load_steps=6 format=3 uid="uid://b4k3xfm8pd8qw"]
+
+[ext_resource type="Script" uid="uid://bsjmj0qu3xfrr" path="res://scripts/building_selector.gd" id="1_yvr4p"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_hover"]
+bg_color = Color(0.3, 0.3, 0.3, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.5, 0.5, 0.5, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_pressed"]
+bg_color = Color(0.4, 0.4, 0.4, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.6, 0.6, 0.6, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button"]
+bg_color = Color(0.2, 0.2, 0.2, 0.8)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.4, 0.4, 0.4, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.145098, 0.172549, 0.231373, 0.941176)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.356863, 0.670588, 0.768627, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="BuildingSelector" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+script = ExtResource("1_yvr4p")
+
+[node name="MainButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 170.0
+offset_bottom = 60.0
+mouse_filter = 1
+theme_override_font_sizes/font_size = 16
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+text = "Select Building"
+
+[node name="SelectionPanel" type="Panel" parent="."]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 70.0
+offset_right = 380.0
+offset_bottom = 620.0
+mouse_filter = 1
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="SearchBar" type="LineEdit" parent="SelectionPanel"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 350.0
+offset_bottom = 40.0
+placeholder_text = "Search buildings..."
+clear_button_enabled = true
+
+[node name="FilterButtons" type="HBoxContainer" parent="SelectionPanel"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 50.0
+offset_right = 350.0
+offset_bottom = 90.0
+theme_override_constants/separation = 5
+
+[node name="AllButton" type="Button" parent="SelectionPanel/FilterButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+toggle_mode = true
+button_pressed = true
+text = "All"
+
+[node name="ResidentialButton" type="Button" parent="SelectionPanel/FilterButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+toggle_mode = true
+text = "Residential"
+
+[node name="CommercialButton" type="Button" parent="SelectionPanel/FilterButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+toggle_mode = true
+text = "Commercial"
+
+[node name="IndustrialButton" type="Button" parent="SelectionPanel/FilterButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+toggle_mode = true
+text = "Industrial"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="SelectionPanel"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 100.0
+offset_right = 350.0
+offset_bottom = 510.0
+horizontal_scroll_mode = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="SelectionPanel/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 20
+
+[node name="GroundSection" type="VBoxContainer" parent="SelectionPanel/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Label" type="Label" parent="SelectionPanel/ScrollContainer/VBoxContainer/GroundSection"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Ground Types"
+horizontal_alignment = 1
+
+[node name="GroundOptions" type="GridContainer" parent="SelectionPanel/ScrollContainer/VBoxContainer/GroundSection"]
+layout_mode = 2
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+columns = 2
+
+[node name="BuildingSection" type="VBoxContainer" parent="SelectionPanel/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Label" type="Label" parent="SelectionPanel/ScrollContainer/VBoxContainer/BuildingSection"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Buildings"
+horizontal_alignment = 1
+
+[node name="BuildingOptions" type="GridContainer" parent="SelectionPanel/ScrollContainer/VBoxContainer/BuildingSection"]
+layout_mode = 2
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+columns = 2
+
+[node name="DescriptionPanel" type="Panel" parent="SelectionPanel"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 520.0
+offset_right = 350.0
+offset_bottom = 610.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="SelectionPanel/DescriptionPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+
+[node name="TitleLabel" type="Label" parent="SelectionPanel/DescriptionPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "No Building Selected"
+horizontal_alignment = 1
+
+[node name="DescriptionLabel" type="Label" parent="SelectionPanel/DescriptionPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 14
+text = "Select a building to view its details"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="StatsContainer" type="HBoxContainer" parent="SelectionPanel/DescriptionPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="PriceLabel" type="Label" parent="SelectionPanel/DescriptionPanel/VBoxContainer/StatsContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Price: $0"
+
+[node name="PopulationLabel" type="Label" parent="SelectionPanel/DescriptionPanel/VBoxContainer/StatsContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Population: 0"
+
+[node name="PowerLabel" type="Label" parent="SelectionPanel/DescriptionPanel/VBoxContainer/StatsContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Power: 0 kW"

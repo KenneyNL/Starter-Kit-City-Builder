@@ -76,6 +76,32 @@ func _ready():
 	
 	# Make sure sound buses are properly configured
 	call_deferred("_setup_sound_buses")
+	
+	# Connect the building selector to the builder
+	var building_selector = $CanvasLayer/BuildingSelector
+	if building_selector:
+		building_selector.builder = $Builder
+	
+	# Connect builder's cash display to HUD
+	if builder and hud:
+		builder.cash_display = hud.get_node("HBoxContainer/CashItem/CashLabel")
+	
+	# Start background music
+	_start_background_music()
+	
+	# Connect economy manager signals to HUD
+	var economy_manager = get_node_or_null("EconomyManager")
+	var hud_manager = get_node_or_null("CanvasLayer/HUD")
+	
+	if economy_manager and hud_manager:
+		economy_manager.money_changed.connect(hud_manager.update_money)
+		economy_manager.population_changed.connect(hud_manager.update_population_count)
+		economy_manager.energy_balance_changed.connect(hud_manager.update_energy_balance)
+		
+		# Initialize HUD with current values
+		hud_manager.update_money(economy_manager.money)
+		hud_manager.update_population_count(economy_manager.population)
+		hud_manager.update_energy_balance(economy_manager.energy_production, economy_manager.energy_consumption)
 
 # Initialize all game audio - called immediately on desktop, after user interaction on web
 func _initialize_game_audio():
