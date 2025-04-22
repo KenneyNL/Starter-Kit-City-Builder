@@ -254,7 +254,7 @@ func action_build(gridmap_position):
 			# Make sure any existing NPCs are children of the navigation region
 			_move_characters_to_navregion()
 		elif is_power_plant:
-			#add_power_plant(gridmap_position, index)
+			_add_power_plant(gridmap_position, index)
 			
 			# We still set the cell item for collision detection
 			gridmap.set_cell_item(gridmap_position, index, gridmap.get_orthogonal_index_from_basis(selector.basis))
@@ -544,8 +544,6 @@ func _add_road_to_navregion(position: Vector3, structure_index: int):
 	road_model.transform = transform
 	
 
-
-# Function to add a power plant as a direct child of the builder
 func _add_power_plant(position: Vector3, structure_index: int):
 	# Create a unique name for this power plant based on its position
 	var power_plant_name = "PowerPlant_" + str(int(position.x)) + "_" + str(int(position.z))
@@ -575,7 +573,7 @@ func _add_power_plant(position: Vector3, structure_index: int):
 	
 	# Apply position offset to center the model (matching the preview)
 	# These offsets need to be transformed based on the current rotation
-	var offset = selector.basis * Vector3(0.25, 0, -0.25)
+	var offset = selector.basis * Vector3(-3, 0, 3)
 	transform.origin += offset
 	
 	# Apply the complete transform in one go
