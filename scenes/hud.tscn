@@ -33,6 +33,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_6vdxc")
+show_mission_select = true
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
 layout_mode = 1
@@ -151,6 +152,22 @@ texture_normal = ExtResource("6_i1y88")
 ignore_texture_size = true
 stretch_mode = 5
 
+[node name="Separator5" type="VSeparator" parent="HBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="MissionSelectItem" type="HBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+mouse_filter = 0
+theme_override_constants/separation = 8
+
+[node name="MissionSelectButton" type="Button" parent="HBoxContainer/MissionSelectItem"]
+custom_minimum_size = Vector2(120, 40)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_default_cursor_shape = 2
+text = "Missions"
+
 [node name="PopulationTooltip" type="Control" parent="."]
 visible = false
 layout_mode = 1
@@ -207,3 +224,4 @@ autowrap_mode = 3
 [connection signal="mouse_exited" from="HBoxContainer/ElectricityItem/ElectricityIcon" to="." method="_on_electricity_icon_mouse_exited"]
 [connection signal="pressed" from="HBoxContainer/SoundItem/SoundButton" to="." method="_on_sound_button_pressed"]
 [connection signal="pressed" from="HBoxContainer/HelpItem/HelpButton" to="." method="_on_help_button_pressed"]
+[connection signal="pressed" from="HBoxContainer/MissionSelectItem/MissionSelectButton" to="." method="_on_mission_select_button_pressed"]

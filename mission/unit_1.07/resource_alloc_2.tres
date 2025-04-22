@@ -15,14 +15,14 @@ structure = ExtResource("2_hh0xb")
 
 [resource]
 script = ExtResource("3_k5ivn")
-id = "29"
+id = "28"
 title = "Resource Allocation"
-description = "Commercial resource allocation requires strategic planning. Develop a commercial sector that balances land use with economic benefits."
+description = "Our linear model predicts commercial success based on location factors. Build stores to test the real-world predictions from our mathematical model."
 objectives = Array[ExtResource("1_vdhxy")]([SubResource("Resource_21csl")])
 rewards = {
 "cash": 650
 }
-next_mission_id = "30"
+next_mission_id = "29"
 graph_path = ""
 full_screen_path = ""
 intro_text = "Let's practice commercial resource allocation! Build 4 store buildings in locations that maximize their effectiveness."

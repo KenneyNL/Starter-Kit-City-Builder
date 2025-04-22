@@ -17,7 +17,7 @@ structure = ExtResource("2_a71iq")
 script = ExtResource("3_38y5t")
 id = "20"
 title = "Urban Planning"
-description = "Good urban planning requires commercial zones strategically placed throughout the city. Plan and build new commercial districts."
+description = "Our scatter plots show a linear association between commercial density and economic growth. Build stores to implement a city plan based on this linear relationship model."
 objectives = Array[ExtResource("1_fywct")]([SubResource("Resource_wq8mf")])
 rewards = {
 "cash": 450

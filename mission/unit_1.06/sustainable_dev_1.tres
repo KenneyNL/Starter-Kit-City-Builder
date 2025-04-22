@@ -15,7 +15,7 @@ completed = false
 script = ExtResource("2_x8j3r")
 id = "16"
 title = "Sustainable Development"
-description = "Your city is growing rapidly, but you need to ensure this growth happens sustainably. Model population growth to ensure you can meet everyone's needs."
+description = "Our linear model shows a strong association between population size and resource demands. Grow your population to test how closely actual data points fit this predictive line."
 objectives = Array[ExtResource("1_40kcw")]([SubResource("Resource_qlixo")])
 rewards = {
 "cash": 500

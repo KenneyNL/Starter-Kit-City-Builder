@@ -15,14 +15,14 @@ structure = ExtResource("2_qlnvj")
 
 [resource]
 script = ExtResource("3_4udbq")
-id = "28"
+id = "27"
 title = "Resource Allocation"
-description = "Efficient resource allocation starts with housing. Create a residential expansion plan that maximizes land use efficiency."
+description = "Using our linear model of housing-to-population growth, build residential zones to see how the rate of change and y-intercept affect real-world outcomes."
 objectives = Array[ExtResource("1_1k37f")]([SubResource("Resource_0fxto")])
 rewards = {
 "cash": 600
 }
-next_mission_id = "29"
+next_mission_id = "28"
 graph_path = ""
 full_screen_path = ""
 intro_text = "Let's practice residential resource allocation! Build 5 residential buildings while optimizing land use patterns."

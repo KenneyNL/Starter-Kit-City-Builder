@@ -1,16 +1,21 @@
 extends Node
 
 # Signals
-signal population_updated(new_population)
 signal electricity_updated(usage, production)
+signal population_updated(count)
 
 # Variables
 var total_population: int = 0
 var total_kW_usage: float = 0.0
 var total_kW_production: float = 0.0
+@export var show_mission_select: bool = false:
+	set(value):
+		show_mission_select = value
+		_update_mission_select_visibility()
 
 # References
-var builder
+var mission_select_menu: Control
+var mission_select_button: Button
 var building_construction_manager
 var population_label: Label
 var electricity_label: Label
@@ -19,30 +24,35 @@ var population_tooltip: Control
 var electricity_tooltip: Control
 var controls_panel: PanelContainer
 var sound_panel: PanelContainer
-var cash_label: Label
+@onready var _builder = get_node_or_null("/root/Main/Builder")
 
 func _ready():
 	# Connect to signals from the builder
-	builder = get_node_or_null("/root/Main/Builder")
-	population_updated.connect(update_population_count)
-	if builder:
-		builder.structure_placed.connect(_on_structure_placed)
-		builder.structure_removed.connect(_on_structure_removed)
-		
+	if _builder:
+		_builder.structure_placed.connect(_on_structure_placed)
+		_builder.structure_removed.connect(_on_structure_removed)
+
 	# Initialize UI elements
 	population_label = $HBoxContainer/PopulationItem/PopulationLabel
-	electricity_label	 = $HBoxContainer/ElectricityItem/ElectricityValues/ElectricityLabel
+	electricity_label = $HBoxContainer/ElectricityItem/ElectricityValues/ElectricityLabel
 	electricity_indicator = $HBoxContainer/ElectricityItem/ElectricityValues/ElectricityIndicator
 	population_tooltip = $PopulationTooltip
 	electricity_tooltip = $ElectricityTooltip
-	if not electricity_tooltip:
-		push_error("Electricity tooltip not found in HUD!")
-		return
-		
-	cash_label = $HBoxContainer/CashItem/CashLabel
-	if not cash_label:
-		push_error("Cash label not found in HUD!")
-		return
+	mission_select_button = $HBoxContainer/MissionSelectItem/MissionSelectButton
+	
+	# Get references to panels
+	controls_panel = get_node_or_null("/root/Main/CanvasLayer/ControlsPanel")
+	sound_panel = get_node_or_null("/root/Main/CanvasLayer/SoundPanel")
+	
+	# Setup mission select button
+	if mission_select_button:
+		mission_select_button.connect("pressed", _on_mission_select_button_pressed)
+	
+	# Setup mission select menu
+	_setup_mission_select_menu()
+	
+	# Update mission select visibility based on export variable
+	_update_mission_select_visibility()
 	
 	# Ensure electricity indicator starts with red color
 	if electricity_indicator:
@@ -69,12 +79,51 @@ func _ready():
 	# Update HUD
 	update_hud()
 
+# Set up the mission select menu
+func _setup_mission_select_menu():
+	# Check if the mission select menu already exists
+	mission_select_menu = get_node_or_null("/root/Main/CanvasLayer/MissionSelectMenu")
+	
+	# If not, instantiate and add it
+	if not mission_select_menu:
+		var mission_select_scene = load("res://scenes/mission_select_menu.tscn")
+		if mission_select_scene:
+			mission_select_menu = mission_select_scene.instantiate()
+			var canvas_layer = get_node_or_null("/root/Main/CanvasLayer")
+			if canvas_layer:
+				canvas_layer.add_child(mission_select_menu)
+				#mission_select_menu.hide() # Initially hidden
+	
+# Update mission select visibility based on export variable
+func _update_mission_select_visibility():
+	var mission_select_item = $HBoxContainer/MissionSelectItem
+	if mission_select_item:
+		mission_select_item.visible = show_mission_select
+		
+# Handle mission select button press
+func _on_mission_select_button_pressed():
+	if mission_select_menu:
+		mission_select_menu.toggle_visibility()
+	else:
+		# Try to set up the menu if it doesn't exist yet
+		_setup_mission_select_menu()
+		if mission_select_menu:
+			mission_select_menu.show()
+	
+	
+func _process(delta):
+	# Update the population label if it changes
+	if population_label and Globals.population != total_population:
+		total_population = Globals.population
+		population_label.text = str(total_population)
+
+
 # Called when a structure is placed
 func _on_structure_placed(structure_index, position):
-	if !builder or structure_index < 0 or structure_index >= builder.structures.size():
+	if !_builder or structure_index < 0 or structure_index >= _builder.structures.size():
 		return
 	
-	var structure = builder.structures[structure_index]
+	var structure = _builder.structures[structure_index]
 	
 	# Only update population for non-residential buildings or if we're NOT in the construction mission
 	var is_residential = structure.type == Structure.StructureType.RESIDENTIAL_BUILDING
@@ -96,13 +145,13 @@ func _on_structure_placed(structure_index, position):
 	
 # Called when a structure is removed
 func _on_structure_removed(structure_index, position):
-	if !builder or structure_index < 0 or structure_index >= builder.structures.size():
+	if !_builder or structure_index < 0 or structure_index >= _builder.structures.size():
 		return
 	
-	var structure = builder.structures[structure_index]
+	var structure = _builder.structures[structure_index]
 	
 	# Update population (but only for non-residential buildings in mission 3)
-	# For residential buildings in mission 3, we handle population separately in builder._remove_resident_for_building
+	# For residential buildings in mission 3, we handle population separately in _builder._remove_resident_for_building
 	var skip_population_update = false
 	var mission_manager = get_node_or_null("/root/Main/MissionManager")
 	
@@ -111,7 +160,7 @@ func _on_structure_removed(structure_index, position):
 			# Only update population for one resident, since we're removing them one by one
 			# We don't do total reset based on structure.population_count
 			skip_population_update = true
-			# We decrement by 1 in builder._remove_resident_for_building instead
+			# We decrement by 1 in _builder._remove_resident_for_building instead
 			
 	if !skip_population_update:
 		total_population = max(0, total_population - structure.population_count)
@@ -128,7 +177,7 @@ func _on_structure_removed(structure_index, position):
 	
 	
 # Update Population
-func update_population_count(count: int):
+func set_population_count(count: int):
 	total_population += count
 	population_label.text = str(total_population)
 	
@@ -207,3 +256,19 @@ func _on_help_button_pressed():
 	
 	if controls_panel:
 		controls_panel.show_panel()
+
+# Called when the music volume is changed
+func _on_music_volume_changed(new_volume):
+	pass  # Sound panel handles this through signals
+
+# Called when the sfx volume is changed
+func _on_sfx_volume_changed(new_volume):
+	pass  # Sound panel handles this through signals
+
+# Called when the music is muted
+func _on_music_muted_changed(is_muted):
+	pass  # Sound panel handles this through signals
+
+# Called when the sfx is muted
+func _on_sfx_muted_changed(is_muted):
+	pass  # Sound panel handles this through signals

@@ -17,7 +17,7 @@ structure = ExtResource("2_r3vpw")
 script = ExtResource("3_mdu3m")
 id = "9"
 title = "Grid Growth"
-description = "Now that you've established your grid pattern, it's time to add residential zones to the grid. This will demonstrate how building placement follows the road network."
+description = "Our scatter plots show a clustering pattern between housing density and road network. Add residential buildings to explore this bivariate relationship further."
 objectives = Array[ExtResource("1_miqck")]([SubResource("Resource_utswr")])
 rewards = {
 "cash": 350

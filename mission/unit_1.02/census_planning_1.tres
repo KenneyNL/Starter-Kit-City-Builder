@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="MissionData" load_steps=5 format=3 uid="uid://x5h4xutbldq3"]
 
 [ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="1_nv6c6"]
-[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_yfbrc"]
+[ext_resource type="Script" uid="uid://b8b67y260mq6g" path="res://scripts/mission/mission_objective.gd" id="1_yfbrc"]
 [ext_resource type="Resource" uid="uid://dv14kkhb6umkv" path="res://structures/road-straight.tres" id="2_d0ffl"]
 
 [sub_resource type="Resource" id="Resource_ywws1"]
@@ -17,7 +17,7 @@ structure = ExtResource("2_d0ffl")
 script = ExtResource("1_nv6c6")
 id = "1"
 title = "Census Planning"
-description = "As the new city planner, you need to establish a baseline understanding of your growing community. The mayor has requested a comprehensive census to guide future development."
+description = "As the new city planner, you need to collect data on two categorical variables: infrastructure types and citizen demographics. Building roads will allow you to collect this data for a two-way frequency table analysis."
 objectives = Array[ExtResource("1_yfbrc")]([SubResource("Resource_ywws1")])
 rewards = {
 "cash": 250

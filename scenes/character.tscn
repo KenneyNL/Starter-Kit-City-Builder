@@ -1,6 +1,6 @@
 [gd_scene load_steps=8 format=3 uid="uid://b4gkfwf4i3ydl"]
 
-[ext_resource type="Script" uid="uid://c2u81fdo7uou3" path="res://scripts/mission/character_controller.gd" id="1_g3a7y"]
+[ext_resource type="Script" uid="uid://dexknr7it5val" path="res://scripts/mission/character_controller.gd" id="1_g3a7y"]
 [ext_resource type="PackedScene" uid="uid://h2jjkvc4edsp" path="res://people/character-female-d.glb" id="2_d5jmi"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_b4w3n"]
@@ -80,7 +80,7 @@ transform = Transform3D(0.6, 0, 0, 0, 0.6, 0, 0, 0, 0.6, 0, 0, 0)
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 libraries = {
-"": SubResource("AnimationLibrary_8ib1s")
+&"": SubResource("AnimationLibrary_8ib1s")
 }
 autoplay = "walk"
 speed_scale = 3.0

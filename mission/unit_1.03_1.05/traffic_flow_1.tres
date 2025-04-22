@@ -17,7 +17,7 @@ structure = ExtResource("2_exdai")
 script = ExtResource("3_kexcf")
 id = "12"
 title = "Traffic Flow Analysis"
-description = "The Transportation Department wants to analyze how curved roads affect traffic flow. Add corner roads to create more natural pathways."
+description = "The Transportation Department is creating scatter plots showing the relationship between road curvature and traffic speed. Add curved roads to investigate this bivariate relationship pattern."
 objectives = Array[ExtResource("1_ajvs5")]([SubResource("Resource_qykcx")])
 rewards = {
 "cash": 300

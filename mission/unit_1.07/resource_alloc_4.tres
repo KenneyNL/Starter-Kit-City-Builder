@@ -15,14 +15,14 @@ structure = ExtResource("2_y8alv")
 
 [resource]
 script = ExtResource("3_p34yh")
-id = "31"
+id = "30"
 title = "Resource Allocation"
 description = "Green space allocation improves quality of life. Create a strategic plan for natural areas throughout your city."
 objectives = Array[ExtResource("1_4b0uw")]([SubResource("Resource_grdmr")])
 rewards = {
 "cash": 600
 }
-next_mission_id = "32"
+next_mission_id = "31"
 graph_path = ""
 full_screen_path = ""
 intro_text = "Let's allocate resources for green spaces! Add 6 grass tiles with trees to create natural areas in your city."

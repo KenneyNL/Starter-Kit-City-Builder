@@ -53,12 +53,12 @@ func update_mission_display(mission: MissionData):
 		label.add_theme_font_size_override("font_size", 16)
 		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		
-		# Format the objective text
-#		var progress = ""
-#		if objective.target_count && objective.type  > 1:
-#			progress = " (%d/%d)" % [objective.current_count, objective.target_count]
+		# Format the objective text with progress
+		var progress_text = ""
+		if objective.target_count > 1:
+			progress_text = " (%d/%d)" % [objective.current_count, objective.target_count]
 		
-		label.text = objective.description
+		label.text = objective.description + progress_text
 		
 		# Style completed objectives differently
 		if objective.completed:

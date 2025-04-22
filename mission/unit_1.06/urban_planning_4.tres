@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_wnlf0"]
 [ext_resource type="Resource" uid="uid://dqqe3iofnleup" path="res://structures/pavement-fountain.tres" id="2_bmmdj"]
-[ext_resource type="Resource" uid="uid://ccb475jeg7ym5" path="res://structures/grass-trees.tres" id="3_ycm66"]
+[ext_resource type="Resource" uid="uid://y6jafhfnhbrp" path="res://structures/grass-trees-tall.tres" id="3_fegi2"]
 [ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="4_8gmvv"]
 
 [sub_resource type="Resource" id="Resource_1ht3m"]
@@ -10,7 +10,7 @@ script = ExtResource("1_wnlf0")
 type = 0
 target_count = 1
 current_count = 0
-description = "Create 1 fountain"
+description = "Add 1 fountain"
 completed = false
 structure = ExtResource("2_bmmdj")
 
@@ -19,9 +19,9 @@ script = ExtResource("1_wnlf0")
 type = 0
 target_count = 4
 current_count = 0
-description = "Add 4 grass tiles with trees surrounding the fountain"
+description = "Add 4 grass tiles with trees for your fountain"
 completed = false
-structure = ExtResource("3_ycm66")
+structure = ExtResource("3_fegi2")
 
 [resource]
 script = ExtResource("4_8gmvv")
