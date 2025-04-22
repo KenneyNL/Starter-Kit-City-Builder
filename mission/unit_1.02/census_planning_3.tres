@@ -15,7 +15,7 @@ completed = false
 script = ExtResource("2_b4llw")
 id = "3"
 title = "Census Planning"
-description = "As your city grows, you need to choose the most efficient construction company."
+description = "As your city grows, you need to interpret your two-way frequency tables. Increase your population to see relative frequencies and possible associations between resident demographics and infrastructure usage."
 objectives = Array[ExtResource("1_l3spi")]([SubResource("Resource_c06be")])
 rewards = {
 "cash": 500

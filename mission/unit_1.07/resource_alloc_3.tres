@@ -15,14 +15,14 @@ structure = ExtResource("2_4rkoa")
 
 [resource]
 script = ExtResource("3_iqaae")
-id = "30"
+id = "29"
 title = "Resource Allocation"
 description = "Transportation infrastructure requires careful resource allocation. Develop an efficient road network that connects all parts of your city."
 objectives = Array[ExtResource("1_c76o5")]([SubResource("Resource_r01e3")])
 rewards = {
 "cash": 700
 }
-next_mission_id = "31"
+next_mission_id = "30"
 graph_path = ""
 full_screen_path = ""
 intro_text = "Let's optimize transportation resource allocation! Build 8 road segments to create an efficient transit network."

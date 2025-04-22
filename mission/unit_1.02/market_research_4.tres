@@ -46,4 +46,4 @@ companion_dialog = {
 "text": ["Let's light up the commercial district! Well-lit streets attract more shoppers in the evening."]
 }
 }
-unlocked_items = Array[String]([])
+unlocked_items = Array[String](["res://models/road-intersection.glb"])

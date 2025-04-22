@@ -17,7 +17,7 @@ structure = ExtResource("2_d7dn8")
 script = ExtResource("3_viy3t")
 id = "4"
 title = "Market Research"
-description = "Local businesses are interested in setting up shop in your city, but they need data on where to locate for maximum profit."
+description = "Local businesses are analyzing your two-way tables to find associations between infrastructure and demographics. Build stores to further explore relationships between these categorical variables."
 objectives = Array[ExtResource("1_tcpuf")]([SubResource("Resource_1rxby")])
 rewards = {
 "cash": 0

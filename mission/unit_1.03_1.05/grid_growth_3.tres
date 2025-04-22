@@ -46,4 +46,4 @@ companion_dialog = {
 "text": ["Let's ensure our grid has enough power! Every growing city needs reliable electricity."]
 }
 }
-unlocked_items = Array[String]([])
+unlocked_items = Array[String](["res://models/grass-trees-tall.glb", "res://models/grass.glb"])

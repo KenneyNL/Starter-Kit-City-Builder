@@ -17,7 +17,7 @@ structure = ExtResource("2_6f04c")
 script = ExtResource("3_7jlc0")
 id = "21"
 title = "Urban Planning"
-description = "Residential zoning is a critical component of urban planning. Create new residential areas to accommodate your growing population."
+description = "Our scatter plot suggests a linear association between residential zones and transit usage. Build housing to further test the fit of our linear model."
 objectives = Array[ExtResource("1_0s0wv")]([SubResource("Resource_3fy3g")])
 rewards = {
 "cash": 500

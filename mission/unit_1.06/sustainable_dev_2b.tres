@@ -1,0 +1,49 @@
+[gd_resource type="Resource" script_class="MissionData" load_steps=5 format=3 uid="uid://bsic030rpgh08"]
+
+[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_75i2t"]
+[ext_resource type="Resource" uid="uid://dtal0tl2ee336" path="res://structures/store.tres" id="2_3t66o"]
+[ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="3_30pdy"]
+
+[sub_resource type="Resource" id="Resource_vcbou"]
+script = ExtResource("1_75i2t")
+type = 0
+target_count = 3
+current_count = 0
+description = "Have 3 store buildings"
+completed = false
+structure = ExtResource("2_3t66o")
+
+[resource]
+script = ExtResource("3_30pdy")
+id = "17b"
+title = "Commercial Development"
+description = "Every community needs stores and businesses. Add commercial zones to create a balanced urban environment."
+objectives = Array[ExtResource("1_75i2t")]([SubResource("Resource_vcbou")])
+rewards = {
+"cash": 300
+}
+next_mission_id = "18"
+graph_path = ""
+full_screen_path = ""
+intro_text = "Now that we have housing, our residents need places to shop and work! Build 3 store buildings to support your community's commercial needs."
+question_text = ""
+correct_answer = ""
+feedback_text = ""
+incorrect_feedback = ""
+company_data = ""
+power_math_content = ""
+num_of_user_inputs = 1
+input_labels = Array[String]([])
+companion_dialog = {
+"mission_completed": {
+"animation": "happy",
+"duration": 6000,
+"text": ["Perfect balance! This ratio of homes to businesses creates a sustainable economic model."]
+},
+"mission_started": {
+"animation": "excited",
+"duration": 6000,
+"text": ["Let's add some shops! A thriving city needs commercial zones to serve residents and create jobs."]
+}
+}
+unlocked_items = Array[String](["res://structures/store.tres"])

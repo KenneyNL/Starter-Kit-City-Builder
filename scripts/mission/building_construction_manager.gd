@@ -81,7 +81,16 @@ func start_construction(position: Vector3, structure_index: int, rotation_basis 
 	}
 	
 	# Place plot marker (outline/transparent version of the building)
-	var plot = building_plot_scene.instantiate()
+	var plot
+	
+	# Use the actual structure model for the transparent preview if available
+	if structure_index >= 0 and structure_index < builder.structures.size():
+		var structure = builder.structures[structure_index]
+		plot = structure.model.instantiate()
+	else:
+		# Fallback to default building model
+		plot = building_plot_scene.instantiate()
+		
 	plot.name = "Plot_" + str(int(position.x)) + "_" + str(int(position.z))
 	
 	# Make it a transparent outline by applying transparency to all materials
@@ -100,8 +109,26 @@ func start_construction(position: Vector3, structure_index: int, rotation_basis 
 	# Store reference
 	construction_sites[position]["plot"] = plot
 	
-	# Find a road position to spawn the worker
-	_spawn_worker_for_construction(position)
+	# Check if we should spawn a worker based on structure type
+	var should_spawn_worker = false
+	
+	if structure_index >= 0 and structure_index < builder.structures.size():
+		var structure = builder.structures[structure_index]
+		
+		# Check if this structure type should spawn a builder
+		if structure.spawn_builder:
+			should_spawn_worker = true
+	else:
+		# Default to true if we can't determine the structure type
+		should_spawn_worker = true
+	
+	# Find a road position to spawn the worker if needed
+	if should_spawn_worker:
+		_spawn_worker_for_construction(position)
+	else:
+		# For structures without workers, start a timer to complete construction automatically
+		var timer = get_tree().create_timer(CONSTRUCTION_TIME)
+		timer.timeout.connect(func(): _complete_construction(position))
 	
 	# Send building_selected dialog to learning companion if available in the current mission
 	var mission_manager = builder.get_node_or_null("/root/Main/MissionManager")
@@ -305,26 +332,23 @@ func _complete_construction(position: Vector3):
 	# Update mission objective now that construction is complete
 #	_update_mission_objective_on_completion(site["structure_index"])
 	
-	# Check if we should spawn a resident
+	# Check if we should spawn a resident (only for residential buildings)
 	var mission_manager = builder.get_node_or_null("/root/Main/MissionManager")
-	var should_spawn_resident = true
+	var should_spawn_resident = false
 	
-	# Don't spawn a resident for the first building in mission 1
-	# (let the mission manager handle that case to avoid double spawning)
-	if mission_manager and mission_manager.current_mission and mission_manager.current_mission.id == "1" and !mission_manager.character_spawned:
-		should_spawn_resident = false
+	# Only spawn residents for residential buildings
 	
-	# Spawn a resident from the new building (except for first building in mission 1)
+	var structure = builder.structures[site["structure_index"]]
+	if structure.type == Structure.StructureType.RESIDENTIAL_BUILDING:
+			should_spawn_resident = true
+	
+	# Spawn a resident from the new residential building if appropriate
 	if should_spawn_resident:
 		_spawn_resident_from_building(position)
-
-	var structure = builder.structures[site["structure_index"]]
  	
 	if structure.type == Structure.StructureType.RESIDENTIAL_BUILDING and structure.population_count > 0:
 			update_population(structure.population_count)
-#			hud.total_population += structure.population_count
-#			hud.update_hud()
-#			hud.population_updated.emit(hud.total_population)
+#			
 	
 	# Emit completion signal
 	construction_completed.emit(position)
@@ -351,8 +375,14 @@ func handle_demolition(position: Vector3):
 
 # Place the final building at the construction site
 func _place_final_building(position: Vector3, structure_index: int):
-	# Create the final building
-	var building = final_building_scene.instantiate()
+	# Create the final building using the actual selected structure model
+	var building
+	if structure_index >= 0 and structure_index < builder.structures.size():
+		building = builder.structures[structure_index].model.instantiate()
+	else:
+		# Fallback to our default model if structure index is invalid
+		building = final_building_scene.instantiate()
+	
 	building.name = "Building_" + str(int(position.x)) + "_" + str(int(position.z))
 	
 	# Add to scene at the correct position and scale

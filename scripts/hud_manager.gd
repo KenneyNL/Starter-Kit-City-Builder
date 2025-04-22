@@ -1,15 +1,21 @@
 extends Node
 
 # Signals
-
 signal electricity_updated(usage, production)
+signal population_updated(count)
+
 # Variables
 var total_population: int = 0
 var total_kW_usage: float = 0.0
 var total_kW_production: float = 0.0
+@export var show_mission_select: bool = false:
+	set(value):
+		show_mission_select = value
+		_update_mission_select_visibility()
 
 # References
-var buildeJuj
+var mission_select_menu: Control
+var mission_select_button: Button
 var building_construction_manager
 var population_label: Label
 var electricity_label: Label
@@ -18,7 +24,7 @@ var population_tooltip: Control
 var electricity_tooltip: Control
 var controls_panel: PanelContainer
 var sound_panel: PanelContainer
-var builder:Node
+var builder: Node
 
 func _ready():
 	# Connect to signals from the builder
@@ -27,17 +33,27 @@ func _ready():
 		builder.structure_placed.connect(_on_structure_placed)
 		builder.structure_removed.connect(_on_structure_removed)
 
-
-#	EventBus.population_update.connect(set_population_count)
-		
 	# Initialize UI elements
 	population_label = $HBoxContainer/PopulationItem/PopulationLabel
-	electricity_label	 = $HBoxContainer/ElectricityItem/ElectricityValues/ElectricityLabel
+	electricity_label = $HBoxContainer/ElectricityItem/ElectricityValues/ElectricityLabel
 	electricity_indicator = $HBoxContainer/ElectricityItem/ElectricityValues/ElectricityIndicator
 	population_tooltip = $PopulationTooltip
 	electricity_tooltip = $ElectricityTooltip
-
-
+	mission_select_button = $HBoxContainer/MissionSelectItem/MissionSelectButton
+	
+	# Get references to panels
+	controls_panel = get_node_or_null("/root/Main/CanvasLayer/ControlsPanel")
+	sound_panel = get_node_or_null("/root/Main/CanvasLayer/SoundPanel")
+	
+	# Setup mission select button
+	if mission_select_button:
+		mission_select_button.connect("pressed", _on_mission_select_button_pressed)
+	
+	# Setup mission select menu
+	_setup_mission_select_menu()
+	
+	# Update mission select visibility based on export variable
+	_update_mission_select_visibility()
 	
 	# Ensure electricity indicator starts with red color
 	if electricity_indicator:
@@ -62,7 +78,38 @@ func _ready():
 		electricity_tooltip.visible = false
 	
 	# Update HUD
-	update_hud() 
+	update_hud()
+
+# Set up the mission select menu
+func _setup_mission_select_menu():
+	# Check if the mission select menu already exists
+	mission_select_menu = get_node_or_null("/root/Main/CanvasLayer/MissionSelectMenu")
+	
+	# If not, instantiate and add it
+	if not mission_select_menu:
+		var mission_select_scene = load("res://scenes/mission_select_menu.tscn")
+		if mission_select_scene:
+			mission_select_menu = mission_select_scene.instantiate()
+			var canvas_layer = get_node_or_null("/root/Main/CanvasLayer")
+			if canvas_layer:
+				canvas_layer.add_child(mission_select_menu)
+				#mission_select_menu.hide() # Initially hidden
+	
+# Update mission select visibility based on export variable
+func _update_mission_select_visibility():
+	var mission_select_item = $HBoxContainer/MissionSelectItem
+	if mission_select_item:
+		mission_select_item.visible = show_mission_select
+		
+# Handle mission select button press
+func _on_mission_select_button_pressed():
+	if mission_select_menu:
+		mission_select_menu.toggle_visibility()
+	else:
+		# Try to set up the menu if it doesn't exist yet
+		_setup_mission_select_menu()
+		if mission_select_menu:
+			mission_select_menu.show()
 	
 	
 func _process(delta):

@@ -232,7 +232,7 @@ func action_build(gridmap_position):
 		var is_terrain = structures[index].type == Structure.StructureType.TERRAIN
 		
 		# Check if we're in mission 3 (when we should use construction workers)
-		var use_worker_construction = true
+		var use_worker_construction = structures[index].spawn_builder
 		var mission_manager = get_node_or_null("/root/Main/MissionManager")
 		# Sound effects are handled via game_manager.gd through the structure_placed signal
 		
@@ -254,7 +254,7 @@ func action_build(gridmap_position):
 			# Make sure any existing NPCs are children of the navigation region
 			_move_characters_to_navregion()
 		elif is_power_plant:
-			#add_power_plant(gridmap_position, index)
+			_add_power_plant(gridmap_position, index)
 			
 			# We still set the cell item for collision detection
 			gridmap.set_cell_item(gridmap_position, index, gridmap.get_orthogonal_index_from_basis(selector.basis))
@@ -264,7 +264,7 @@ func action_build(gridmap_position):
 			
 			# We still set the cell item for collision detection
 			gridmap.set_cell_item(gridmap_position, index, gridmap.get_orthogonal_index_from_basis(selector.basis))
-		elif is_residential and use_worker_construction:
+		elif is_residential or use_worker_construction:
 			# For residential buildings in mission 3, use construction workers
 			# Pass the current selector basis to preserve rotation
 			var selector_basis = selector.basis
@@ -544,8 +544,6 @@ func _add_road_to_navregion(position: Vector3, structure_index: int):
 	road_model.transform = transform
 	
 
-
-# Function to add a power plant as a direct child of the builder
 func _add_power_plant(position: Vector3, structure_index: int):
 	# Create a unique name for this power plant based on its position
 	var power_plant_name = "PowerPlant_" + str(int(position.x)) + "_" + str(int(position.z))
@@ -575,7 +573,7 @@ func _add_power_plant(position: Vector3, structure_index: int):
 	
 	# Apply position offset to center the model (matching the preview)
 	# These offsets need to be transformed based on the current rotation
-	var offset = selector.basis * Vector3(0.25, 0, -0.25)
+	var offset = selector.basis * Vector3(-3, 0, 3)
 	transform.origin += offset
 	
 	# Apply the complete transform in one go
@@ -812,26 +810,27 @@ func _add_terrain(position: Vector3, structure_index: int):
 
 # Callback for when construction is completed
 func _on_construction_completed(position: Vector3):
-	# We need to find a residential structure index to add to gridmap
-	var residential_index = -1
-	for i in range(structures.size()):
-		if structures[i].type == Structure.StructureType.RESIDENTIAL_BUILDING:
-			residential_index = i
-			break
+	# Get the original structure index that was selected for construction
+	var structure_index = -1
+	var rotation_index = 0
 	
-	if residential_index >= 0:
-		# Get the rotation index from the construction manager if available
-		var rotation_index = 0
-		
-		# Try to get the rotation index from the construction manager
-		if construction_manager and construction_manager.construction_sites.has(position):
-			var site = construction_manager.construction_sites[position]
-			if site.has("rotation_index"):
-				rotation_index = site["rotation_index"]
-			
-		
-		# Add the completed residential building to the gridmap with the correct rotation
-		gridmap.set_cell_item(position, residential_index, rotation_index)
+	if construction_manager and construction_manager.construction_sites.has(position):
+		var site = construction_manager.construction_sites[position]
+		if site.has("structure_index"):
+			structure_index = site["structure_index"]
+		if site.has("rotation_index"):
+			rotation_index = site["rotation_index"]
+	
+	# If we couldn't get the original structure index, fall back to finding any residential building
+	if structure_index < 0 or structure_index >= structures.size():
+		for i in range(structures.size()):
+			if structures[i].type == Structure.StructureType.RESIDENTIAL_BUILDING:
+				structure_index = i
+				break
+	
+	if structure_index >= 0:
+		# Add the completed building to the gridmap with the correct rotation and structure index
+		gridmap.set_cell_item(position, structure_index, rotation_index)
 		
 		# Check if we need to spawn a character for mission 1
 		var mission_manager = get_node_or_null("/root/Main/MissionManager")
