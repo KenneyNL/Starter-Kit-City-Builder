@@ -14,5 +14,6 @@ kW_usage = 0.0
 kW_production = 0.0
 selector_scale = 2.8
 unlocked = false
+spawn_builder = false
 description = "A pedestrian-friendly surface that creates walkable areas and enhances the appearance of your city spaces."
 thumbnail = "res://sprites/roads/pavement.png"

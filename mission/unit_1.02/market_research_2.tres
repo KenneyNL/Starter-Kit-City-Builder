@@ -17,7 +17,7 @@ structure = ExtResource("2_ktjdq")
 script = ExtResource("3_w1cq1")
 id = "5"
 title = "Market Research"
-description = "To support the growing commercial district, you need to improve city infrastructure by adding more roads."
+description = "Your two-way tables show an interesting association between road access and commercial success. Add more roads to gather more data on this categorical relationship pattern."
 objectives = Array[ExtResource("1_pfd6v")]([SubResource("Resource_a42kn")])
 rewards = {
 "cash": 300

@@ -17,7 +17,7 @@ structure = ExtResource("2_evy85")
 script = ExtResource("3_mtrpd")
 id = "8"
 title = "Grid Growth"
-description = "City planners have proposed a grid-based layout for efficient city expansion. Begin implementing this pattern with strategic road placement."
+description = "City planners are using scatter plots to visualize how distance from city center relates to property values. Create a grid road layout to represent this bivariate data pattern."
 objectives = Array[ExtResource("1_fvshb")]([SubResource("Resource_pj2vg")])
 rewards = {
 "cash": 300

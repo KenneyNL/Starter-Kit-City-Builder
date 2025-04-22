@@ -19,11 +19,12 @@ var construction_sfx: AudioStreamPlayer
 
 
 func _ready():
+
 	# Load data from a file.
-	var err = config.load("global://config.cfg")
-	# If the file didn't load, ignore it.
-	if err != OK:
-		return
+	#var err = config.load("global://config.cfg")
+	## If the file didn't load, ignore it.
+	#if err != OK:
+		#return
 	# Register SoundManager in the main loop for JavaScript bridge to find
 	Engine.get_main_loop().set_meta("sound_manager", get_node_or_null("/root/SoundManager"))
 	
@@ -38,7 +39,6 @@ func _ready():
 	
 	
 	if generic_text_panel and intro_text_resource:
-		print(generic_text_panel.resource_data)
 		generic_text_panel.apply_resource_data(intro_text_resource)
 		generic_text_panel.show_panel()
 		

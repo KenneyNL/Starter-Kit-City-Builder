@@ -17,7 +17,7 @@ structure = ExtResource("2_em5vq")
 script = ExtResource("2_mum3p")
 id = "2"
 title = "Census Planning"
-description = "Now that we have a road, let's build a residential building for our citizens!"
+description = "Now that we have roads, we need to collect data on housing preferences. Build residential buildings to gather categorical data on housing types and resident occupations for your two-way table analysis."
 objectives = Array[ExtResource("1_dhx01")]([SubResource("Resource_7c02e")])
 rewards = {
 "cash": 250

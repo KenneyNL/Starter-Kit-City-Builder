@@ -14,5 +14,6 @@ kW_usage = 0.0
 kW_production = 0.0
 selector_scale = 2.8
 unlocked = false
+spawn_builder = false
 description = "Some cool trees and grass!"
 thumbnail = "res://sprites/terrain/grass-trees.png"

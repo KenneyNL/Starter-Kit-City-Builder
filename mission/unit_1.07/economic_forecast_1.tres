@@ -15,7 +15,7 @@ completed = false
 script = ExtResource("2_pv8r1")
 id = "24"
 title = "Economic Forecasting"
-description = "Economic models predict substantial growth for your city. Use population data to forecast economic trends and prepare for the future."
+description = "Our linear model helps forecast economic needs based on population size. Grow your population to 150 to test real-world predictions from this mathematical model."
 objectives = Array[ExtResource("1_cjqfg")]([SubResource("Resource_e2jx7")])
 rewards = {
 "cash": 700
