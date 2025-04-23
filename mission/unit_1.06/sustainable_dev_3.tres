@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="MissionData" load_steps=5 format=3 uid="uid://byd5jxiutxpky"]
 
-[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_3s3sm"]
+[ext_resource type="Script" uid="uid://b8b67y260mq6g" path="res://scripts/mission/mission_objective.gd" id="1_3s3sm"]
 [ext_resource type="Resource" uid="uid://c4qbn3d85prxx" path="res://structures/power-plant.tres" id="2_5l1dw"]
 [ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="3_w8jc7"]
 

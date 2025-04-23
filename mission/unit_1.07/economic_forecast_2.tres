@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="MissionData" load_steps=7 format=3 uid="uid://bj7tjuknfaeyg"]
 
-[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_t87pd"]
+[ext_resource type="Script" uid="uid://b8b67y260mq6g" path="res://scripts/mission/mission_objective.gd" id="1_t87pd"]
 [ext_resource type="Resource" uid="uid://cntgl86ianngh" path="res://structures/building-small-a.tres" id="2_ys3mw"]
 [ext_resource type="Resource" uid="uid://bh65eqgid4kxy" path="res://structures/building-small-c.tres" id="3_jl18p"]
 [ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="4_2h1ol"]

@@ -1,0 +1,14 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://construction_preview_material"]
+
+[ext_resource type="Shader" path="res://models/Materials/construction_preview.gdshader" id="1_preview"]
+
+[resource]
+render_priority = 1
+shader = ExtResource("1_preview")
+shader_parameter/alpha = 0.3
+shader_parameter/progress = 0.0
+shader_parameter/fill_color = Color(0.2, 0.5, 0.8, 0.3)
+shader_parameter/outline_color = Color(0.0, 0.6, 1.0, 1.0)
+shader_parameter/outline_width = 0.02
+shader_parameter/grid_scale = 20.0
+shader_parameter/grid_width = 0.02 

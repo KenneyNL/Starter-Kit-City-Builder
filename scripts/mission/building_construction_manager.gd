@@ -164,14 +164,32 @@ func _process(delta):
 		# Skip completed sites
 		if site["completed"]:
 			continue
+		
+		# Get the structure's build time
+		var build_time = CONSTRUCTION_TIME  # Default fallback
+		if site["structure_index"] >= 0 and site["structure_index"] < builder.structures.size():
+			var structure = builder.structures[site["structure_index"]]
+			if "build_time" in structure:
+				build_time = structure.build_time
 			
-		# Update timer for active sites
-		if site["worker"] != null and site["worker"].is_construction_active:
-			site["timer"] += delta
-			
-			# Check if construction is complete
-			if site["timer"] >= CONSTRUCTION_TIME:
-				sites_to_complete.append(pos)
+		# Update timer for all active sites, regardless of worker status
+		site["timer"] += delta
+		
+		# Update the construction preview shader progress
+		if site["plot"] != null:
+			var progress = site["timer"] / build_time
+			# Find all mesh instances and update their materials
+			var mesh_instances = []
+			_find_all_mesh_instances(site["plot"], mesh_instances)
+			for mesh_instance in mesh_instances:
+				for i in range(mesh_instance.get_surface_override_material_count()):
+					var material = mesh_instance.get_surface_override_material(i)
+					if material:
+						material.set_shader_parameter("progress", progress)
+		
+		# Check if construction is complete
+		if site["timer"] >= build_time:
+			sites_to_complete.append(pos)
 	
 	# Complete construction for sites that are done
 	for pos in sites_to_complete:
@@ -424,42 +442,29 @@ func _place_final_building(position: Vector3, structure_index: int):
 			
 # Make a model semi-transparent with outline effect
 func _make_model_transparent(model: Node3D, alpha: float):
+	# Load the construction preview shader material
+	var preview_material = load("res://models/Materials/construction_preview.tres")
+	if not preview_material:
+		push_error("Failed to load construction preview material")
+		return
+		
 	# Find all mesh instances
 	var mesh_instances = []
 	_find_all_mesh_instances(model, mesh_instances)
 	
-	# Adjust the materials for each mesh instance
+	# Apply the preview material to each mesh instance
 	for mesh_instance in mesh_instances:
 		var materials_count = mesh_instance.get_surface_override_material_count()
 		
 		for i in range(materials_count):
-			var material = mesh_instance.get_surface_override_material(i)
-			if not material:
-				# If no override material, try to get the mesh material
-				if mesh_instance.mesh and i < mesh_instance.mesh.get_surface_count():
-					material = mesh_instance.mesh.surface_get_material(i)
+			# Clone the preview material to avoid affecting other instances
+			var new_material = preview_material.duplicate()
 			
-			if material:
-				# Clone the material to avoid affecting other instances
-				var new_material = material.duplicate()
-				
-				# Set up transparency
-				new_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-				new_material.albedo_color.a = alpha
-				
-				# Make it look more like an outline/hologram
-				new_material.emission_enabled = true
-				new_material.emission = Color(0.2, 0.5, 0.8, 1.0)  # Light blue emission
-				new_material.emission_energy = 0.5
-				
-				# Optional: add a subtle outline effect
-				if new_material is StandardMaterial3D:
-					new_material.outline_enabled = true
-					new_material.outline_width = 3.0
-					new_material.outline_color = Color(0.0, 0.6, 1.0)
-				
-				# Apply modified material
-				mesh_instance.set_surface_override_material(i, new_material)
+			# Set the alpha value from the parameter
+			new_material.set_shader_parameter("alpha", alpha)
+			
+			# Apply the material
+			mesh_instance.set_surface_override_material(i, new_material)
 
 # Spawn a resident from a newly constructed building
 func _spawn_resident_from_building(position: Vector3):

@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="MissionData" load_steps=5 format=3 uid="uid://qwiwim2pg88f"]
 
-[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_lsd8i"]
+[ext_resource type="Script" uid="uid://b8b67y260mq6g" path="res://scripts/mission/mission_objective.gd" id="1_lsd8i"]
 [ext_resource type="Resource" uid="uid://mxrnqinnsqnt" path="res://structures/road-straight-lightposts.tres" id="2_v2q1j"]
 [ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="3_gtu3s"]
 

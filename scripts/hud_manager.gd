@@ -92,7 +92,8 @@ func _setup_mission_select_menu():
 			var canvas_layer = get_node_or_null("/root/Main/CanvasLayer")
 			if canvas_layer:
 				canvas_layer.add_child(mission_select_menu)
-				#mission_select_menu.hide() # Initially hidden
+				# Make sure it's initially hidden
+				mission_select_menu.hide()
 	
 # Update mission select visibility based on export variable
 func _update_mission_select_visibility():
@@ -102,15 +103,18 @@ func _update_mission_select_visibility():
 		
 # Handle mission select button press
 func _on_mission_select_button_pressed():
+	print("Mission select button pressed")
+	
+	# Make sure the menu exists
+	if not mission_select_menu:
+		_setup_mission_select_menu()
+	
 	if mission_select_menu:
+		print("Toggling mission select menu visibility")
 		mission_select_menu.toggle_visibility()
 	else:
-		# Try to set up the menu if it doesn't exist yet
-		_setup_mission_select_menu()
-		if mission_select_menu:
-			mission_select_menu.show()
-	
-	
+		push_error("Mission select menu not found after setup attempt")
+
 func _process(delta):
 	# Update the population label if it changes
 	if population_label and Globals.population != total_population:
