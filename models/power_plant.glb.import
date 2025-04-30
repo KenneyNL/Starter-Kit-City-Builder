@@ -32,6 +32,13 @@ animation/trimming=false
 animation/remove_immutable_tracks=true
 animation/import_rest_as_RESET=false
 import_script/path=""
-_subresources={}
+_subresources={
+"materials": {
+"colormap": {
+"use_external/enabled": true,
+"use_external/path": "uid://b8yum5qqa1c75"
+}
+}
+}
 gltf/naming_version=1
 gltf/embedded_image_handling=1

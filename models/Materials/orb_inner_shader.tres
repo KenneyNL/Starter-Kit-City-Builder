@@ -67,10 +67,10 @@ render_mode blend_mix, depth_draw_opaque, cull_back, diffuse_lambert, specular_s
 uniform sampler2D tex_vtx_17;
 uniform sampler2D Albedo_Map : hint_default_black;
 uniform vec4 Albedo_Tone : source_color;
-uniform float Metallic : hint_range(0, 1);
-uniform float Roughness : hint_range(0, 1);
+uniform float Metallic : hint_range(0.0, 1.0);
+uniform float Roughness : hint_range(0.0, 1.0);
 uniform vec4 Emission : source_color;
-uniform float Fresnel_Power : hint_range(-10, 100) = 100;
+uniform float Fresnel_Power : hint_range(-10.0, 100.0) = 100.0;
 
 
 
