@@ -6,9 +6,9 @@
 [resource]
 render_priority = 0
 shader = ExtResource("1_r8t2t")
+shader_parameter/Albedo_Map = ExtResource("2_83rgw")
 shader_parameter/Albedo_Tone = Color(0.505645, 0.698715, 1, 1)
 shader_parameter/Metallic = 0.194
 shader_parameter/Roughness = 0.403
 shader_parameter/Emission = Color(0.151504, 0.398018, 0.646932, 1)
 shader_parameter/Fresnel_Power = 0.1
-shader_parameter/Albedo_Map = ExtResource("2_83rgw")

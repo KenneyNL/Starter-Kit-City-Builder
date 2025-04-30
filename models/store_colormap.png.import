@@ -2,9 +2,9 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cckpaetm6elpf"
-path.s3tc="res://.godot/imported/road-straight-lightposts_colormap.png-c8d1253418f218a084df50c53c513432.s3tc.ctex"
-path.etc2="res://.godot/imported/road-straight-lightposts_colormap.png-c8d1253418f218a084df50c53c513432.etc2.ctex"
+uid="uid://bmwvd0udrl3mt"
+path.s3tc="res://.godot/imported/store_colormap.png-0c8242d7cffc0f8d4757c000844710b2.s3tc.ctex"
+path.etc2="res://.godot/imported/store_colormap.png-0c8242d7cffc0f8d4757c000844710b2.etc2.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
@@ -15,8 +15,8 @@ generator_parameters={
 
 [deps]
 
-source_file="res://models/road-straight-lightposts_colormap.png"
-dest_files=["res://.godot/imported/road-straight-lightposts_colormap.png-c8d1253418f218a084df50c53c513432.s3tc.ctex", "res://.godot/imported/road-straight-lightposts_colormap.png-c8d1253418f218a084df50c53c513432.etc2.ctex"]
+source_file="res://models/store_colormap.png"
+dest_files=["res://.godot/imported/store_colormap.png-0c8242d7cffc0f8d4757c000844710b2.s3tc.ctex", "res://.godot/imported/store_colormap.png-0c8242d7cffc0f8d4757c000844710b2.etc2.ctex"]
 
 [params]
 

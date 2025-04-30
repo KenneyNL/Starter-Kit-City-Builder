@@ -2,9 +2,9 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://oo7o4pp68xgr"
-path.s3tc="res://.godot/imported/pavement-fountain_colormap.png-d827cc6b1a4dc607aa80cf851d86b35e.s3tc.ctex"
-path.etc2="res://.godot/imported/pavement-fountain_colormap.png-d827cc6b1a4dc607aa80cf851d86b35e.etc2.ctex"
+uid="uid://ckqy5ay5m40cu"
+path.s3tc="res://.godot/imported/power_plant_colormap.png-e3852f3ab950661f6fb34853a2c5c106.s3tc.ctex"
+path.etc2="res://.godot/imported/power_plant_colormap.png-e3852f3ab950661f6fb34853a2c5c106.etc2.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
@@ -15,8 +15,8 @@ generator_parameters={
 
 [deps]
 
-source_file="res://models/pavement-fountain_colormap.png"
-dest_files=["res://.godot/imported/pavement-fountain_colormap.png-d827cc6b1a4dc607aa80cf851d86b35e.s3tc.ctex", "res://.godot/imported/pavement-fountain_colormap.png-d827cc6b1a4dc607aa80cf851d86b35e.etc2.ctex"]
+source_file="res://models/power_plant_colormap.png"
+dest_files=["res://.godot/imported/power_plant_colormap.png-e3852f3ab950661f6fb34853a2c5c106.s3tc.ctex", "res://.godot/imported/power_plant_colormap.png-e3852f3ab950661f6fb34853a2c5c106.etc2.ctex"]
 
 [params]
 

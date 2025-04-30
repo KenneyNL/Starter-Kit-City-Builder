@@ -1,4 +1,4 @@
-[gd_scene load_steps=72 format=3 uid="uid://vgwrcfy1qawf"]
+[gd_scene load_steps=71 format=3 uid="uid://vgwrcfy1qawf"]
 
 [ext_resource type="Script" uid="uid://c37h6na3e4twn" path="res://scripts/builder.gd" id="1_jybm7"]
 [ext_resource type="Environment" uid="uid://jbptgqvstei3" path="res://scenes/main-environment.tres" id="1_yndf3"]
@@ -37,7 +37,6 @@
 [ext_resource type="Resource" uid="uid://bom5bu47dy5kp" path="res://mission/unit_1.02/market_research_2.tres" id="24_xud6a"]
 [ext_resource type="Resource" uid="uid://csrqvfwp63ygr" path="res://mission/unit_1.02/market_research_3.tres" id="25_6hx7u"]
 [ext_resource type="Resource" uid="uid://qwiwim2pg88f" path="res://mission/unit_1.02/market_research_4.tres" id="26_lvk23"]
-[ext_resource type="PackedScene" uid="uid://cb2rylpbex3ep" path="res://models/building-arcology.glb" id="27_m8wco"]
 [ext_resource type="Resource" uid="uid://cfgw8dblm55c5" path="res://mission/unit_1.03_1.05/grid_growth_1.tres" id="27_s0e58"]
 [ext_resource type="Resource" uid="uid://ba3ndftq7dht7" path="res://mission/unit_1.03_1.05/grid_growth_2.tres" id="28_hurxs"]
 [ext_resource type="Resource" uid="uid://dgimr2v12rjqu" path="res://mission/unit_1.03_1.05/grid_growth_3.tres" id="29_rhn1n"]
@@ -230,7 +229,7 @@ cell_center_y = false
 cell_center_z = false
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.642788, 0.766044, 0, -0.766045, 0.642787, 0, 0, 0)
+transform = Transform3D(0.430511, -0.372862, -0.821969, 0, 0.910684, -0.413104, 0.902585, 0.177846, 0.392059, 0, 0, 0)
 light_energy = 2.0
 light_indirect_energy = 3.0
 light_volumetric_fog_energy = 3.07
@@ -440,9 +439,6 @@ text = "Complete"
 [node name="ObjectiveLabel" type="Label" parent="MissionManager"]
 offset_right = 40.0
 offset_bottom = 23.0
-
-[node name="building-arcology2" parent="." instance=ExtResource("27_m8wco")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, -16, -14)
 
 [connection signal="all_missions_completed" from="MissionManager" to="." method="_on_mission_manager_all_missions_completed"]
 [connection signal="mission_started" from="MissionManager" to="." method="_on_mission_manager_mission_started"]
