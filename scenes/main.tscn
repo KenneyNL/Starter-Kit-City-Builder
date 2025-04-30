@@ -229,7 +229,7 @@ cell_center_y = false
 cell_center_z = false
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.109734, -0.41061, -0.905183, 0, 0.910684, -0.413104, 0.993961, 0.0453318, 0.0999332, 0, 0, 0)
+transform = Transform3D(0.430511, -0.372862, -0.821969, 0, 0.910684, -0.413104, 0.902585, 0.177846, 0.392059, 0, 0, 0)
 light_energy = 2.0
 light_indirect_energy = 3.0
 light_volumetric_fog_energy = 3.07
