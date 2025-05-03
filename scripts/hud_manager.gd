@@ -24,6 +24,7 @@ var population_tooltip: Control
 var electricity_tooltip: Control
 var controls_panel: PanelContainer
 var sound_panel: PanelContainer
+var structure_menu: Control
 @onready var _builder = get_node_or_null("/root/Main/Builder")
 
 func _ready():
@@ -43,6 +44,7 @@ func _ready():
 	# Get references to panels
 	controls_panel = get_node_or_null("/root/Main/CanvasLayer/ControlsPanel")
 	sound_panel = get_node_or_null("/root/Main/CanvasLayer/SoundPanel")
+	structure_menu = get_node_or_null("/root/Main/CanvasLayer/StructureMenu")
 	
 	# Setup mission select button
 	if mission_select_button:
@@ -53,6 +55,9 @@ func _ready():
 	
 	# Setup mission select menu
 	_setup_mission_select_menu()
+	
+	# Setup structure menu
+	_setup_structure_menu()
 	
 	# Wait a frame to ensure all nodes are ready
 	await get_tree().process_frame
@@ -100,6 +105,23 @@ func _setup_mission_select_menu():
 				canvas_layer.add_child(mission_select_menu)
 				# Make sure it's initially hidden
 				mission_select_menu.hide()
+
+# Set up the structure menu
+func _setup_structure_menu():
+	# Check if the structure menu already exists
+	structure_menu = get_node_or_null("/root/Main/CanvasLayer/StructureMenu")
+	
+	# If not, instantiate and add it
+	if not structure_menu:
+		var structure_menu_scene = load("res://scenes/structure_menu.tscn")
+		if structure_menu_scene:
+			structure_menu = structure_menu_scene.instantiate()
+			var canvas_layer = get_node_or_null("/root/Main/CanvasLayer")
+			if canvas_layer:
+				canvas_layer.add_child(structure_menu)
+				# Set the builder reference
+				if _builder:
+					structure_menu.builder = _builder
 	
 # Update mission select visibility based on export variable
 func _update_mission_select_visibility():
@@ -288,3 +310,8 @@ func _on_music_muted_changed(is_muted):
 # Called when the sfx is muted
 func _on_sfx_muted_changed(is_muted):
 	pass  # Sound panel handles this through signals
+
+func is_mouse_over_structure_menu() -> bool:
+	if structure_menu and structure_menu.has_method("is_mouse_over_menu"):
+		return structure_menu.is_mouse_over_menu()
+	return false
