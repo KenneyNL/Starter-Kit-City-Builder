@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="MissionData" load_steps=4 format=3 uid="uid://csrqvfwp63ygr"]
 
-[ext_resource type="Script" path="res://scripts/mission/mission_objective.gd" id="1_a8iy6"]
-[ext_resource type="Script" path="res://scripts/mission/mission_data.gd" id="2_5q4dp"]
+[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_a8iy6"]
+[ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="2_5q4dp"]
 
 [sub_resource type="Resource" id="Resource_m1jev"]
 script = ExtResource("1_a8iy6")
@@ -45,3 +45,4 @@ companion_dialog = {
 }
 }
 unlocked_items = Array[String](["res://models/road-straight-lightposts.glb"])
+starting_structures = Array[String]([])

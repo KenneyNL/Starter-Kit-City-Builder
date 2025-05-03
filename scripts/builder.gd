@@ -213,6 +213,10 @@ func _process(delta):
 
 # Function to check if the mouse is over any UI elements
 func is_mouse_over_ui() -> bool:
+	# Check if mouse is over the structure menu via HUD
+	if hud_manager and hud_manager.has_method("is_mouse_over_structure_menu") and hud_manager.is_mouse_over_structure_menu():
+		return true
+	
 	# Get mouse position
 	var mouse_pos = get_viewport().get_mouse_position()
 	
