@@ -4,7 +4,7 @@ extends Node
 static var instance = null
 
 # Signals
-signal init_data_received(data)
+
 signal init_check_received
 signal mission_progress_updated(data)
 signal mission_completed(data)

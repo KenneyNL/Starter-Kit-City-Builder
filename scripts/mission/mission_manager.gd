@@ -18,6 +18,7 @@ signal game_started()
 signal all_missions_completed()
 signal structures_unlocked()  # New signal for when structures are unlocked
 signal bridge_connection_completed
+signal init_data_received(data)
 
 @export var missions: Array[MissionData] = []
 @export var mission_ui: Control
