@@ -46,10 +46,16 @@ func _ready():
 	
 	# Setup mission select button
 	if mission_select_button:
-		mission_select_button.connect("pressed", _on_mission_select_button_pressed)
+		if not mission_select_button.pressed.is_connected(_on_mission_select_button_pressed):
+			mission_select_button.pressed.connect(_on_mission_select_button_pressed)
+	else:
+		push_error("Mission select button not found in HUD")
 	
 	# Setup mission select menu
 	_setup_mission_select_menu()
+	
+	# Wait a frame to ensure all nodes are ready
+	await get_tree().process_frame
 	
 	# Update mission select visibility based on export variable
 	_update_mission_select_visibility()
@@ -97,9 +103,15 @@ func _setup_mission_select_menu():
 	
 # Update mission select visibility based on export variable
 func _update_mission_select_visibility():
-	var mission_select_item = $HBoxContainer/MissionSelectItem
+	if not is_inside_tree():
+		# If we're not in the tree yet, wait until we are
+		await ready
+		
+	var mission_select_item = get_node_or_null("HBoxContainer/MissionSelectItem")
 	if mission_select_item:
 		mission_select_item.visible = show_mission_select
+	else:
+		push_warning("MissionSelectItem node not found in HUD")
 		
 # Handle mission select button press
 func _on_mission_select_button_pressed():

@@ -1,8 +1,8 @@
 [gd_resource type="Resource" script_class="MissionData" load_steps=5 format=3 uid="uid://btwrfq37q8vey"]
 
-[ext_resource type="Script" uid="uid://b8b67y260mq6g" path="res://scripts/mission/mission_objective.gd" id="1_ajvs5"]
+[ext_resource type="Script" path="res://scripts/mission/mission_objective.gd" id="1_ajvs5"]
 [ext_resource type="Resource" uid="uid://d2jplegnkl6u2" path="res://structures/road-corner.tres" id="2_exdai"]
-[ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="3_kexcf"]
+[ext_resource type="Script" path="res://scripts/mission/mission_data.gd" id="3_kexcf"]
 
 [sub_resource type="Resource" id="Resource_qykcx"]
 script = ExtResource("1_ajvs5")

@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="GenericText" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/generic_text_panel.resource.gd" id="1_resource"]
+
+[resource]
+script = ExtResource("1_resource")
+panel_type = 0
+title = "Building Selector"
+body_text = "Select structures to build in your city."
+button_text = "Close" 

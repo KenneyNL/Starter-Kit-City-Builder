@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="MissionData" load_steps=7 format=3 uid="uid://d1fykuxfmh2q1"]
 
-[ext_resource type="Script" uid="uid://b8b67y260mq6g" path="res://scripts/mission/mission_objective.gd" id="1_wnlf0"]
+[ext_resource type="Script" path="res://scripts/mission/mission_objective.gd" id="1_wnlf0"]
 [ext_resource type="Resource" uid="uid://dqqe3iofnleup" path="res://structures/pavement-fountain.tres" id="2_bmmdj"]
 [ext_resource type="Resource" uid="uid://y6jafhfnhbrp" path="res://structures/grass-trees-tall.tres" id="3_fegi2"]
-[ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="4_8gmvv"]
+[ext_resource type="Script" path="res://scripts/mission/mission_data.gd" id="4_8gmvv"]
 
 [sub_resource type="Resource" id="Resource_1ht3m"]
 script = ExtResource("1_wnlf0")

@@ -1,0 +1,56 @@
+[gd_resource type="Resource" script_class="MissionData" load_steps=5 format=3 uid="uid://cua0khnbyusip"]
+
+[ext_resource type="Script" path="res://scripts/mission/mission_objective.gd" id="1_objective"]
+[ext_resource type="Script" path="res://scripts/mission/mission_data.gd" id="2_mission"]
+[ext_resource type="Resource" uid="uid://cntgl86ianngh" path="res://structures/building-small-a.tres" id="3_building_a"]
+
+[sub_resource type="Resource" id="Resource_objective1"]
+script = ExtResource("1_objective")
+type = 1
+target_count = 3
+current_count = 0
+description = "Build 3 Type A houses to unlock all building types"
+completed = false
+structure = ExtResource("3_building_a")
+
+[resource]
+script = ExtResource("2_mission")
+id = "unlock_buildings"
+title = "Building Variety"
+description = "Demonstrate your basic building skills to unlock access to all residential building types!"
+objectives = Array[ExtResource("1_objective")]([SubResource("Resource_objective1")])
+rewards = {
+"cash": 300,
+"experience": 50
+}
+next_mission_id = "construction_efficiency"
+graph_path = ""
+full_screen_path = ""
+intro_text = "The city council is impressed with your development plans! Show them you can handle basic construction by building a few houses, and they'll grant you access to build all residential building types."
+question_text = ""
+correct_answer = ""
+feedback_text = ""
+incorrect_feedback = ""
+company_data = ""
+power_math_content = ""
+num_of_user_inputs = 0
+input_labels = Array[String]([])
+companion_dialog = {
+"mission_completed": {
+"animation": "excited",
+"duration": 6000,
+"text": "Great job! You now have access to all residential building types!"
+},
+"mission_started": {
+"animation": "excited",
+"duration": 6000,
+"text": ["Let's start building some houses!", "Show the city council what you can do!"]
+},
+"objective_completed_1": {
+"animation": "happy",
+"duration": 5000,
+"text": ["Nice work with those houses!", "The city council is impressed with your building skills!"]
+}
+}
+unlocked_items = Array[String](["res://structures/building-small-a.tres", "res://structures/building-small-b.tres", "res://structures/building-small-c.tres", "res://structures/building-garage.tres", "res://structures/road-straight.tres"])
+starting_structures = Array[String](["res://structures/building-small-a.tres", "res://structures/building-small-b.tres"])

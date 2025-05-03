@@ -12,6 +12,7 @@ signal worker_construction_ended
 
 
 const CONSTRUCTION_TIME = 10.0 # seconds to build a building
+var debug_timer = 0.0  # Add debug timer
 
 
 # References to necessary scenes and resources
@@ -29,12 +30,23 @@ var mission_manager: MissionManager
 var construction_sites = {}  # position (Vector3) -> construction data (dict)
 
 func _ready():
+	print("\n=== Initializing Building Construction Manager ===")
 	
 	# Load the worker character scene - add more fallbacks to ensure we get a valid model
 	builder = get_node_or_null('/root/Main/Builder')
 	worker_scene = load("res://people/character-male-a.glb")
 	hud_manager = get_node_or_null("/root/Main/CanvasLayer/HUD")
 	mission_manager = builder.get_node_or_null("/root/Main/MissionManager")
+	
+	# Get navigation region
+	if builder and builder.nav_region:
+		nav_region = builder.nav_region
+		print("Found navigation region with ", nav_region.get_child_count(), " children")
+		for child in nav_region.get_children():
+			print("Nav region child: ", child.name)
+	else:
+		print("WARNING: No navigation region found!")
+	
 	if not worker_scene:
 		worker_scene = load("res://people/character-female-a.glb")
 	if not worker_scene:
@@ -54,10 +66,17 @@ func _ready():
 	if not final_building_scene:
 		# Create an empty PackedScene as a last resort
 		final_building_scene = PackedScene.new()
+	
+	print("=== Building Construction Manager Initialized ===\n")
 
 # Call this method to start construction at a position
 func start_construction(position: Vector3, structure_index: int, rotation_basis = null):
+	print("\n=== Starting Construction ===")
+	print("Position: ", position)
+	print("Structure Index: ", structure_index)
+	
 	if position in construction_sites:
+		print("ERROR: Construction site already exists at this position!")
 		return
 	
 	# Get the current selector rotation if available
@@ -70,6 +89,8 @@ func start_construction(position: Vector3, structure_index: int, rotation_basis 
 		if builder.gridmap:
 			rotation_index = builder.gridmap.get_orthogonal_index_from_basis(rotation_basis)
 	
+	print("Rotation Index: ", rotation_index)
+	
 	# Create a construction site entry
 	construction_sites[position] = {
 		"position": position,
@@ -78,9 +99,11 @@ func start_construction(position: Vector3, structure_index: int, rotation_basis 
 		"worker": null,
 		"timer": 0.0,
 		"completed": false,
-		"rotation_index": rotation_index,  # Store the rotation for later use
-		"rotation_basis": rotation_basis   # Store the rotation basis
+		"rotation_index": rotation_index,
+		"rotation_basis": rotation_basis
 	}
+	
+	print("Created construction site entry")
 	
 	# Place plot marker (outline/transparent version of the building)
 	var plot
@@ -89,14 +112,17 @@ func start_construction(position: Vector3, structure_index: int, rotation_basis 
 	if structure_index >= 0 and structure_index < builder.structures.size():
 		var structure = builder.structures[structure_index]
 		plot = structure.model.instantiate()
+		print("Created plot using structure model: ", structure.model.resource_path)
 	else:
 		# Fallback to default building model
 		plot = building_plot_scene.instantiate()
+		print("Created plot using fallback model")
 		
 	plot.name = "Plot_" + str(int(position.x)) + "_" + str(int(position.z))
 	
 	# Make it a transparent outline by applying transparency to all materials
-	_make_model_transparent(plot, 0.3)  # More transparent (0.3 instead of 0.5)
+	_make_model_transparent(plot, 0.3)
+	print("Applied transparent material to plot")
 	
 	# Add to the scene and position it
 	builder.add_child(plot)
@@ -106,34 +132,17 @@ func start_construction(position: Vector3, structure_index: int, rotation_basis 
 	if rotation_basis:
 		plot.basis = rotation_basis
 	
-	plot.scale = Vector3(3.0, 3.0, 3.0)  # Scale to match other buildings
+	plot.scale = Vector3(3.0, 3.0, 3.0)
+	print("Added plot to scene at position: ", position)
 	
 	# Store reference
 	construction_sites[position]["plot"] = plot
 	
-	# Check if we should spawn a worker based on structure type
-	var should_spawn_worker = false
-	
-	if structure_index >= 0 and structure_index < builder.structures.size():
-		var structure = builder.structures[structure_index]
-		
-		# Check if this structure type should spawn a builder
-		if structure.spawn_builder:
-			should_spawn_worker = true
-	else:
-		# Default to true if we can't determine the structure type
-		should_spawn_worker = true
-	
-	# Find a road position to spawn the worker if needed
-	if should_spawn_worker:
-		_spawn_worker_for_construction(position)
-	else:
-		# For structures without workers, start a timer to complete construction automatically
-		var timer = get_tree().create_timer(CONSTRUCTION_TIME)
-		timer.timeout.connect(func(): _complete_construction(position))
+	# Always spawn a worker for construction
+	_spawn_worker_for_construction(position)
+	print("=== Construction Started ===\n")
 	
 	# Send building_selected dialog to learning companion if available in the current mission
-	var mission_manager = builder.get_node_or_null("/root/Main/MissionManager")
 	if mission_manager and mission_manager.current_mission and mission_manager.learning_companion_connected:
 		var mission = mission_manager.current_mission
 		
@@ -156,6 +165,7 @@ func start_construction(position: Vector3, structure_index: int, rotation_basis 
 # Process active construction sites
 func _process(delta):
 	var sites_to_complete = []
+	debug_timer += delta  # Track total time
 	
 	# Update all construction sites
 	for pos in construction_sites.keys():
@@ -178,48 +188,63 @@ func _process(delta):
 		# Update the construction preview shader progress
 		if site["plot"] != null:
 			var progress = site["timer"] / build_time
+			progress = clamp(progress, 0.0, 1.0)
+			
 			# Find all mesh instances and update their materials
 			var mesh_instances = []
 			_find_all_mesh_instances(site["plot"], mesh_instances)
 			for mesh_instance in mesh_instances:
 				for i in range(mesh_instance.get_surface_override_material_count()):
 					var material = mesh_instance.get_surface_override_material(i)
-					if material:
+					if material and material is ShaderMaterial:
 						material.set_shader_parameter("progress", progress)
-		
+						material.set_shader_parameter("alpha", 0.3)
+			
 		# Check if construction is complete
 		if site["timer"] >= build_time:
 			sites_to_complete.append(pos)
 	
 	# Complete construction for sites that are done
 	for pos in sites_to_complete:
+		print("\n=== Completing Construction ===")
+		print("Position: ", pos)
 		_complete_construction(pos)
 
 # Find a road and spawn a worker there
 func _spawn_worker_for_construction(target_position: Vector3):
+	print("\n=== Attempting to Spawn Worker ===")
+	print("Target Position: ", target_position)
+	
 	# Find closest road tile
 	var road_position = _find_nearest_road(target_position)
 	
 	if road_position == Vector3.ZERO:
 		print("ERROR: No road found for worker spawn at target position: ", target_position)
-		# Force completion immediately without worker since we can't spawn one
-		var timer = get_tree().create_timer(0.5)
-		timer.timeout.connect(func(): _complete_construction(target_position))
+		print("Checking navigation region...")
+		if nav_region:
+			print("Nav region has ", nav_region.get_child_count(), " children")
+			for child in nav_region.get_children():
+				print("Child: ", child.name)
+		else:
+			print("Nav region is null!")
+		# Don't force completion - let the timer run normally
 		return
 		
-	print("DEBUG: Spawning worker at road position: ", road_position, " for target: ", target_position)
+	print("Found road position: ", road_position)
+	print("Distance to target: ", road_position.distance_to(target_position))
+	
 	# Create the worker
 	var worker = _create_worker(road_position, target_position)
 	
 	if worker == null:
 		print("ERROR: Failed to create worker for construction at: ", target_position)
-		# Force completion immediately without worker
-		var timer = get_tree().create_timer(0.5)
-		timer.timeout.connect(func(): _complete_construction(target_position))
+		# Don't force completion - let the timer run normally
 		return
 		
 	# Store in the construction site data
 	construction_sites[target_position]["worker"] = worker
+	print("Worker spawned successfully")
+	print("=== Worker Spawn Complete ===\n")
 
 # Find nearest road (simplified version of what's in mission_manager.gd)
 func _find_nearest_road(position: Vector3) -> Vector3:
@@ -316,6 +341,7 @@ func _on_worker_construction_started():
 func _on_worker_construction_ended():
 	# Forward the signal for mission managers/other systems that need it
 	worker_construction_ended.emit()
+
 func update_population(count: int):
 	Globals.set_population_count(count)
 	
@@ -324,21 +350,34 @@ func update_population(count: int):
 	
 # Complete construction at a position
 func _complete_construction(position: Vector3):
+	print("\n=== Completing Construction Process ===")
+	print("Position: ", position)
+	
 	if not position in construction_sites:
+		print("ERROR: No construction site found at position!")
 		return
 		
 	var site = construction_sites[position]
+	print("Found construction site")
+	
+	# Verify the timer has reached the build time
+	var build_time = CONSTRUCTION_TIME
+	if site["structure_index"] >= 0 and site["structure_index"] < builder.structures.size():
+		var structure = builder.structures[site["structure_index"]]
+		if "build_time" in structure:
+			build_time = structure.build_time
+	
+	if site["timer"] < build_time:
+		print("WARNING: Construction completing before timer is done!")
+		return
 	
 	# Mark as completed
 	site["completed"] = true
-	
-	# Remove placeholder plot
-	if site["plot"] != null:
-		site["plot"].queue_free()
-		site["plot"] = null
+	print("Marked as completed")
 	
 	# Stop worker and send back to a road
 	if site["worker"] != null:
+		print("Stopping worker")
 		if site["worker"].has_method("finish_construction"):
 			site["worker"].finish_construction()
 		else:
@@ -346,32 +385,41 @@ func _complete_construction(position: Vector3):
 			site["worker"].queue_free()
 			site["worker"] = null
 	
-	# Place the final building
-	_place_final_building(position, site["structure_index"])
+	# Remove placeholder plot
+	if site["plot"] != null:
+		print("Removing plot")
+		site["plot"].queue_free()
+		site["plot"] = null
 	
-	# Update mission objective now that construction is complete
-#	_update_mission_objective_on_completion(site["structure_index"])
+	# Place the final building
+	print("Placing final building")
+	_place_final_building(position, site["structure_index"])
 	
 	# Check if we should spawn a resident (only for residential buildings)
 	var mission_manager = builder.get_node_or_null("/root/Main/MissionManager")
 	var should_spawn_resident = false
 	
 	# Only spawn residents for residential buildings
-	
 	var structure = builder.structures[site["structure_index"]]
 	if structure.type == Structure.StructureType.RESIDENTIAL_BUILDING:
-			should_spawn_resident = true
+		should_spawn_resident = true
 	
 	# Spawn a resident from the new residential building if appropriate
 	if should_spawn_resident:
+		print("Spawning resident")
 		_spawn_resident_from_building(position)
  	
 	if structure.type == Structure.StructureType.RESIDENTIAL_BUILDING and structure.population_count > 0:
-			update_population(structure.population_count)
-#			
+		update_population(structure.population_count)
 	
 	# Emit completion signal
+	print("Emitting completion signal")
 	construction_completed.emit(position)
+	
+	# Remove from construction sites
+	print("Removing from construction sites")
+	construction_sites.erase(position)
+	print("=== Construction Process Complete ===\n")
 
 # Function to handle building demolition at a position
 func handle_demolition(position: Vector3):
@@ -395,13 +443,19 @@ func handle_demolition(position: Vector3):
 
 # Place the final building at the construction site
 func _place_final_building(position: Vector3, structure_index: int):
+	print("\n=== Placing Final Building ===")
+	print("Position: ", position)
+	print("Structure Index: ", structure_index)
+	
 	# Create the final building using the actual selected structure model
 	var building
 	if structure_index >= 0 and structure_index < builder.structures.size():
 		building = builder.structures[structure_index].model.instantiate()
+		print("Created building using structure model: ", builder.structures[structure_index].model.resource_path)
 	else:
-		# Fallback to our default model if structure index is invalid
+		# Fallback to default building model
 		building = final_building_scene.instantiate()
+		print("Created building using fallback model")
 	
 	building.name = "Building_" + str(int(position.x)) + "_" + str(int(position.z))
 	
@@ -415,10 +469,15 @@ func _place_final_building(position: Vector3, structure_index: int):
 		if "rotation_basis" in site and site["rotation_basis"]:
 			building.basis = site["rotation_basis"]
 	
-	building.scale = Vector3(3.0, 3.0, 3.0)  # Scale to match other buildings
+	building.scale = Vector3(3.0, 3.0, 3.0)
+	print("Added building to scene")
+	
+	# Add to gridmap for collision detection and mission tracking
+	if builder.gridmap:
+		print("Adding to gridmap")
+		builder.gridmap.set_cell_item(position, structure_index, builder.gridmap.get_orthogonal_index_from_basis(building.basis))
 	
 	# Send placement_success dialog to learning companion if available in the current mission
-	var mission_manager = builder.get_node_or_null("/root/Main/MissionManager")
 	if mission_manager and mission_manager.current_mission and mission_manager.learning_companion_connected:
 		var mission = mission_manager.current_mission
 		

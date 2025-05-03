@@ -1,38 +1,60 @@
 extends Node
 
 # Simple function to handle structure unlocking for missions
-static func process_structures(structures, mission_id):
+static func process_structures(structures, mission):
+	print("\n=== Processing Structures for Mission: ", mission.id, " ===")
+	print("Starting Structures: ", mission.starting_structures)
+	print("Unlocked Items: ", mission.unlocked_items)
+	
 	for structure in structures:
+		print("\n--- Processing Structure: ", structure.model.resource_path, " ---")
+		print("Initial status: ", structure.unlocked)
+		
 		# Default is locked
 		structure.unlocked = false
-		
-		# Handle basic structures (always available)
-		if basic_structure(structure):
-			structure.unlocked = true
+		print("After default lock: ", structure.unlocked)
 			
-		# Handle mission-specific structures
-		if mission_id == "1":
-			# Mission 1: Unlock residential buildings
-			if residential_building(structure):
-				structure.unlocked = true
-				
-		elif mission_id == "2" or mission_id == "3":
-			# Missions 2-3: Unlock curved roads and decoration
-			if curved_road(structure) or decoration(structure):
-				structure.unlocked = true
-				
-		elif mission_id == "4" or mission_id == "5":
-			# Missions 4-5: Unlock power plants
-			if power_plant(structure):
-				structure.unlocked = true
+		# Handle starting structures (always available for this mission)
+		if mission.starting_structures != null:
+			print("Checking starting structures: ", mission.starting_structures)
+			for item in mission.starting_structures:
+				if structure.model.resource_path == item or structure.resource_path == item:
+					print("Found matching starting structure: ", item)
+					structure.unlocked = true
+					print("After starting structures check: ", structure.unlocked)
+					break
+		
+		# Handle unlocked items (unlocked from previous missions)
+		if mission.unlocked_items != null:
+			print("Checking unlocked items: ", mission.unlocked_items)
+			for item in mission.unlocked_items:
+				if structure.model.resource_path == item or structure.resource_path == item:
+					print("Found matching unlocked item: ", item)
+					structure.unlocked = true
+					print("After unlocked items check: ", structure.unlocked)
+					break
+		
+		# Check if it's a basic structure
+		if basic_structure(structure):
+			print("Structure is marked as basic")
+			structure.unlocked = true
+			print("After basic structure check: ", structure.unlocked)
+			
+		print("Final status: ", structure.unlocked)
+		print("--- End Structure Processing ---\n")
 
 # Simple helper functions to categorize structures
 static func basic_structure(structure):
 	var path = structure.model.resource_path
-	return path.contains("road-straight") or path.contains("pavement")
+	# Only consider the exact road-straight.tres as basic
+	return path == "res://structures/road-straight.tres" or path.contains("pavement")
 	
 static func residential_building(structure):
-	return structure.model.resource_path.contains("building-small-a")
+	var path = structure.model.resource_path
+	var res_path = structure.resource_path if structure.has("resource_path") else ""
+	var is_residential = path.contains("building-small-a") or res_path.contains("building-small-a")
+	print("Checking if residential: ", path, " or ", res_path, " = ", is_residential)
+	return is_residential
 	
 static func curved_road(structure):
 	return structure.model.resource_path.contains("road-corner")

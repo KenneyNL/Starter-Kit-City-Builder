@@ -16,6 +16,11 @@ var construction_sfx: AudioStreamPlayer
 @export var intro_text_resource: GenericText
 @export var outro_text_resource: GenericText
 
+# Node references
+@onready var building_selector = get_node_or_null("CanvasLayer/BuildingSelector")
+@onready var resource_display = get_node_or_null("CanvasLayer/ResourceDisplay")
+@onready var game_menu = get_node_or_null("CanvasLayer/GameMenu")
+
 func _ready():
 	print("GameManager: Initializing...")
 	# Load data from a file.
@@ -56,11 +61,12 @@ func _ready():
 	Engine.get_main_loop().set_meta("sound_manager", sound_manager)
 	
 	# Reference to the controls panel and HUD
-	var controls_panel = $CanvasLayer/ControlsPanel
-	var hud = $CanvasLayer/HUD
+	var controls_panel = get_node_or_null("CanvasLayer/ControlsPanel")
+	var hud = get_node_or_null("CanvasLayer/HUD")
 	
 	# Set up the HUD's reference to the panels
-	hud.controls_panel = controls_panel
+	if hud and controls_panel:
+		hud.controls_panel = controls_panel
 	
 	# Show intro text if available
 	if generic_text_panel and intro_text_resource:
@@ -94,6 +100,7 @@ func _ready():
 	var builder = get_node_or_null("/root/Main/Builder")
 	if builder:
 		builder.structure_placed.connect(_on_structure_placed)
+		print("GameManager: Connected to Builder signals")
 		
 	# Connect to construction signals via deferred call to make sure everything is ready
 	call_deferred("_setup_construction_signals")
@@ -102,9 +109,14 @@ func _ready():
 	call_deferred("_setup_sound_buses")
 	
 	# Connect the building selector to the builder
-	var building_selector = $CanvasLayer/BuildingSelector
 	if building_selector:
-		building_selector.builder = $Builder
+		if builder:
+			building_selector.builder = builder
+			print("GameManager: Connected BuildingSelector to Builder")
+		else:
+			print("GameManager: Warning - Builder not found!")
+	else:
+		print("GameManager: Warning - BuildingSelector not found!")
 	
 	# Connect builder's cash display to HUD
 	if builder and hud:
@@ -121,6 +133,18 @@ func _ready():
 		economy_manager.money_changed.connect(hud_manager.update_money)
 		economy_manager.population_changed.connect(hud_manager.update_population_count)
 		economy_manager.energy_balance_changed.connect(hud_manager.update_energy_balance)
+
+	# Initialize managers
+	_initialize_managers()
+	
+	# Connect signals
+	_connect_signals()
+	
+	# Initialize game state
+	_initialize_game_state()
+	
+	# Start the game
+	start_game()
 
 func _on_music_volume_changed(new_volume: float):
 	print("GameManager: Music volume changed to ", new_volume)
@@ -395,3 +419,23 @@ func _on_mission_manager_mission_started(mission: MissionData) -> void:
 		generic_text_panel.apply_resource_data(mission_text)
 		generic_text_panel.show_panel()
 		
+
+func _initialize_managers():
+	print("GameManager: Initializing managers")
+	# Initialize any required managers here
+	pass
+
+func _connect_signals():
+	print("GameManager: Connecting signals")
+	# Connect any required signals here
+	pass
+
+func _initialize_game_state():
+	print("GameManager: Initializing game state")
+	# Initialize game state here
+	pass
+
+func start_game():
+	print("GameManager: Starting game")
+	# Start game logic here
+	pass

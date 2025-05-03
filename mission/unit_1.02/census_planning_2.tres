@@ -1,12 +1,12 @@
 [gd_resource type="Resource" script_class="MissionData" load_steps=5 format=3 uid="uid://cjr36hqnmyn0x"]
 
-[ext_resource type="Script" uid="uid://b8b67y260mq6g" path="res://scripts/mission/mission_objective.gd" id="1_dhx01"]
+[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_dhx01"]
 [ext_resource type="Resource" uid="uid://cntgl86ianngh" path="res://structures/building-small-a.tres" id="2_em5vq"]
 [ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="2_mum3p"]
 
 [sub_resource type="Resource" id="Resource_7c02e"]
 script = ExtResource("1_dhx01")
-type = 0
+type = 1
 target_count = 3
 current_count = 0
 description = "Build 3 residential buildings"

@@ -120,45 +120,70 @@ func _unlock_structures_up_to_mission(mission_id: String):
 
 # Function to unlock a specific structure by path
 func _unlock_structure(item_path: String):
-	print("Unlocking structure: " + item_path)
+	print("\nAttempting to unlock structure: " + item_path)
+	
+	# Get structures from builder
+	var structures = builder.get_structures()
+	if not structures:
+		print("ERROR: No structures available")
+		return
+	
+	# Convert .tres path to .glb path for comparison
+	var glb_path = item_path.replace(".tres", ".glb")
+	print("Looking for matching structure with paths:")
+	print("Original path: " + item_path)
+	print("GLB path: " + glb_path)
 	
 	# Find the structure in builder's structures
-	for structure in builder.structures:
+	var found = false
+	for structure in structures:
 		if structure.model:
-			# Check for exact match
-			if structure.model.resource_path == item_path:
-				if "unlocked" in structure:
-					structure.unlocked = true
-					print("SUCCESS: Unlocked structure: " + structure.model.resource_path)
+			print("Checking structure: " + structure.model.resource_path)
 			
-			# Check for filename match
-			elif structure.model.resource_path.get_file() == item_path.get_file():
+			# Check for exact match with either path
+			if structure.model.resource_path == item_path or structure.model.resource_path == glb_path:
 				if "unlocked" in structure:
 					structure.unlocked = true
-					print("SUCCESS: Unlocked structure by filename: " + structure.model.resource_path)
+					print("SUCCESS: Unlocked structure by exact match: " + structure.model.resource_path)
+					found = true
+					break
 			
-			# Check for contains match
-			elif item_path.get_file() in structure.model.resource_path:
+			# Check for base name match (without extension)
+			elif structure.model.resource_path.get_basename() == item_path.get_basename():
 				if "unlocked" in structure:
 					structure.unlocked = true
-					print("SUCCESS: Unlocked structure by partial match: " + structure.model.resource_path)
+					print("SUCCESS: Unlocked structure by base name match: " + structure.model.resource_path)
+					found = true
+					break
+	
+	if not found:
+		print("WARNING: No matching structure found for: " + item_path)
+		print("Available structures:")
+		for structure in structures:
+			if structure.model:
+				print("  " + structure.model.resource_path)
 
 # Function to update the builder after unlocking structures
 func _update_builder_structures():
 	if builder:
+		var structures = builder.get_structures()
+		if not structures:
+			print("ERROR: No structures available")
+			return
+			
 		# Find a valid unlocked structure to set as current
 		var found_unlocked = false
-		for i in range(builder.structures.size()):
-			if "unlocked" in builder.structures[i] and builder.structures[i].unlocked:
+		for i in range(structures.size()):
+			if "unlocked" in structures[i] and structures[i].unlocked:
 				builder.index = i
 				builder.update_structure()
 				found_unlocked = true
 				break
 				
-		if not found_unlocked and builder.structures.size() > 0:
+		if not found_unlocked and structures.size() > 0:
 			# Force unlock the first structure as fallback
-			if "unlocked" in builder.structures[0]:
-				builder.structures[0].unlocked = true
+			if "unlocked" in structures[0]:
+				structures[0].unlocked = true
 				builder.index = 0
 				builder.update_structure()
 

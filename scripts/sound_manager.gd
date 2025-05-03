@@ -50,7 +50,10 @@ const SFX_PATH = "res://audio/sfx/"
 
 func _ready():
 	print("SoundManager: Initializing...")
-	# For web platform, we need to wait for user interaction before initializing audio
+	# Create audio buses first
+	_initialize_audio()
+	
+	# For web platform, we need to wait for user interaction before enabling audio
 	if OS.has_feature("web"):
 		print("SoundManager: Web platform detected, waiting for user interaction")
 		# Connect to the JavaScript bridge
@@ -68,30 +71,41 @@ func _ready():
 			});
 		""")
 	else:
-		print("SoundManager: Desktop platform, initializing audio immediately")
-		# For non-web platforms, initialize audio immediately
-		_initialize_audio()
+		print("SoundManager: Desktop platform, audio initialization complete")
+		audio_ready.emit()
 
 func _on_audio_ready():
 	print("SoundManager: Audio ready signal received")
-	_initialize_audio()
+	audio_ready.emit()
 
 func _initialize_audio():
 	print("SoundManager: Initializing audio buses")
-	# Set up audio buses if they don't exist
+	
+	# Create audio buses if they don't exist
 	var music_bus_index = AudioServer.get_bus_index("Music")
 	if music_bus_index == -1:
 		print("SoundManager: Creating Music bus")
-		AudioServer.add_bus(AudioServer.bus_count)
-		AudioServer.set_bus_name(AudioServer.bus_count - 1, "Music")
-		music_bus_index = AudioServer.get_bus_index("Music")
+		AudioServer.add_bus()
+		music_bus_index = AudioServer.bus_count - 1
+		AudioServer.set_bus_name(music_bus_index, "Music")
+		AudioServer.set_bus_send(music_bus_index, "Master")
 		
 	var sfx_bus_index = AudioServer.get_bus_index("SFX")
 	if sfx_bus_index == -1:
 		print("SoundManager: Creating SFX bus")
-		AudioServer.add_bus(AudioServer.bus_count)
-		AudioServer.set_bus_name(AudioServer.bus_count - 1, "SFX")
-		sfx_bus_index = AudioServer.get_bus_index("SFX")
+		AudioServer.add_bus()
+		sfx_bus_index = AudioServer.bus_count - 1
+		AudioServer.set_bus_name(sfx_bus_index, "SFX")
+		AudioServer.set_bus_send(sfx_bus_index, "Master")
+	
+	# Get the final bus indices after creation
+	music_bus_index = AudioServer.get_bus_index("Music")
+	sfx_bus_index = AudioServer.get_bus_index("SFX")
+	
+	# Verify bus indices are valid
+	if music_bus_index == -1 or sfx_bus_index == -1:
+		push_error("SoundManager: Failed to create audio buses")
+		return
 	
 	# Apply current volume settings
 	print("SoundManager: Applying initial volume settings")
@@ -106,7 +120,6 @@ func _initialize_audio():
 	# Mark audio as initialized
 	audio_initialized = true
 	print("SoundManager: Audio initialization complete")
-	audio_ready.emit()
 
 # Volume control functions
 func set_music_volume(volume: float):

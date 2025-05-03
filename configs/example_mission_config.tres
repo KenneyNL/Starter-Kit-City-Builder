@@ -1,0 +1,62 @@
+[gd_resource type="Resource" script_class="MissionConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/mission/mission_config.gd" id="1_config"]
+
+[resource]
+script = ExtResource("1_config")
+starting_structures = ["res://structures/road-straight.tres", "res://structures/building-small-a.tres"]
+initial_structures = [
+    {
+        "structure_path": "res://structures/road-straight.tres",
+        "position": Vector3(0, 0, 0),
+        "rotation": 0
+    },
+    {
+        "structure_path": "res://structures/road-straight.tres",
+        "position": Vector3(1, 0, 0),
+        "rotation": 90
+    }
+]
+missions = [
+    {
+        "id": "custom_mission_1",
+        "title": "Road Network",
+        "description": "Build a basic road network for your city",
+        "objectives": [
+            {
+                "type": 1,
+                "target_count": 4,
+                "structure_path": "res://structures/road-straight.tres",
+                "description": "Build 4 straight roads"
+            }
+        ],
+        "rewards": {
+            "cash": 200,
+            "experience": 25
+        },
+        "unlocked_items": [
+            "res://structures/road-corner.tres"
+        ]
+    },
+    {
+        "id": "custom_mission_2",
+        "title": "First Houses",
+        "description": "Start building houses along your roads",
+        "objectives": [
+            {
+                "type": 1,
+                "target_count": 2,
+                "structure_path": "res://structures/building-small-a.tres",
+                "description": "Build 2 Type A houses"
+            }
+        ],
+        "rewards": {
+            "cash": 300,
+            "experience": 50
+        },
+        "unlocked_items": [
+            "res://structures/building-small-b.tres",
+            "res://structures/building-small-c.tres"
+        ]
+    }
+] 

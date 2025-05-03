@@ -28,6 +28,69 @@ signal structure_placed(structure_index, position) # For our mission flow
 
 var invalid_placement_material: StandardMaterial3D
 
+# Central structure management
+var _structures: Array[Structure] = []
+
+# Getter for structures that ensures deduplication
+func get_structures() -> Array[Structure]:
+	return _structures
+
+# Setter for structures that ensures deduplication
+func set_structures(new_structures: Array[Structure]) -> void:
+	print("\n=== Updating Structures ===")
+	_structures = new_structures
+	_deduplicate_structures()
+	# Update construction manager with deduplicated structures
+	if construction_manager:
+		construction_manager.structures = _structures
+	print("=== Structure Update Complete ===\n")
+
+# Function to deduplicate structures
+func _deduplicate_structures() -> void:
+	print("\n=== Deduplicating Structures ===")
+	
+	# Create a new array to store unique structures
+	var unique_structures: Array[Structure] = []
+	var seen_paths = {}
+	
+	# Initialize all structures, skipping duplicates
+	for i in range(_structures.size()):
+		var structure = _structures[i]
+		if not structure:
+			push_error("Null structure at index " + str(i))
+			continue
+			
+		# Skip if no model
+		if not structure.model:
+			push_error("Structure at index " + str(i) + " has no model!")
+			continue
+			
+		var path = structure.model.resource_path
+		
+		# Skip if we've seen this path before
+		if path in seen_paths:
+			print("Skipping duplicate structure: " + path)
+			continue
+			
+		seen_paths[path] = true
+		
+		# Initialize unlocked property only if it doesn't exist
+		if not "unlocked" in structure:
+			structure.unlocked = false
+		print("Adding structure: " + path + " - Unlocked: " + str(structure.unlocked))
+		unique_structures.append(structure)
+	
+	# Replace the original structures array with our deduplicated one
+	_structures.clear()
+	_structures.append_array(unique_structures)
+	
+	# Print final structure list for verification
+	print("\nFinal structure list:")
+	for i in range(_structures.size()):
+		var structure = _structures[i]
+		print(str(i) + ": " + structure.model.resource_path + " - Unlocked: " + str(structure.unlocked))
+	print("=== Structure Deduplication Complete ===\n")
+
 func _ready():
 	map = DataMap.new()
 	plane = Plane(Vector3.UP, Vector3.ZERO)
@@ -48,28 +111,66 @@ func _ready():
 	# Give the construction manager references it needs
 	construction_manager.builder = self
 	construction_manager.gridmap = gridmap
-	construction_manager.structures = structures
 	
 	# Set gridmap cell size to 3 units
 	if gridmap:
 		gridmap.cell_size = Vector3(3, 3, 3)
 	
-	# Sound effects now handled in game_manager.gd
+	print("\n=== Initializing Structures ===")
 	
-	# Ensure we start with an unlocked structure
-	var found_unlocked = false
-	for i in range(structures.size()):
-		if "unlocked" in structures[i] and structures[i].unlocked:
-			index = i
-			found_unlocked = true
-			print("Starting with unlocked structure: " + structures[i].model.resource_path)
-			break
+	# Load all structures from the structures directory
+	var dir = DirAccess.open("res://structures")
+	if dir:
+		dir.list_dir_begin()
+		var file_name = dir.get_next()
+		while file_name != "":
+			if file_name.ends_with(".tres"):
+				var structure = load("res://structures/" + file_name)
+				if structure:
+					structures.append(structure)
+			file_name = dir.get_next()
+	else:
+		push_error("Failed to open structures directory!")
 	
-	if not found_unlocked:
-		print("WARNING: No unlocked structures found at start!")
+	# Set initial structures through our centralized system
+	set_structures(structures)
 	
-	update_structure()
+	# Connect to mission manager's structures_unlocked signal
+	var mission_manager = get_node_or_null("/root/Main/MissionManager")
+	if mission_manager:
+		mission_manager.structures_unlocked.connect(_on_structures_unlocked)
+	
+	# Initially hide the selector since we don't know which structure to show yet
+	if selector:
+		selector.visible = false
+	
+	print("=== Structure Initialization Complete ===\n")
+	
 	update_cash()
+
+# Override the setter for structures to ensure deduplication
+func _set_structures(new_structures: Array[Structure]) -> void:
+	structures = new_structures
+	_deduplicate_structures()
+	# Update construction manager with deduplicated structures
+	if construction_manager:
+		construction_manager.structures = structures
+
+# Function to add a structure to the array
+func add_structure(structure: Structure) -> void:
+	structures.append(structure)
+	_deduplicate_structures()
+	# Update construction manager with deduplicated structures
+	if construction_manager:
+		construction_manager.structures = structures
+
+# Function to remove a structure from the array
+func remove_structure(structure: Structure) -> void:
+	structures.erase(structure)
+	_deduplicate_structures()
+	# Update construction manager with deduplicated structures
+	if construction_manager:
+		construction_manager.structures = structures
 
 func _process(delta):
 	# Skip all building functionality if disabled or game is paused
@@ -114,6 +215,13 @@ func _process(delta):
 func is_mouse_over_ui() -> bool:
 	# Get mouse position
 	var mouse_pos = get_viewport().get_mouse_position()
+	
+	# Check building selector panel
+	var building_selector = get_node_or_null("/root/Main/CanvasLayer/BuildingSelector")
+	if building_selector and building_selector.selection_panel and building_selector.selection_panel.visible:
+		var panel_rect = building_selector.selection_panel.get_global_rect()
+		if panel_rect.has_point(mouse_pos):
+			return true
 	
 	# Let's try an extremely simple approach - just check coordinates
 	# most HUDs are at top of screen
@@ -227,7 +335,7 @@ func action_build(gridmap_position, can_place: bool):
 		var is_terrain = structures[index].type == Structure.StructureType.TERRAIN
 		
 		# Check if we're in mission 3 (when we should use construction workers)
-		var use_worker_construction = structures[index].spawn_builder
+		var use_worker_construction = true
 		var mission_manager = get_node_or_null("/root/Main/MissionManager")
 		# Sound effects are handled via game_manager.gd through the structure_placed signal
 		
@@ -262,20 +370,10 @@ func action_build(gridmap_position, can_place: bool):
 			
 			# We still set the cell item for collision detection
 			gridmap.set_cell_item(gridmap_position, index, gridmap.get_orthogonal_index_from_basis(selector.basis))
-		elif is_residential or use_worker_construction:
-			# For residential buildings in mission 3, use construction workers
-			# Pass the current selector basis to preserve rotation
+		else:
+			# For all other buildings, start construction process with worker
 			var selector_basis = selector.basis
 			construction_manager.start_construction(gridmap_position, index, selector_basis)
-			
-			# Don't place the building immediately - it will be placed when construction completes
-			# We leave gridmap empty for now
-			
-			# For mission 3, don't update objectives immediately - wait for construction to finish
-			# See _update_mission_objective_on_completion in building_construction_manager.gd
-		else:
-			# For non-road structures or not in mission 3, add to the gridmap as usual
-			gridmap.set_cell_item(gridmap_position, index, gridmap.get_orthogonal_index_from_basis(selector.basis))
 		
 		if previous_tile != index:
 			map.cash -= structures[index].price
@@ -435,42 +533,61 @@ func action_rotate():
 # Toggle between structures to build
 
 func action_structure_toggle():
+	# Original keyboard controls
 	if Input.is_action_just_pressed("structure_next"):
-		# Find the next unlocked structure
-		var next_index = index
-		var tried_indices = []
+		print("\nE key pressed - attempting to switch to next structure")
+		# First, collect all unlocked structure indices in order
+		var unlocked_indices = []
+		for i in range(_structures.size()):
+			var structure = _structures[i]
+			if structure.model:
+				if structure.unlocked:
+					unlocked_indices.append(i)
 		
-		while tried_indices.size() < structures.size():
-			next_index = wrap(next_index + 1, 0, structures.size())
-			if tried_indices.has(next_index):
-				break  # We've already tried this index, avoid infinite loop
+		if unlocked_indices.is_empty():
+			print("WARNING: No unlocked structures available!")
+			return
 			
-			tried_indices.append(next_index)
-			
-			# Check if this structure is unlocked
-			if "unlocked" in structures[next_index] and structures[next_index].unlocked:
-				index = next_index
-				break
+		# Find the next unlocked structure
+		var current_pos = unlocked_indices.find(index)
+		if current_pos == -1:
+			# If current index is not in unlocked list, start from beginning
+			index = unlocked_indices[0]
+			print("Current structure not unlocked, starting from first unlocked: ", index)
+		else:
+			# Move to next structure, wrapping around to start if at end
+			index = unlocked_indices[(current_pos + 1) % unlocked_indices.size()]
+			print("Moving to next unlocked structure: ", index)
+		
+		update_structure()
 	
 	if Input.is_action_just_pressed("structure_previous"):
-		# Find the previous unlocked structure
-		var prev_index = index
-		var tried_indices = []
+		print("\nQ key pressed - attempting to switch to previous structure")
+		# First, collect all unlocked structure indices in order
+		var unlocked_indices = []
+		for i in range(_structures.size()):
+			var structure = _structures[i]
+			if structure.model:
+				if structure.unlocked:
+					unlocked_indices.append(i)
 		
-		while tried_indices.size() < structures.size():
-			prev_index = wrap(prev_index - 1, 0, structures.size())
-			if tried_indices.has(prev_index):
-				break  # We've already tried this index, avoid infinite loop
+		if unlocked_indices.is_empty():
+			print("WARNING: No unlocked structures available!")
+			return
 			
-			tried_indices.append(prev_index)
-			
-			# Check if this structure is unlocked
-			if "unlocked" in structures[prev_index] and structures[prev_index].unlocked:
-				index = prev_index
-				break
-
-	update_structure()
-
+		# Find the previous unlocked structure
+		var current_pos = unlocked_indices.find(index)
+		if current_pos == -1:
+			# If current index is not in unlocked list, start from end
+			index = unlocked_indices[-1]
+			print("Current structure not unlocked, starting from last unlocked: ", index)
+		else:
+			# Move to previous structure, wrapping around to end if at start
+			index = unlocked_indices[(current_pos - 1 + unlocked_indices.size()) % unlocked_indices.size()]
+			print("Moving to previous unlocked structure: ", index)
+		
+		update_structure()
+	
 # Update the structure visual in the 'cursor'
 func update_structure():
 	# Clear previous structure preview in selector
@@ -478,14 +595,14 @@ func update_structure():
 		selector_container.remove_child(n)
 		
 	# Create new structure preview in selector
-	var _model = structures[index].model.instantiate()
+	var _model = _structures[index].model.instantiate()
 	selector_container.add_child(_model)
 	
 	# Get reference to the selector sprite
 	var selector_sprite = selector.get_node("Sprite")
 	
 	# Apply appropriate scaling based on structure type
-	if structures[index].model.resource_path.contains("power_plant"):
+	if _structures[index].model.resource_path.contains("power_plant"):
 		# Scale power plant model to be much smaller (0.5x)
 		_model.scale = Vector3(0.5, 0.5, 0.5)
 		# Center the power plant model within the selector
@@ -496,7 +613,7 @@ func update_structure():
 		_model.position.y += 0.0 # No need for Y adjustment with scaling
 	
 	# Get the selector scale from the structure resource
-	var scale_factor = structures[index].selector_scale
+	var scale_factor = _structures[index].selector_scale
 	selector_sprite.scale = Vector3(scale_factor, scale_factor, scale_factor)
 		
 	# Sound effects are now handled in game_manager.gd
@@ -827,25 +944,13 @@ func _on_construction_completed(position: Vector3):
 				break
 	
 	if structure_index >= 0:
-		# Add the completed building to the gridmap with the correct rotation and structure index
-		gridmap.set_cell_item(position, structure_index, rotation_index)
-		
 		# Check if we need to spawn a character for mission 1
 		var mission_manager = get_node_or_null("/root/Main/MissionManager")
 		if mission_manager:
-			# We DON'T re-emit the structure_placed signal here, because we already
-			# emitted it when construction started in action_build()
-			# This prevents double-counting buildings in the HUD
-			
 			# Now check if we need to manually handle mission 1 character spawning
 			if mission_manager.current_mission and mission_manager.current_mission.id == "1" and not mission_manager.character_spawned:
 				mission_manager.character_spawned = true
 				mission_manager._spawn_character_on_road(position)
-			
-			# NOTE: We removed the structure_placed signal emission here to fix the population double-counting
-		else:
-			# We don't emit the signal anymore to prevent double-counting
-			pass
 	else:
 		# No residential building structure found
 		pass
@@ -855,11 +960,6 @@ func _on_construction_completed(position: Vector3):
 	
 	# Make sure the navigation mesh is updated
 	rebake_navigation_mesh()
-	
-	# Note that mission objective updates are now handled in the construction manager
-	# to ensure they only occur after construction is complete
-	
-	
 
 # Saving/load
 
@@ -965,6 +1065,7 @@ func check_can_place(pos: Vector3) -> bool:
 	if construction_manager:
 		for site_pos in construction_manager.construction_sites:
 			var distance = Vector2(abs(site_pos.x - pos.x), abs(site_pos.z - pos.z))
+			# Block the entire 3x3 grid space where construction is happening
 			if distance.x < 3 and distance.y < 3:
 				return false
 	
@@ -977,6 +1078,7 @@ func check_can_place(pos: Vector3) -> bool:
 				float(child.name.split("_")[2])
 			)
 			var distance = Vector2(abs(plot_pos.x - pos.x), abs(plot_pos.z - pos.z))
+			# Block the entire 3x3 grid space where construction is happening
 			if distance.x < 3 and distance.y < 3:
 				return false
 	
@@ -1021,3 +1123,95 @@ func _get_all_mesh_instances(node: Node) -> Array:
 		mesh_instances.append_array(_get_all_mesh_instances(child))
 	
 	return mesh_instances
+
+# Place a structure at a specific position and rotation
+func place_structure(structure_index: int, position: Vector3, rotation: float = 0.0) -> void:
+	if structure_index < 0 or structure_index >= structures.size():
+		push_error("Invalid structure index: " + str(structure_index))
+		return
+		
+	# Store current index
+	var previous_index = index
+	
+	# Set the structure to place
+	index = structure_index
+	
+	# Create a gridmap position from the world position
+	var gridmap_position = Vector3(
+		round(position.x / 3.0) * 3.0,
+		0,
+		round(position.z / 3.0) * 3.0
+	)
+	
+	# Check if we can place here
+	if not check_can_place(gridmap_position):
+		push_error("Cannot place structure at position: " + str(position))
+		index = previous_index
+		return
+	
+	# Place the structure
+	var is_road = structures[index].type == Structure.StructureType.ROAD
+	var is_residential = structures[index].type == Structure.StructureType.RESIDENTIAL_BUILDING
+	var is_power_plant = structures[index].model.resource_path.contains("power_plant")
+	var is_terrain = structures[index].type == Structure.StructureType.TERRAIN
+	
+	if is_road:
+		# For roads, we'll need to track in our data without using the GridMap
+		# But for now, we won't add it to the GridMap visually, just add to NavRegion3D
+		var previous_tile = gridmap.get_cell_item(gridmap_position)
+		if previous_tile >= 0 and previous_tile < structures.size() and structures[previous_tile].type == Structure.StructureType.ROAD:
+			_remove_road_from_navregion(gridmap_position)
+		_add_road_to_navregion(gridmap_position, index)
+		emit_signal("structure_placed", index, gridmap_position)
+	elif is_residential:
+		# For residential buildings, we use the construction manager
+		construction_manager.start_construction(gridmap_position, index)
+		emit_signal("structure_placed", index, gridmap_position)
+	elif is_power_plant:
+		# For power plants, we just place them directly in the gridmap
+		gridmap.set_cell_item(gridmap_position, index)
+		emit_signal("structure_placed", index, gridmap_position)
+	elif is_terrain:
+		# For grass and trees (terrain), we just place them directly in the gridmap
+		gridmap.set_cell_item(gridmap_position, index)
+		emit_signal("structure_placed", index, gridmap_position)
+	else:
+		# For other structures, we use the gridmap
+		gridmap.set_cell_item(gridmap_position, index)
+		emit_signal("structure_placed", index, gridmap_position)
+	
+	# Restore previous index
+	index = previous_index
+
+# New function to handle when structures are unlocked
+func _on_structures_unlocked():
+	print("\n=== Structures Unlocked, Setting Initial Structure ===")
+	
+	# Find the first unlocked structure in the array
+	var found_unlocked = false
+	print("\nChecking for unlocked structures:")
+	for i in range(_structures.size()):
+		var structure = _structures[i]
+		print("Structure " + str(i) + ": " + structure.model.resource_path + " - Unlocked: " + str(structure.unlocked))
+		if structure.unlocked:
+			index = i
+			found_unlocked = true
+			print("Found first unlocked structure at index " + str(i) + ": " + structure.model.resource_path)
+			break
+	
+	if not found_unlocked:
+		print("WARNING: No unlocked structures found!")
+		# Don't set any structure as selected if none are unlocked
+		index = -1
+		# Hide the selector since we have no structures to place
+		if selector:
+			selector.visible = false
+	else:
+		# Show the selector since we have a structure to place
+		if selector:
+			selector.visible = true
+	
+	update_structure()
+	print("=== Initial Structure Set ===\n")
+
+# Function to deduplicate structures

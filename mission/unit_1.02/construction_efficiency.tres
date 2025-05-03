@@ -1,0 +1,85 @@
+[gd_resource type="Resource" script_class="MissionData" load_steps=9 format=3 uid="uid://bh148683scgge"]
+
+[ext_resource type="Script" path="res://scripts/mission/mission_objective.gd" id="1_objective"]
+[ext_resource type="Script" path="res://scripts/mission/mission_data.gd" id="2_mission"]
+[ext_resource type="Resource" uid="uid://dykbopx8n3c3v" path="res://resources/patterns/road_square.tres" id="3_pattern"]
+[ext_resource type="Resource" uid="uid://cntgl86ianngh" path="res://structures/building-small-a.tres" id="4_building_a"]
+[ext_resource type="Resource" uid="uid://bh65eqgid4kxy" path="res://structures/building-small-c.tres" id="5_building_c"]
+
+[sub_resource type="Resource" id="Resource_objective1"]
+script = ExtResource("1_objective")
+type = 3
+target_count = 1
+current_count = 0
+description = "Build a 2x2 road square using corner and straight roads"
+completed = false
+pattern_rules = ExtResource("3_pattern")
+
+[sub_resource type="Resource" id="Resource_objective2"]
+script = ExtResource("1_objective")
+type = 0
+target_count = 2
+current_count = 0
+description = "Build 2 Type A houses inside the road square"
+completed = false
+structure = ExtResource("4_building_a")
+
+[sub_resource type="Resource" id="Resource_objective3"]
+script = ExtResource("1_objective")
+type = 0
+target_count = 2
+current_count = 0
+description = "Build 2 Type C houses outside the road square"
+completed = false
+structure = ExtResource("5_building_c")
+
+[resource]
+script = ExtResource("2_mission")
+id = "road_square_neighborhood"
+title = "Square Neighborhood"
+description = "Create a well-organized neighborhood by building a square road pattern and placing different types of houses strategically. Complete this mission to unlock all building types!"
+objectives = Array[ExtResource("1_objective")]([SubResource("Resource_objective1"), SubResource("Resource_objective2"), SubResource("Resource_objective3")])
+rewards = {
+"cash": 500,
+"experience": 100
+}
+next_mission_id = ""
+graph_path = ""
+full_screen_path = ""
+intro_text = "Let's create an organized neighborhood! First, we'll build a square road pattern using corner and straight roads. Then, we'll place Type A houses inside the square and Type C houses outside to create a diverse residential area. Complete this mission to unlock all building types!"
+question_text = ""
+correct_answer = ""
+feedback_text = ""
+incorrect_feedback = ""
+company_data = ""
+power_math_content = ""
+num_of_user_inputs = 1
+input_labels = Array[String]([])
+companion_dialog = {
+"mission_completed": {
+"animation": "excited",
+"duration": 6000,
+"text": "Excellent work! You've created a well-organized neighborhood with a good mix of house types. You've unlocked all building types!"
+},
+"mission_started": {
+"animation": "excited",
+"duration": 6000,
+"text": ["Time to build a well-organized neighborhood!", "Let's start by creating a square road pattern."]
+},
+"objective_completed_1": {
+"animation": "happy",
+"duration": 5000,
+"text": ["Perfect square! The roads are perfectly aligned.", "Now we can start placing houses inside."]
+},
+"objective_completed_2": {
+"animation": "happy",
+"duration": 5000,
+"text": ["The Type A houses fit perfectly inside the road square!", "Now let's add some Type C houses outside."]
+},
+"objective_completed_3": {
+"animation": "happy",
+"duration": 5000,
+"text": ["Great placement of the Type C houses outside the square!", "This creates a nice variety in our neighborhood."]
+}
+}
+unlocked_items = Array[String](["res://structures/building-small-a.tres", "res://structures/building-small-b.tres", "res://structures/building-small-c.tres", "res://structures/building-garage.tres"])
