@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://b3kdhu8jq41iq"]
+[gd_scene load_steps=3 format=3 uid="uid://b3kdhu8jq41iq"]
 
 [ext_resource type="PackedScene" uid="uid://do24bjaohw3vy" path="res://models/road-straight.glb" id="2_kgyfd"]
 

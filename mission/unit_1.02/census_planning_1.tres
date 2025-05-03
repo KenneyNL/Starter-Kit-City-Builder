@@ -62,3 +62,4 @@ companion_dialog = {
 }
 }
 unlocked_items = Array[String](["res://models/building-small-a.glb"])
+starting_structures = Array[String]([])

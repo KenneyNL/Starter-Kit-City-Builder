@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://b6x8v0j6y5n3q"]
 
-[ext_resource type="Script" path="res://scripts/mission/learning_panel.gd" id="1_2k4m3"]
+[ext_resource type="Script" uid="uid://dnquivpg0ead" path="res://scripts/mission/learning_panel.gd" id="1_2k4m3"]
 
 [node name="LearningPanel" type="Control"]
 layout_mode = 3
@@ -53,4 +53,4 @@ alignment = 1
 [node name="SubmitButton" type="Button" parent="PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/SubmitButtonContainer"]
 layout_mode = 2
 size_flags_horizontal = 4
-text = "Submit" 
+text = "Submit"

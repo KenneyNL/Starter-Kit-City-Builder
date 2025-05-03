@@ -62,3 +62,4 @@ companion_dialog = {
 }
 }
 unlocked_items = Array[String](["res://models/road-corner.glb"])
+starting_structures = Array[String]([])

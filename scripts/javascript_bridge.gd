@@ -105,6 +105,22 @@ func _ready():
 		""")
 		print("JavaScript callbacks set up")
 		
+		# Send init data from URL parameters if present
+		JavaScript.JavaScriptGlobal.eval("""
+			(function() {
+				var params = new URLSearchParams(window.location.search);
+				if (params.has('missions')) {
+					try {
+						var missions = JSON.parse(decodeURIComponent(params.get('missions')));
+						console.log('Sending init data from URL:', missions);
+						window.godot_interface.emit_signal('init_data_received', missions);
+					} catch (e) {
+						console.error('Failed to parse missions param:', e);
+					}
+				}
+			})();
+		""")
+		
 		# Process any pending signals
 		_process_pending_signals()
 

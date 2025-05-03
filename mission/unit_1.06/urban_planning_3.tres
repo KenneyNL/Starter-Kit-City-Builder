@@ -1,8 +1,8 @@
 [gd_resource type="Resource" script_class="MissionData" load_steps=5 format=3 uid="uid://ct1k7n2oopwdu"]
 
-[ext_resource type="Script" path="res://scripts/mission/mission_objective.gd" id="1_40klq"]
+[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_40klq"]
 [ext_resource type="Resource" uid="uid://mxrnqinnsqnt" path="res://structures/road-straight-lightposts.tres" id="2_u46hd"]
-[ext_resource type="Script" path="res://scripts/mission/mission_data.gd" id="3_j3mtn"]
+[ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="3_j3mtn"]
 
 [sub_resource type="Resource" id="Resource_fai8r"]
 script = ExtResource("1_40klq")
@@ -47,3 +47,4 @@ companion_dialog = {
 }
 }
 unlocked_items = Array[String](["res://models/pavement-fountain.glb"])
+starting_structures = Array[String]([])

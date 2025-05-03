@@ -1,6 +1,6 @@
 [gd_scene load_steps=8 format=3 uid="uid://b4gkfwf4i3ydl"]
 
-[ext_resource type="Script" path="res://scripts/mission/character_controller.gd" id="1_g3a7y"]
+[ext_resource type="Script" uid="uid://c2u81fdo7uou3" path="res://scripts/mission/character_controller.gd" id="1_g3a7y"]
 [ext_resource type="PackedScene" uid="uid://h2jjkvc4edsp" path="res://people/character-female-d.glb" id="2_d5jmi"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_b4w3n"]
@@ -58,9 +58,9 @@ tracks/0/keys = {
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_8ib1s"]
 _data = {
-"RESET": SubResource("Animation_reset"),
-"idle": SubResource("Animation_idle"),
-"walk": SubResource("Animation_walk")
+&"RESET": SubResource("Animation_reset"),
+&"idle": SubResource("Animation_idle"),
+&"walk": SubResource("Animation_walk")
 }
 
 [node name="Character" type="CharacterBody3D"]

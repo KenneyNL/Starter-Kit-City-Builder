@@ -1,8 +1,8 @@
 [gd_resource type="Resource" script_class="MissionData" load_steps=5 format=3 uid="uid://cf7gpb4j7gq1g"]
 
-[ext_resource type="Script" path="res://scripts/mission/mission_objective.gd" id="1_8k2sf"]
+[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_8k2sf"]
 [ext_resource type="Resource" uid="uid://cntgl86ianngh" path="res://structures/building-small-a.tres" id="2_4a8uo"]
-[ext_resource type="Script" path="res://scripts/mission/mission_data.gd" id="3_aihyv"]
+[ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="3_aihyv"]
 
 [sub_resource type="Resource" id="Resource_fmsjh"]
 script = ExtResource("1_8k2sf")
@@ -47,3 +47,4 @@ companion_dialog = {
 }
 }
 unlocked_items = Array[String]([])
+starting_structures = Array[String]([])

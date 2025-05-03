@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="MissionData" load_steps=9 format=3 uid="uid://bh148683scgge"]
 
-[ext_resource type="Script" path="res://scripts/mission/mission_objective.gd" id="1_objective"]
-[ext_resource type="Script" path="res://scripts/mission/mission_data.gd" id="2_mission"]
+[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_objective"]
+[ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="2_mission"]
 [ext_resource type="Resource" uid="uid://dykbopx8n3c3v" path="res://resources/patterns/road_square.tres" id="3_pattern"]
 [ext_resource type="Resource" uid="uid://cntgl86ianngh" path="res://structures/building-small-a.tres" id="4_building_a"]
 [ext_resource type="Resource" uid="uid://bh65eqgid4kxy" path="res://structures/building-small-c.tres" id="5_building_c"]
@@ -83,3 +83,4 @@ companion_dialog = {
 }
 }
 unlocked_items = Array[String](["res://structures/building-small-a.tres", "res://structures/building-small-b.tres", "res://structures/building-small-c.tres", "res://structures/building-garage.tres"])
+starting_structures = Array[String]([])
