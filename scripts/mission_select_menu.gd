@@ -138,13 +138,10 @@ func _unlock_structure(item_path: String):
 	var found = false
 	for structure in structures:
 		if structure.model:
-			print("Checking structure: " + structure.model.resource_path)
-			
 			# Check for exact match with either path
 			if structure.model.resource_path == item_path or structure.model.resource_path == glb_path:
 				if "unlocked" in structure:
 					structure.unlocked = true
-					print("SUCCESS: Unlocked structure by exact match: " + structure.model.resource_path)
 					found = true
 					break
 			
@@ -152,16 +149,11 @@ func _unlock_structure(item_path: String):
 			elif structure.model.resource_path.get_basename() == item_path.get_basename():
 				if "unlocked" in structure:
 					structure.unlocked = true
-					print("SUCCESS: Unlocked structure by base name match: " + structure.model.resource_path)
 					found = true
 					break
 	
 	if not found:
 		print("WARNING: No matching structure found for: " + item_path)
-		print("Available structures:")
-		for structure in structures:
-			if structure.model:
-				print("  " + structure.model.resource_path)
 
 # Function to update the builder after unlocking structures
 func _update_builder_structures():

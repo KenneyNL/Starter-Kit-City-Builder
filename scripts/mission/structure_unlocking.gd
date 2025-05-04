@@ -5,13 +5,6 @@ static func process_mission_structures(structures: Array[Structure], mission_dat
 	print("\n=== Processing Mission Structures ===")
 	print("Mission ID: ", mission_data.id)
 	
-	# Print current unlock status
-	print("\nCurrent structure status:")
-	for i in range(structures.size()):
-		var structure = structures[i]
-		if structure.model:
-			print("Structure ", i, ": ", structure.model.resource_path, " - Unlocked: ", structure.unlocked if "unlocked" in structure else "no unlock property")
-	
 	# Don't lock all structures at start - only unlock new ones
 	var paths_to_unlock = []
 	
@@ -48,15 +41,11 @@ static func unlock_structure_by_path(structures: Array[Structure], path: String)
 	print("\nStarting structure matching...")
 	for structure in structures:
 		if not structure.model:
-			print("WARNING: Structure has no model!")
 			continue
 			
 		var structure_path = structure.model.resource_path
-		print("\nChecking structure: ", structure_path)
-		
 		# Try exact path match first
 		if structure_path == path:
-			print("Found exact path match, unlocking")
 			structure.unlocked = true
 			break
 		
