@@ -15,5 +15,5 @@ kW_production = 0.0
 selector_scale = 2.8
 unlocked = false
 spawn_builder = false
-description = "Description"
-thumbnail = "Thumbnail"
+description = "Garage"
+thumbnail = "res://sprites/updated/garage.png"
