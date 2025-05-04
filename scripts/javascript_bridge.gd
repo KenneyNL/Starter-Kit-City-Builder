@@ -133,15 +133,15 @@ func receive_init_data(missions_data):
 
 		# Parse URL parameters more directly
 		var params_str = JavaScriptBridge.eval("""
-            (function() {
-                var result = {};
-                var params = new URLSearchParams(window.location.search);
-                params.forEach(function(value, key) {
-                    result[key] = value;
-                });
-                return JSON.stringify(result);
-            })()
-        """)
+			(function() {
+				var result = {};
+				var params = new URLSearchParams(window.location.search);
+				params.forEach(function(value, key) {
+					result[key] = value;
+				});
+				return JSON.stringify(result);
+			})()
+		""")
 
 		# Parse the JSON string to get a Dictionary
 		var params = JSON.parse_string(params_str)

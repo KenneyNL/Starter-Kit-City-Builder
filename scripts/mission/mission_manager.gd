@@ -199,7 +199,7 @@ func _input(event):
 			if skip_key_presses >= skip_key_required:
 				skip_key_presses = 0
 				_skip_current_mission()
-	
+
 	# For web builds, use any input to initialize audio
 	if OS.has_feature("web"):
 		if event is InputEventMouseButton or event is InputEventKey:
@@ -410,7 +410,7 @@ func complete_mission(mission_id: String):
 		
 		# Send the "end" event to the companion
 		await get_tree().create_timer(2.0).timeout
-	
+
 func update_objective_progress(structure:Structure = null):
 	print("\n=== Updating Objective Progress ===")
 	print("Objective type: ", current_objective.type)
@@ -592,14 +592,14 @@ func _check_learning_panel_state():
 		# If all learning is complete but we still have other objectives, auto close
 		if learning_objectives_complete and other_objectives_incomplete:
 			should_auto_close = true
-	
+
 	# Automatically close the panel if appropriate
 	if should_auto_close:
 		if learning_panel and learning_panel.visible:
 			learning_panel.hide_learning_panel()
 		if fullscreen_learning_panel and fullscreen_learning_panel.visible:
 			fullscreen_learning_panel.hide_fullscreen_panel()
-	
+
 # Skip to the next mission (for debug/testing)
 func _skip_current_mission():
 	if current_mission:
@@ -1241,21 +1241,11 @@ func _on_init_data_received(data):
 		push_error("No missions found in initialization data")
 		return
 		
-	var missions = data["missions"]
-	print("Missions array: ", missions)
-	
-	for mission_data in missions:
-		print("Processing mission data: ", mission_data)
-		var mission = MissionData.new()
-		mission.from_dictionary(mission_data)
-		active_missions[mission.id] = mission
-		print("Added mission: ", mission.id)
-		print("Mission Data Added ", mission)
-		
-	# Start the first mission if available
-	if active_missions.size() > 0:
-		var first_mission = active_missions.values()[0]
-		print("Starting first mission: ", first_mission.id)
-		start_mission(first_mission)
+	# Use mission loader helper to populate missions
+	mission_loader.load_from_js(data)
+	# Start the first loaded mission if available
+	if missions.size() > 0:
+		print("Starting first mission: ", missions[0].id)
+		start_mission(missions[0])
 	else:
 		push_error("No missions available to start")
