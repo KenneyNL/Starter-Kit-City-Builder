@@ -35,7 +35,7 @@ structure = ExtResource("5_building_c")
 
 [resource]
 script = ExtResource("2_mission")
-id = "road_square_neighborhood"
+id = "99"
 title = "Square Neighborhood"
 description = "Create a well-organized neighborhood by building a square road pattern and placing different types of houses strategically. Complete this mission to unlock all building types!"
 objectives = Array[ExtResource("1_objective")]([SubResource("Resource_objective1"), SubResource("Resource_objective2"), SubResource("Resource_objective3")])

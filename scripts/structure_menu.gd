@@ -47,6 +47,12 @@ func _ready():
 		print("Connecting to builder's structure_updated signal")  # Debug print
 		builder.structure_updated.connect(_on_builder_structure_updated)
 	
+	# Connect to mission manager's structures_unlocked signal
+	var mission_manager = get_node_or_null("/root/Main/MissionManager")
+	if mission_manager:
+		print("Connecting to mission manager's structures_unlocked signal")  # Debug print
+		mission_manager.structures_unlocked.connect(_on_structures_unlocked)
+	
 	# Wait a frame to ensure all nodes are ready
 	await get_tree().process_frame
 	_center_toggle_button()
@@ -201,8 +207,7 @@ func create_structure_item(structure, index):
 	# Try to load thumbnail
 	if "thumbnail" in structure and structure.thumbnail != null:
 		var texture = load(structure.thumbnail)
-		if texture != null:
-			# Scale the texture to 128x128
+		if texture is Texture2D:
 			var image = texture.get_image()
 			image.resize(128, 128)
 			var scaled_texture = ImageTexture.create_from_image(image)
@@ -211,6 +216,8 @@ func create_structure_item(structure, index):
 			print("Texture size: ", scaled_texture.get_size())
 			print("Thumbnail size: ", thumbnail.size)
 			print("Thumbnail container size: ", thumbnail_container.size)
+		else:
+			print("Warning: Thumbnail is not a Texture2D: ", structure.thumbnail, " (type: ", typeof(texture), ")")
 	
 	thumbnail_container.add_child(thumbnail)
 	
@@ -312,3 +319,8 @@ func get_structure_name(structure):
 func is_mouse_over_menu() -> bool:
 	var mouse_pos = get_viewport().get_mouse_position()
 	return menu_panel.get_global_rect().has_point(mouse_pos) or toggle_button.get_global_rect().has_point(mouse_pos) 
+
+# Add new function to handle structure unlocking
+func _on_structures_unlocked():
+	print("Structures unlocked signal received, updating menu")
+	populate_menu() 

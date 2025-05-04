@@ -23,7 +23,7 @@ rewards = {
 "cash": 300,
 "experience": 50
 }
-next_mission_id = "construction_efficiency"
+next_mission_id = "99"
 graph_path = ""
 full_screen_path = ""
 intro_text = "The city council is impressed with your development plans! Show them you can handle basic construction by building a few houses, and they'll grant you access to build all residential building types."

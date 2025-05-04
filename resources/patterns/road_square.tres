@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="PatternRules" load_steps=9 format=3 uid="uid://dykbopx8n3c3v"]
 
-[ext_resource type="Script" uid="uid://dq0hn1a4b0c0" path="res://scripts/mission/pattern_rules.gd" id="1_rules"]
-[ext_resource type="Script" uid="uid://clv4vhawbuihu" path="res://scripts/mission/pattern_rule.gd" id="2_rule"]
+[ext_resource type="Script" path="res://scripts/mission/pattern_rules.gd" id="1_rules"]
+[ext_resource type="Script" path="res://scripts/mission/pattern_rule.gd" id="2_rule"]
 [ext_resource type="Resource" uid="uid://d2jplegnkl6u2" path="res://structures/road-corner.tres" id="3_corner"]
 [ext_resource type="Resource" uid="uid://dv14kkhb6umkv" path="res://structures/road-straight.tres" id="4_straight"]
 

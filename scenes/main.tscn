@@ -1,4 +1,4 @@
-[gd_scene load_steps=74 format=3 uid="uid://b6eb1v02n61vv"]
+[gd_scene load_steps=68 format=3 uid="uid://vgwrcfy1qawf"]
 
 [ext_resource type="Script" uid="uid://c37h6na3e4twn" path="res://scripts/builder.gd" id="1_jybm7"]
 [ext_resource type="Environment" uid="uid://jbptgqvstei3" path="res://scenes/main-environment.tres" id="1_yndf3"]
@@ -17,8 +17,7 @@
 [ext_resource type="PackedScene" uid="uid://dmsy06s02tcw4" path="res://scenes/generic_text_panel.tscn" id="13_7i6dj"]
 [ext_resource type="Resource" uid="uid://bh65eqgid4kxy" path="res://structures/building-small-c.tres" id="13_kf5aa"]
 [ext_resource type="Script" uid="uid://ctqqmg4ydlbse" path="res://scripts/mission/mission_ui.gd" id="13_xvw5w"]
-[ext_resource type="Script" uid="uid://bt3emc1vt40gq" path="res://resources/generic_text_panel.resource.gd" id="14_76jlq"]
-[ext_resource type="Script" uid="uid://dnquivpg0ead" path="res://scripts/mission/learning_panel.gd" id="14_q2ymb"]
+[ext_resource type="Script" uid="uid://b6kf2nelnggk6" path="res://resources/generic_text_panel.resource.gd" id="14_76jlq"]
 [ext_resource type="Resource" uid="uid://dqqe3iofnleup" path="res://structures/pavement-fountain.tres" id="14_t5ykj"]
 [ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="14_vcrh8"]
 [ext_resource type="Resource" uid="uid://dveu4dnue0d54" path="res://structures/road-intersection.tres" id="15_e755i"]
@@ -36,13 +35,11 @@
 [ext_resource type="Resource" uid="uid://csrqvfwp63ygr" path="res://mission/unit_1.02/market_research_3.tres" id="25_6hx7u"]
 [ext_resource type="PackedScene" uid="uid://b4k3xfm8pd8qw" path="res://scenes/building_selector.tscn" id="25_od4ux"]
 [ext_resource type="Resource" uid="uid://qwiwim2pg88f" path="res://mission/unit_1.02/market_research_4.tres" id="26_lvk23"]
-[ext_resource type="PackedScene" uid="uid://cb2rylpbex3ep" path="res://models/building-arcology.glb" id="27_m8wco"]
 [ext_resource type="Resource" uid="uid://cfgw8dblm55c5" path="res://mission/unit_1.03_1.05/grid_growth_1.tres" id="27_s0e58"]
 [ext_resource type="Resource" uid="uid://ba3ndftq7dht7" path="res://mission/unit_1.03_1.05/grid_growth_2.tres" id="28_hurxs"]
 [ext_resource type="Resource" uid="uid://cua0khnbyusip" path="res://mission/unit_1.02/unlock_buildings.tres" id="28_ro3en"]
 [ext_resource type="Resource" uid="uid://dgimr2v12rjqu" path="res://mission/unit_1.03_1.05/grid_growth_3.tres" id="29_rhn1n"]
 [ext_resource type="Resource" uid="uid://dm2o4dq2oml53" path="res://mission/unit_1.03_1.05/grid_growth_4.tres" id="30_4rwkv"]
-[ext_resource type="Resource" uid="uid://bh148683scgge" path="res://mission/unit_1.02/construction_efficiency.tres" id="30_od4ux"]
 [ext_resource type="Resource" uid="uid://btwrfq37q8vey" path="res://mission/unit_1.03_1.05/traffic_flow_1.tres" id="31_j2idb"]
 [ext_resource type="Resource" uid="uid://cf7gpb4j7gq1g" path="res://mission/unit_1.03_1.05/traffic_flow_2.tres" id="32_ipu0c"]
 [ext_resource type="Resource" uid="uid://ddmxjjyxgxyxo" path="res://mission/unit_1.03_1.05/traffic_flow_3.tres" id="33_c0l5e"]
@@ -157,44 +154,6 @@ corner_radius_bottom_left = 8
 shadow_size = 5
 shadow_offset = Vector2(2, 2)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lsmd5"]
-bg_color = Color(0.196078, 0.196078, 0.196078, 0.960784)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.294118, 0.478431, 0.729412, 1)
-corner_radius_top_left = 8
-corner_radius_top_right = 8
-corner_radius_bottom_right = 8
-corner_radius_bottom_left = 8
-shadow_size = 5
-shadow_offset = Vector2(3, 3)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_description"]
-bg_color = Color(0.145098, 0.145098, 0.164706, 0.768627)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.294118, 0.478431, 0.729412, 0.301961)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_graph"]
-bg_color = Color(0.117647, 0.137255, 0.160784, 0.768627)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.294118, 0.478431, 0.729412, 0.301961)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
 [node name="Main" type="Node3D"]
 script = ExtResource("20_game_manager")
 intro_text_resource = SubResource("Resource_1gdbm")
@@ -273,7 +232,7 @@ grow_vertical = 1
 
 [node name="MissionManager" type="Node" parent="." node_paths=PackedStringArray("mission_ui", "builder")]
 script = ExtResource("10_oe3re")
-missions = Array[ExtResource("14_vcrh8")]([ExtResource("28_ro3en"), ExtResource("30_od4ux"), ExtResource("17_rrdy6"), ExtResource("20_ngu16"), ExtResource("24_xud6a"), ExtResource("25_6hx7u"), ExtResource("26_lvk23"), ExtResource("27_s0e58"), ExtResource("28_hurxs"), ExtResource("29_rhn1n"), ExtResource("30_4rwkv"), ExtResource("31_j2idb"), ExtResource("32_ipu0c"), ExtResource("33_c0l5e"), ExtResource("34_21t20"), ExtResource("35_o0bjh"), ExtResource("36_2wodh"), ExtResource("37_psgx1"), ExtResource("38_hw762"), ExtResource("39_ymw5p"), ExtResource("40_uggp1"), ExtResource("41_f0dxf"), ExtResource("42_fv8gl"), ExtResource("43_qvne6"), ExtResource("44_haub2"), ExtResource("45_xs8xk"), SubResource("Resource_t5ykj"), ExtResource("47_6w4y8"), ExtResource("48_ck35a"), ExtResource("49_cvgxw"), ExtResource("50_6ke0d"), ExtResource("57_e755i")])
+missions = Array[ExtResource("14_vcrh8")]([ExtResource("28_ro3en"), ExtResource("17_rrdy6"), ExtResource("20_ngu16"), ExtResource("24_xud6a"), ExtResource("25_6hx7u"), ExtResource("26_lvk23"), ExtResource("27_s0e58"), ExtResource("28_hurxs"), ExtResource("29_rhn1n"), ExtResource("30_4rwkv"), ExtResource("31_j2idb"), ExtResource("32_ipu0c"), ExtResource("33_c0l5e"), ExtResource("34_21t20"), ExtResource("35_o0bjh"), ExtResource("36_2wodh"), ExtResource("37_psgx1"), ExtResource("38_hw762"), ExtResource("39_ymw5p"), ExtResource("40_uggp1"), ExtResource("41_f0dxf"), ExtResource("42_fv8gl"), ExtResource("43_qvne6"), ExtResource("44_haub2"), ExtResource("45_xs8xk"), SubResource("Resource_t5ykj"), ExtResource("47_6w4y8"), ExtResource("48_ck35a"), ExtResource("49_cvgxw"), ExtResource("50_6ke0d"), ExtResource("57_e755i")])
 mission_ui = NodePath("MissionPanel")
 builder = NodePath("../Builder")
 character_scene = ExtResource("18_8lrh8")
@@ -338,148 +297,9 @@ layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 10
 
-[node name="LearningPanel" type="PanelContainer" parent="MissionManager"]
-visible = false
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 50.0
-offset_top = 50.0
-offset_right = -50.0
-offset_bottom = -50.0
-grow_horizontal = 2
-grow_vertical = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_lsmd5")
-script = ExtResource("14_q2ymb")
-
-[node name="MarginContainer" type="MarginContainer" parent="MissionManager/LearningPanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 30
-theme_override_constants/margin_top = 30
-theme_override_constants/margin_right = 30
-theme_override_constants/margin_bottom = 30
-
-[node name="VBoxContainer" type="VBoxContainer" parent="MissionManager/LearningPanel/MarginContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_constants/separation = 20
-
-[node name="TitleLabel" type="Label" parent="MissionManager/LearningPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("17_vlub6")
-theme_override_font_sizes/font_size = 32
-text = "Learning Module"
-horizontal_alignment = 1
-
-[node name="HSeparator" type="HSeparator" parent="MissionManager/LearningPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-
-[node name="DescriptionPanel" type="PanelContainer" parent="MissionManager/LearningPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-size_flags_stretch_ratio = 0.5
-theme_override_styles/panel = SubResource("StyleBoxFlat_description")
-
-[node name="MarginContainer" type="MarginContainer" parent="MissionManager/LearningPanel/MarginContainer/VBoxContainer/DescriptionPanel"]
-layout_mode = 2
-theme_override_constants/margin_left = 15
-theme_override_constants/margin_top = 15
-theme_override_constants/margin_right = 15
-theme_override_constants/margin_bottom = 15
-
-[node name="DescriptionLabel" type="Label" parent="MissionManager/LearningPanel/MarginContainer/VBoxContainer/DescriptionPanel/MarginContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 20
-text = "Description goes here..."
-autowrap_mode = 2
-
-[node name="GraphTitle" type="Label" parent="MissionManager/LearningPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "Graph:"
-horizontal_alignment = 1
-
-[node name="GraphContainer" type="Panel" parent="MissionManager/LearningPanel/MarginContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 300)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
-size_flags_stretch_ratio = 2.0
-theme_override_styles/panel = SubResource("StyleBoxFlat_graph")
-
-[node name="AnswerContainer" type="VBoxContainer" parent="MissionManager/LearningPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="QuestionLabel" type="Label" parent="MissionManager/LearningPanel/MarginContainer/VBoxContainer/AnswerContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "How many workers do we need to build 10 houses in a week?"
-horizontal_alignment = 1
-
-[node name="AnswerField" type="LineEdit" parent="MissionManager/LearningPanel/MarginContainer/VBoxContainer/AnswerContainer"]
-custom_minimum_size = Vector2(150, 40)
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 18
-placeholder_text = "Enter answer"
-alignment = 1
-max_length = 5
-
-[node name="CheckButton" type="Button" parent="MissionManager/LearningPanel/MarginContainer/VBoxContainer/AnswerContainer"]
-custom_minimum_size = Vector2(150, 40)
-layout_mode = 2
-size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 16
-text = "Check Answer"
-
-[node name="FeedbackLabel" type="Label" parent="MissionManager/LearningPanel/MarginContainer/VBoxContainer/AnswerContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 18
-horizontal_alignment = 1
-autowrap_mode = 2
-text_overrun_behavior = 3
-max_lines_visible = 6
-
-[node name="HBoxContainer" type="HBoxContainer" parent="MissionManager/LearningPanel/MarginContainer/VBoxContainer"]
-layout_mode = 2
-alignment = 1
-
-[node name="CompleteButton" type="Button" parent="MissionManager/LearningPanel/MarginContainer/VBoxContainer/HBoxContainer"]
-custom_minimum_size = Vector2(200, 50)
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
-disabled = true
-text = "Complete"
-
 [node name="ObjectiveLabel" type="Label" parent="MissionManager"]
 offset_right = 40.0
 offset_bottom = 23.0
 
-[node name="building-arcology2" parent="." instance=ExtResource("27_m8wco")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, -16, -14)
-
-[node name="Builder2" type="Node3D" parent="." node_paths=PackedStringArray("selector", "selector_container", "view_camera", "gridmap", "cash_display")]
-script = ExtResource("1_jybm7")
-structures = Array[ExtResource("2_54v6r")]([ExtResource("13_kf5aa"), ExtResource("5_v5o2m"), ExtResource("7_t5ykj"), ExtResource("6_fwsy4"), ExtResource("9_e755i"), ExtResource("14_t5ykj"), ExtResource("11_ro3en"), ExtResource("12_xtc7p"), ExtResource("15_e755i"), ExtResource("21_y11qv"), ExtResource("2_bwyku"), ExtResource("11_20frt")])
-selector = NodePath("Selector")
-selector_container = NodePath("Selector/Container")
-view_camera = NodePath("../View/Camera")
-gridmap = NodePath("../GridMap")
-cash_display = NodePath("../CanvasLayer/HUD/HBoxContainer/CashItem/CashLabel")
-
-[node name="Selector" type="Node3D" parent="Builder2"]
-
-[node name="Sprite" type="Sprite3D" parent="Builder2/Selector"]
-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0.06, 0)
-texture = ExtResource("4_wr1wv")
-
-[node name="Container" type="Node3D" parent="Builder2/Selector"]
-
 [connection signal="all_missions_completed" from="MissionManager" to="." method="_on_mission_manager_all_missions_completed"]
 [connection signal="mission_started" from="MissionManager" to="." method="_on_mission_manager_mission_started"]
-[connection signal="pressed" from="MissionManager/LearningPanel/MarginContainer/VBoxContainer/HBoxContainer/CompleteButton" to="MissionManager/LearningPanel" method="_on_complete_button_pressed"]

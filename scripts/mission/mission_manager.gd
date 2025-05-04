@@ -378,37 +378,24 @@ func complete_mission(mission_id: String):
 	# Keep a copy of the mission for UI display during transition
 	var completed_mission = mission
 	
-	# Figure out if there's a next mission
-	var next_mission: MissionData
-	if mission.next_mission_id:
-		# Find mission with that ID
-		for m in missions:
-			if m.id == mission.next_mission_id:
-				next_mission = m
-				break
-				
 	# Emit mission completed signal
 	mission_completed.emit(mission)
 	
 	# Only remove from active missions after we're ready to show the next one
-	# This ensures the UI always has a mission to display
+	await get_tree().create_timer(2.0).timeout
+	active_missions.erase(mission_id)
+	
+	var next_mission = get_next_mission(mission_id)
 	if next_mission:
-		# Keep the active mission during the delay
-		await get_tree().create_timer(2.0).timeout
-		
-		# Only now remove the old mission
-		active_missions.erase(mission_id)
-		
-		# Start the next mission
-		start_mission(next_mission)
+		if is_unlocked_panel_showing:
+			print("Unlock panel showing, queueing next mission start.")
+			delayed_mission_start_queue.append(next_mission)
+		else:
+			print("Starting next mission: " + str(next_mission.id))
+			start_mission(next_mission)
 	else:
-		# Only remove after delay for last mission too
-		await get_tree().create_timer(2.0).timeout
-		active_missions.erase(mission_id)
-		
+		print("No more missions to start.")
 		all_missions_completed.emit()
-		
-		# Send the "end" event to the companion
 		await get_tree().create_timer(2.0).timeout
 
 func update_objective_progress(structure:Structure = null):
@@ -427,7 +414,7 @@ func update_objective_progress(structure:Structure = null):
 			objective_completed.emit(current_objective)
 			var dialog_key = "objective_completed_" + str(current_objective.type)
 			_send_companion_dialog(dialog_key, current_mission)
-			update_current_objective()
+			update_current_objective(current_mission)
 	elif current_objective.type == ObjectiveType.BUILD_STRUCTURE:
 		print("Updating BUILD_STRUCTURE objective")
 		current_objective.current_count += 1
@@ -856,68 +843,66 @@ func _get_connected_road_length(road_position: Vector3, gridmap: GridMap) -> flo
 # This function handles structure unlocking when a mission is completed
 func _handle_structure_unlocking(mission):
 	if not builder:
+		print("[Unlock] No builder found, aborting unlocking.")
 		return
 	
 	var structures = builder.get_structures()
+	print("[Unlock] Builder has ", structures.size(), " structures.")
 	
 	var unlocked_structures = []
 	
 	# Check for explicitly defined unlocked items in mission
 	if mission is Resource and "unlocked_items" in mission and mission.unlocked_items.size() > 0:
+		print("[Unlock] Mission unlocked_items: ", mission.unlocked_items)
 		var items = mission.unlocked_items
 		for item_path in items:
+			print("[Unlock] Checking item_path: ", item_path)
 			var found = false
-			
-			# Find the structure in builder's structures that matches this path
+			var item_base = item_path.get_file().get_basename()
 			for structure in structures:
 				if structure.model:
-					# Try exact match
-					if structure.model.resource_path == item_path:
-						found = true
-						
-						# Make sure structure has the unlocked property before setting it
+					var model_base = structure.model.resource_path.get_file().get_basename()
+					print("[Unlock]   Structure model: ", structure.model.resource_path, " base: ", model_base, " unlocked: ", (structure.unlocked if "unlocked" in structure else "N/A"))
+					if item_base == model_base:
+						print("[Unlock]   Base name match found!")
 						if "unlocked" in structure:
 							structure.unlocked = true
 							unlocked_structures.append(structure)
-					
-					# Try matching just the filename part
-					elif structure.model.resource_path.get_file() == item_path.get_file():
 						found = true
-						
-						# Make sure structure has the unlocked property before setting it
-						if "unlocked" in structure:
-							structure.unlocked = true
-							unlocked_structures.append(structure)
-							
-					# Try contains match for more flexible path matching (handles directory differences)
-					elif item_path.get_file() in structure.model.resource_path:
-						found = true
-						
-						# Make sure structure has the unlocked property before setting it
-						if "unlocked" in structure:
-							structure.unlocked = true
-							unlocked_structures.append(structure)
+			if not found:
+				print("[Unlock]   No match found for item_path: ", item_path)
+	else:
+		print("[Unlock] No unlocked_items in mission or mission is not a Resource.")
 	
 	# Update builder's current structure if needed
 	var found_unlocked = false
 	for i in range(structures.size()):
 		var structure = structures[i]
 		if "unlocked" in structure and structure.unlocked:
-			# Only update if the current structure is not unlocked
 			if not (structures[builder.index].unlocked if "unlocked" in structures[builder.index] else false):
 				builder.index = i
 				builder.update_structure()
 			found_unlocked = true
 			break
 	
+	print("[Unlock] unlocked_structures size: ", unlocked_structures.size())
 	# Show the unlocked items panel if we unlocked anything
 	if unlocked_structures.size() > 0:
+		print("[Unlock] Emitting structures_unlocked signal and showing panel.")
+		structures_unlocked.emit()
+		builder._on_structures_unlocked()
 		_show_unlocked_items_panel(unlocked_structures)
+	else:
+		print("[Unlock] No new structures unlocked.")
 
 # Shows a panel with the newly unlocked items
 func _show_unlocked_items_panel(unlocked_structures):
+	print("\n=== Showing Unlocked Items Panel ===")
+	print("Number of unlocked structures: ", unlocked_structures.size())
+	
 	# Check if panel is already showing
 	if is_unlocked_panel_showing:
+		print("Panel already showing, returning")
 		return
 		
 	# Set panel state to showing - prevents mission starts while panel is visible
@@ -942,6 +927,7 @@ func _show_unlocked_items_panel(unlocked_structures):
 	
 	# Remove any existing panels
 	for panel in existing_panels:
+		print("Removing existing panel: ", panel.name)
 		panel.queue_free()
 	
 	# Wait a short delay before showing the panel
@@ -950,17 +936,21 @@ func _show_unlocked_items_panel(unlocked_structures):
 	# Load the panel scene
 	var unlocked_panel_scene = load("res://scenes/unlocked_items_panel.tscn")
 	if unlocked_panel_scene:
+		print("Loaded unlocked items panel scene")
 		var unlocked_panel = unlocked_panel_scene.instantiate()
 		
 		# Always add to HUD if available
 		if hud:
+			print("Adding panel to HUD")
 			hud.add_child(unlocked_panel)
 		else:
 			# Fallback to CanvasLayer if HUD not available
 			if canvas:
+				print("Adding panel to CanvasLayer")
 				canvas.add_child(unlocked_panel)
 			else:
 				# Final fallback to root
+				print("Adding panel to root")
 				get_tree().root.add_child(unlocked_panel)
 		
 		# Wait for panel to be added
@@ -971,11 +961,13 @@ func _show_unlocked_items_panel(unlocked_structures):
 		unlocked_panel.show()
 		
 		# Setup and show the panel
+		print("Setting up panel with structures")
 		unlocked_panel.setup(unlocked_structures)
 		unlocked_panel.show_panel()
 		
 		# Connect the closed signal
 		unlocked_panel.closed.connect(func():
+			print("Unlocked panel closed")
 			# Reset the panel showing state
 			is_unlocked_panel_showing = false
 			
@@ -989,6 +981,8 @@ func _show_unlocked_items_panel(unlocked_structures):
 			# Process any delayed mission starts
 			_process_delayed_mission_starts()
 		)
+	else:
+		push_error("Failed to load unlocked items panel scene")
 
 # Public function to show all unlocked structures when requested
 func show_unlocked_structures_panel():
@@ -1249,3 +1243,9 @@ func _on_init_data_received(data):
 		start_mission(missions[0])
 	else:
 		push_error("No missions available to start")
+
+func get_next_mission(current_mission_id):
+	for i in range(missions.size()):
+		if missions[i].id == current_mission_id and i + 1 < missions.size():
+			return missions[i + 1]
+	return null
