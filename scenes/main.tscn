@@ -64,7 +64,7 @@
 [ext_resource type="Resource" uid="uid://cpfr2xnjtpcog" path="res://mission/unit_1.07/resource_alloc_4.tres" id="50_6ke0d"]
 [ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="51_kf5aa"]
 [ext_resource type="Resource" uid="uid://bsic030rpgh08" path="res://mission/unit_1.06/sustainable_dev_2b.tres" id="57_e755i"]
-[ext_resource type="PackedScene" path="res://scenes/structure_menu.tscn" id="58_structure_menu"]
+[ext_resource type="PackedScene" uid="uid://blfrsgh3cct2l" path="res://scenes/structure_menu.tscn" id="58_structure_menu"]
 
 [sub_resource type="Resource" id="Resource_1gdbm"]
 script = ExtResource("14_76jlq")

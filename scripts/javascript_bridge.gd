@@ -4,7 +4,7 @@ extends Node
 static var instance = null
 
 # Signals
-
+signal init_data_received(data)
 signal init_check_received
 signal mission_progress_updated(data)
 signal mission_completed(data)
@@ -16,6 +16,8 @@ var _interface = null
 var _init_data = null
 var _init_check_received = false
 var _pending_signals = []
+var _my_js_callback = JavaScriptBridge.create_callback(receive_init_data)
+var window = null
 
 func _init():
 	instance = self
@@ -26,11 +28,13 @@ func _init():
 func _ready():
 	# Connect signals when the node is initialized
 	if OS.has_feature("web"):
+		window = JavaScriptBridge.get_interface("window")
 		# Wait for the interface to be available
 		await get_tree().process_frame
-		
+		receive_init_data("test")
+
 		# Set up message listener and interface
-		JavaScript.JavaScriptGlobal.eval("""
+		JavaScriptBridge.eval("""
 			// Create the Godot interface
 			window.godot_interface = {
 				_callbacks: {},
@@ -73,13 +77,13 @@ func _ready():
 				}
 			});
 		""")
-		
+
 		# Set up the interface
 		_interface = JavaScript.get_interface()
 		print("JavaScript interface initialized")
-		
+
 		# Set up callbacks in JavaScript
-		JavaScript.JavaScriptGlobal.eval("""
+		JavaScriptBridge.eval("""
 			window.godot_interface._callbacks.init_data_received = function(data) {
 				console.log('Emitting init_data_received signal with data:', data);
 				// Don't re-emit the signal to avoid recursion
@@ -104,26 +108,59 @@ func _ready():
 			};
 		""")
 		print("JavaScript callbacks set up")
-		
+
 		# Send init data from URL parameters if present
-		JavaScript.JavaScriptGlobal.eval("""
-			(function() {
-				var params = new URLSearchParams(window.location.search);
-				if (params.has('missions')) {
-					try {
-						var missions = JSON.parse(decodeURIComponent(params.get('missions')));
-						console.log('Sending init data from URL:', missions);
-						window.godot_interface.emit_signal('init_data_received', missions);
-					} catch (e) {
-						console.error('Failed to parse missions param:', e);
-					}
-				}
-			})();
-		""")
-		
+
+
 		# Process any pending signals
 		_process_pending_signals()
 
+
+func receive_init_data(missions_data):
+	# First, let's properly log the missions_data itself
+	print("Received missions data:", JSON.stringify(missions_data))
+
+	# To get URL information, we need to extract specific properties from window.location
+	if window and window.location:
+		# Access specific properties of the location object
+		var href = JavaScriptBridge.eval("window.location.href")
+		var search = JavaScriptBridge.eval("window.location.search")
+		var hostname = JavaScriptBridge.eval("window.location.hostname")
+
+		print("URL href:", href)
+		print("URL search params:", search)
+		print("URL hostname:", hostname)
+
+		# Parse URL parameters more directly
+		var params_str = JavaScriptBridge.eval("""
+            (function() {
+                var result = {};
+                var params = new URLSearchParams(window.location.search);
+                params.forEach(function(value, key) {
+                    result[key] = value;
+                });
+                return JSON.stringify(result);
+            })()
+        """)
+
+		# Parse the JSON string to get a Dictionary
+		var params = JSON.parse_string(params_str)
+		print("URL parameters:", params)
+
+		# Now access and process the missions parameter if it exists
+		if params and "missions" in params:
+			var missions_json = params["missions"]
+			var missions = JSON.parse_string(missions_json)
+			print("Missions from URL:", missions)
+			var mission_data = {"missions": missions}
+			Globals.receive_data_from_browser(mission_data)
+
+	# Also process the directly passed missions_data
+	if missions_data and missions_data != "test":
+		print("Processing passed missions data")
+		emit_signal("init_data_received", missions_data)
+
+	
 func _process_pending_signals():
 	if _pending_signals.size() > 0:
 		print("Processing pending signals...")

@@ -18,7 +18,7 @@ signal game_started()
 signal all_missions_completed()
 signal structures_unlocked()  # New signal for when structures are unlocked
 signal bridge_connection_completed
-signal init_data_received(data)
+
 
 @export var missions: Array[MissionData] = []
 @export var mission_ui: Control
@@ -69,8 +69,17 @@ func _ready() -> void:
 	# Connect to event bus and builder signals
 	print("\n=== Setting up Event Connections ===")
 	EventBus.population_update.connect(population_updated)
+	EventBus.receive_data_from_browser.connect(_on_init_data_received)
 	print("Connected to population update event")
-	
+
+#	init_data_received.connect(_on_init_data_received)	
+	# Connect to the JavaScript bridge
+#	if OS.has_feature("web"):
+#		var js = Engine.get_singleton("JavaScriptBridge")
+#		if js:
+#			print("Connecting Javascript to ")
+#			js.connect("init_data_received", Callable(self, "_on_init_data_received"))
+
 	if builder:
 		# Connect to builder signals
 		builder.connect("structure_placed", _on_structure_placed)
@@ -98,11 +107,7 @@ func _ready() -> void:
 	learning_panel.name = "LearningPanelFromScene"
 	add_child(learning_panel)
 	
-	# Connect to the JavaScript bridge
-	if OS.has_feature("web"):
-		var js = Engine.get_singleton("JavaScriptBridge")
-		if js:
-			js.connect("init_data_received", Callable(self, "_on_init_data_received"))
+	
 	
 	# Hide the panel initially
 	learning_panel.hide()
@@ -226,6 +231,7 @@ func _setup_learning_companion_communication() -> void:
 		var js_interface = JSBridge.get_interface()
 		if js_interface:
 			print("JavaScript interface initialized")
+			#init_data_received.connect(_on_init_data_received)
 			
 			# In web environment, we'll skip audio initialization for now
 			if OS.has_feature("web"):
@@ -1244,6 +1250,7 @@ func _on_init_data_received(data):
 		mission.from_dictionary(mission_data)
 		active_missions[mission.id] = mission
 		print("Added mission: ", mission.id)
+		print("Mission Data Added ", mission)
 		
 	# Start the first mission if available
 	if active_missions.size() > 0:

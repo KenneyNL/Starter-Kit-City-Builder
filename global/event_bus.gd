@@ -1,6 +1,7 @@
 extends Node
 
 signal population_update(count:int)
+signal receive_data_from_browser(args)
 
 var current_scene = null
 
