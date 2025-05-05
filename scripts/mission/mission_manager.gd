@@ -104,49 +104,6 @@ func _ready() -> void:
 		old_panel.queue_free()
 		print("Removed existing learning panel")
 		
-	# Load the learning panel scene
-	learning_panel_scene = load("res://scenes/ui/learning_panel.tscn")
-	if not learning_panel_scene:
-		push_error("Failed to load learning panel scene")
-		return
-		
-	# Instantiate the learning panel
-	learning_panel = learning_panel_scene.instantiate()
-	learning_panel.name = "LearningPanelFromScene"
-	add_child(learning_panel)
-	
-	
-	
-	# Hide the panel initially
-	learning_panel.hide()
-	
-	# Load the fullscreen learning panel scene
-	var fullscreen_panel_scene = load("res://scenes/fullscreen_learning_panel.tscn")
-	if fullscreen_panel_scene:
-		fullscreen_learning_panel = fullscreen_panel_scene.instantiate()
-		fullscreen_learning_panel.name = "FullscreenLearningPanel"
-		add_child(fullscreen_learning_panel)
-		print("Created fullscreen learning panel")
-		
-	# Fall back to existing panels if needed
-	if not learning_panel:
-		learning_panel = get_node_or_null("/root/Main/LearningPanel")
-		if learning_panel:
-			print("Using existing learning panel from Main")
-	
-	# Connect signals for both panel types
-	if learning_panel:
-		learning_panel.completed.connect(_on_learning_completed)
-		learning_panel.panel_opened.connect(_on_learning_panel_opened)
-		learning_panel.panel_closed.connect(_on_learning_panel_closed)
-		print("Connected learning panel signals")
-	
-	if fullscreen_learning_panel:
-		fullscreen_learning_panel.completed.connect(_on_learning_completed)
-		fullscreen_learning_panel.panel_opened.connect(_on_learning_panel_opened)
-		fullscreen_learning_panel.panel_closed.connect(_on_learning_panel_closed)
-		print("Connected fullscreen learning panel signals")
-	
 	print("\n=== Setting up Connection Timer ===")
 	# Create a simple timer to force a learning companion connection in 3 seconds
 	# This is a fallback in case the normal connection doesn't work

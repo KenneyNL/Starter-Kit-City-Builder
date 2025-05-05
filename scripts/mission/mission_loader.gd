@@ -57,13 +57,6 @@ func _unlock_starting_structures(structure_paths: Array) -> void:
 		push_error("No structures available")
 		return
 		
-	# Print current unlock status
-	print("\nCurrent structure status:")
-	for i in range(structures.size()):
-		var structure = structures[i]
-		if structure.model:
-			print("Structure ", i, ": ", structure.model.resource_path, " - Unlocked: ", structure.unlocked)
-	
 	# Process each path
 	for path in structure_paths:
 		print("\nProcessing path: ", path)
@@ -95,12 +88,9 @@ func _unlock_starting_structures(structure_paths: Array) -> void:
 				
 			var structure_path = structure.model.resource_path
 			
-			print("Checking structure: ", structure_path)
-			
 			# Only try exact path matches
 			for possible_path in possible_paths:
 				if structure_path == possible_path:
-					print("Found exact path match: ", possible_path)
 					structure.unlocked = true
 					found_match = true
 					break
@@ -110,20 +100,6 @@ func _unlock_starting_structures(structure_paths: Array) -> void:
 				
 		if not found_match:
 			print("WARNING: No match found for path: ", path)
-			print("Available structures:")
-			for i in range(structures.size()):
-				var structure = structures[i]
-				if structure.model:
-					print("  ", i, ": ", structure.model.resource_path)
-	
-	# Print final unlock status
-	print("\nFinal structure status:")
-	for i in range(structures.size()):
-		var structure = structures[i]
-		if structure.model:
-			print("Structure ", i, ": ", structure.model.resource_path, " - Unlocked: ", structure.unlocked)
-	
-	print("=== Structure Unlocking Complete ===\n")
 
 # Convert mission dictionaries to MissionData objects
 func _convert_missions(mission_dicts: Array) -> Array[MissionData]:

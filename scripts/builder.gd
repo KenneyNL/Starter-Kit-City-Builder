@@ -47,7 +47,6 @@ func set_structures(new_structures: Array[Structure]) -> void:
 
 # Function to deduplicate structures
 func _deduplicate_structures() -> void:
-	print("\n=== Deduplicating Structures ===")
 	
 	# Create a new array to store unique structures
 	var unique_structures: Array[Structure] = []
@@ -69,7 +68,6 @@ func _deduplicate_structures() -> void:
 		
 		# Skip if we've seen this path before
 		if path in seen_paths:
-			print("Skipping duplicate structure: " + path)
 			continue
 			
 		seen_paths[path] = true
@@ -77,7 +75,6 @@ func _deduplicate_structures() -> void:
 		# Initialize unlocked property only if it doesn't exist
 		if not "unlocked" in structure:
 			structure.unlocked = false
-		print("Adding structure: " + path + " - Unlocked: " + str(structure.unlocked))
 		unique_structures.append(structure)
 	
 	# Replace the original structures array with our deduplicated one
@@ -85,10 +82,6 @@ func _deduplicate_structures() -> void:
 	_structures.append_array(unique_structures)
 	
 	# Print final structure list for verification
-	print("\nFinal structure list:")
-	for i in range(_structures.size()):
-		var structure = _structures[i]
-		print(str(i) + ": " + structure.model.resource_path + " - Unlocked: " + str(structure.unlocked))
 	print("=== Structure Deduplication Complete ===\n")
 
 func _ready():
