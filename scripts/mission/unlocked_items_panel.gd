@@ -57,8 +57,9 @@ func setup(unlocked_structures):
 		# Add structure thumbnail
 		var icon = TextureRect.new()
 		icon.custom_minimum_size = Vector2(64, 64)
-		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT
 		icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH
+		icon.expand_mode = TextureRect.EXPAND_FIT_HEIGHT
 		
 		# Try to get thumbnail from structure thumbnail field
 		if "thumbnail" in structure and structure.thumbnail and structure.thumbnail != "Thumbnail":
