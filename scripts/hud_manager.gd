@@ -118,8 +118,10 @@ func _setup_structure_menu():
 			structure_menu = structure_menu_scene.instantiate()
 			var canvas_layer = get_node_or_null("/root/Main/CanvasLayer")
 			if canvas_layer:
-				canvas_layer.add_child(structure_menu)
-				# Set the builder reference
+				# Use call_deferred to add the child
+				canvas_layer.add_child.call_deferred(structure_menu)
+				# Set the builder reference after a frame to ensure the node is added
+				await get_tree().process_frame
 				if _builder:
 					structure_menu.builder = _builder
 	
