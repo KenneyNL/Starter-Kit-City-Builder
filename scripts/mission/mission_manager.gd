@@ -60,6 +60,14 @@ func _ready() -> void:
 	await _setup_learning_companion_communication()
 	print("JavaScript bridge setup completed")
 	
+	# Connect to the generic_text_panel closed signal if it exists
+	var generic_text_panel = get_node_or_null("/root/Main/CanvasLayer/GenericTextPanel")
+	if generic_text_panel and generic_text_panel.has_signal("closed"):
+		print("Found generic_text_panel, connecting to closed signal")
+		if generic_text_panel.is_connected("closed", _on_learning_panel_closed_for_react):
+			generic_text_panel.disconnect("closed", _on_learning_panel_closed_for_react)
+		generic_text_panel.closed.connect(_on_learning_panel_closed_for_react)
+	
 	# Only proceed with other initialization after bridge is established
 	print("\n=== Starting Mission Loader Initialization ===")
 	# Initialize mission loader
@@ -312,6 +320,35 @@ func _show_learning_panel(mission: MissionData) -> void:
 	
 	# Show the panel
 	learning_panel.show_learning_panel(mission)
+	
+	# We set current_mission when starting a mission, so there's no need to store it again
+	# We now use the generic_text_panel.closed signal configured in _ready()
+
+# We use current_mission directly now, no need for _current_learning_mission
+	
+# This function handles showing graph or table data after panel closes
+func _on_learning_panel_closed_for_react() -> void:
+	# For generic text panel, we don't need to disconnect since the signal connection is handled in _ready
+	
+	# We now use the current_mission property directly instead of _current_learning_mission
+	print("Panel closed, checking for graph/table data to display")
+	
+	# Check if we have a current mission
+	if not current_mission:
+		print("No current mission")
+		return
+		
+	print("Current mission: ", current_mission.id, ", open_react_graph: ", current_mission.open_react_graph, ", open_react_table: ", current_mission.open_react_table)
+	
+	# Send React data via the autoloaded JavaScriptBridge node
+	if current_mission.open_react_graph:
+		print("Opening React graph with data:", current_mission.react_data)
+		JSBridge.send_open_graph(current_mission.react_data)
+	elif current_mission.open_react_table:
+		print("Opening React table with data:", current_mission.react_table_data)
+		JSBridge.send_open_table(current_mission.react_table_data)
+	
+	# We're now using current_mission directly, so no need to clear anything
 
 # Function to start mission with error handling
 func start_mission(mission: MissionData):

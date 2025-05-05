@@ -46,3 +46,10 @@ companion_dialog = {
 }
 unlocked_items = Array[String](["res://models/road-straight-lightposts.glb"])
 starting_structures = Array[String]([])
+open_react_graph = false
+open_react_table = false
+react_data = {}
+react_table_data = {
+"headers": [],
+"rows": []
+}

@@ -137,7 +137,13 @@ func _convert_missions(mission_dicts: Array) -> Array[MissionData]:
 		mission_data.id = mission_dict.get("id", "")
 		mission_data.title = mission_dict.get("title", "")
 		mission_data.description = mission_dict.get("description", "")
-		
+		mission_data.open_react_graph = mission_dict.get("open_react_graph", false)
+		mission_data.open_react_table = mission_dict.get("open_react_table", false)
+		mission_data.react_data = mission_dict.get("react_data", {})
+		mission_data.react_table_data = mission_dict.get("react_table_data", {
+			"headers": [],  # Array of header text strings
+			"rows": []      # 2D array of cell values: [[row1cell1, row1cell2...], [row2cell1, row2cell2...], ...]
+		})
 		# Convert objectives
 		var objectives: Array[MissionObjective] = []
 		for obj in mission_dict.get("objectives", []):

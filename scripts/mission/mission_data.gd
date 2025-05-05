@@ -21,3 +21,10 @@ class_name MissionData
 @export var companion_dialog: Dictionary = {} # Map of event keys to dialog entries for the learning companion
 @export var unlocked_items: Array[String] = [] # Array of structure resource paths that get unlocked after mission completion
 @export var starting_structures: Array[String] = [] # Array of structure resource paths that are unlocked when this mission starts
+@export var open_react_graph: bool = false # Whether to display the React graph component
+@export var open_react_table: bool = false # Whether to display the React table component
+@export var react_data: Dictionary
+@export var react_table_data: Dictionary = {
+											   "headers": [],  # Array of header text strings
+											   "rows": []      # 2D array of cell values: [[row1cell1, row1cell2...], [row2cell1, row2cell2...], ...]
+										   } # Data structure for React table component
