@@ -34,12 +34,12 @@ func _ready():
 		_builder.structure_removed.connect(_on_structure_removed)
 
 	# Initialize UI elements
-	population_label = $HBoxContainer/PopulationItem/PopulationLabel
-	electricity_label = $HBoxContainer/ElectricityItem/ElectricityValues/ElectricityLabel
-	electricity_indicator = $HBoxContainer/ElectricityItem/ElectricityValues/ElectricityIndicator
+	population_label = $PanelContainer/HBoxContainer/PopulationItem/PopulationLabel
+	electricity_label = $PanelContainer/HBoxContainer/ElectricityItem/ElectricityValues/ElectricityLabel
+	electricity_indicator = $PanelContainer/HBoxContainer/ElectricityItem/ElectricityValues/ElectricityIndicator
 	population_tooltip = $PopulationTooltip
 	electricity_tooltip = $ElectricityTooltip
-	mission_select_button = $HBoxContainer/MissionSelectItem/MissionSelectButton
+	mission_select_button = $PanelContainer/HBoxContainer/MissionSelectItem/MissionSelectButton
 	
 	# Get references to panels
 	controls_panel = get_node_or_null("/root/Main/CanvasLayer/ControlsPanel")
@@ -131,7 +131,7 @@ func _update_mission_select_visibility():
 		# If we're not in the tree yet, wait until we are
 		await ready
 		
-	var mission_select_item = get_node_or_null("HBoxContainer/MissionSelectItem")
+	var mission_select_item = get_node_or_null("PanelContainer/HBoxContainer/MissionSelectItem")
 	if mission_select_item:
 		mission_select_item.visible = show_mission_select
 	else:

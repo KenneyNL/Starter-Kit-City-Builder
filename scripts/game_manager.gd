@@ -120,7 +120,7 @@ func _ready():
 	
 	# Connect builder's cash display to HUD
 	if builder and hud:
-		builder.cash_display = hud.get_node("HBoxContainer/CashItem/CashLabel")
+		builder.cash_display = hud.get_node("PanelContainer/HBoxContainer/CashItem/CashLabel")
 	
 	# Start background music
 	_start_background_music()
