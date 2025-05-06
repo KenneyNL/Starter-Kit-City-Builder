@@ -15,7 +15,7 @@ var total_kW_production: float = 0.0
 
 # References
 var mission_select_menu: Control
-var mission_select_button: Button
+var mission_select_button: TextureButton
 var building_construction_manager
 var population_label: Label
 var electricity_label: Label
