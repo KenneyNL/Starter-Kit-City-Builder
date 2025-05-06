@@ -15,3 +15,10 @@ func set_population_count(count: int) -> void:
 	EventBus.population_update.emit(population)
 	
 	# Print the updated population for debugging
+
+
+func receive_data_from_browser(args) -> void:
+
+	# Emit the signal to notify other nodes
+	EventBus.receive_data_from_browser.emit(args)
+	

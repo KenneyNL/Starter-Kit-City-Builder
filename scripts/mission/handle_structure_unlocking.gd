@@ -5,17 +5,14 @@ extends Node
 
 # Unlocks basic structures and locks special ones
 func process_structures(structures_array):
-	# Start with all unlocked
+	# Start with all locked
 	for structure in structures_array:
-		# Basic structures are always unlocked
-		if basic_structure(structure):
-			structure.unlocked = true
 		# Special structures start locked unless mission-specific
-		elif special_structure(structure):
+		if special_structure(structure):
 			structure.unlocked = false
 		else:
-			# Default to unlocked for other structures
-			structure.unlocked = true
+			# Default to locked for other structures
+			structure.unlocked = false
 
 # Check if this is a mission-dependent structure type that should be unlocked
 func unlock_by_mission(structures_array, mission_id):
@@ -35,13 +32,6 @@ func unlock_by_mission(structures_array, mission_id):
 			if structure.model.resource_path.contains("power_plant"):
 				structure.unlocked = true
 
-# Check if a structure is one of the basic types (always available)
-func basic_structure(structure):
-	return (structure.model.resource_path.contains("road-straight") or 
-	       structure.model.resource_path.contains("building-small-a") or
-	       structure.model.resource_path.contains("pavement") or
-	       structure.model.resource_path.contains("grass.glb"))
-
 # Check if a structure is a special type (requires unlocking)
 func special_structure(structure):
 	return (structure.model.resource_path.contains("road-corner") or 
@@ -59,8 +49,7 @@ func select_unlocked_structure(builder):
 			found_unlocked = true
 			break
 			
-	# If no structures are unlocked, unlock a basic one
+	# If no structures are unlocked, use the first structure
 	if not found_unlocked and builder.structures.size() > 0:
-		builder.structures[0].unlocked = true
 		builder.index = 0
 		builder.update_structure()

@@ -1,0 +1,44 @@
+[gd_scene load_steps=2 format=3 uid="uid://blfrsgh3cct2l"]
+
+[ext_resource type="Script" uid="uid://cprx4wmn43sgk" path="res://scripts/structure_menu.gd" id="1_structure_menu"]
+
+[node name="StructureMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 300.0
+offset_bottom = 600.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_structure_menu")
+
+[node name="MenuPanel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MenuPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+horizontal_scroll_mode = 0
+
+[node name="ItemsContainer" type="HBoxContainer" parent="MenuPanel/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="ToggleButton" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_right = 40.0
+offset_bottom = 40.0
+grow_horizontal = 0
+text = ">"

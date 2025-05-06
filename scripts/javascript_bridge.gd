@@ -1,216 +1,223 @@
 extends Node
-class_name JSBridge
+
+# Make this a singleton
+static var instance = null
+
+# Signals
+signal init_data_received(data)
+signal init_check_received
+signal mission_progress_updated(data)
+signal mission_completed(data)
+signal open_react_graph(data)
+signal open_react_table(data)
+
+# Variables
+static var _interface = null
+var _init_data = null
+var _init_check_received = false
+static var _pending_signals = []
+var _my_js_callback = JavaScriptBridge.create_callback(receive_init_data)
+var window = null
+
+func _init():
+	instance = self
 
 # This script provides a bridge to JavaScript functionality
 # while gracefully handling platforms that don't support it
 
-# Check if JavaScript is available
-static func has_interface() -> bool:
-	# Check if running in a web environment
-	# Use OS.has_feature("web") for consistency with sound_manager.gd
+func _ready():
+	# Connect signals when the node is initialized
 	if OS.has_feature("web"):
-		print("Running in web environment, JavaScript should be available")
-		
-		# Double-check by evaluating a simple script
-		if Engine.has_singleton("JavaScriptBridge"):
-			var js = Engine.get_singleton("JavaScriptBridge")
-			var test_result = js.eval("!!window && typeof window !== 'undefined'")
-			print("JavaScript test result: " + str(test_result))
-			return test_result != null
-		else:
-			print("JavaScriptBridge singleton not available, running in editor or non-web platform")
-	else:
-		print("Not running in web environment")
-	
-	return false
+		window = JavaScriptBridge.get_interface("window")
+		# Wait for the interface to be available
+		await get_tree().process_frame
+		receive_init_data("test")
 
-# Get the JavaScript interface
+		# Set up message listener and interface
+		
+
+		# Set up the interface
+		_interface = JavaScript.get_interface()
+		print("JavaScript interface initialized")
+
+		# Set up callbacks in JavaScript
+		JavaScriptBridge.eval("""
+			window.godot_interface._callbacks.init_data_received = function(data) {
+				console.log('Emitting init_data_received signal with data:', data);
+				// Don't re-emit the signal to avoid recursion
+				window.godot_interface._callbacks.init_data_received = null;
+			};
+			window.godot_interface._callbacks.init_check_received = function() {
+				console.log('Emitting init_check_received signal');
+				// Don't re-emit the signal to avoid recursion
+				window.godot_interface._callbacks.init_check_received = null;
+			};
+			window.godot_interface._callbacks.mission_progress_updated = function(data) {
+				window.godot_interface.emit_signal('mission_progress_updated', data);
+			};
+			window.godot_interface._callbacks.mission_completed = function(data) {
+				window.godot_interface.emit_signal('mission_completed', data);
+			};
+			window.godot_interface._callbacks.open_react_graph = function(data) {
+				window.godot_interface.emit_signal('open_react_graph', data);
+			};
+			window.godot_interface._callbacks.open_react_table = function(data) {
+				window.godot_interface.emit_signal('open_react_table', data);
+			};
+		""")
+		print("JavaScript callbacks set up")
+
+		# Send init data from URL parameters if present
+
+
+		# Process any pending signals
+		_process_pending_signals()
+
+
+func receive_init_data(missions_data):
+	# First, let's properly log the missions_data itself
+	print("Received missions data:", JSON.stringify(missions_data))
+
+	# To get URL information, we need to extract specific properties from window.location
+	if window and window.location:
+		# Access specific properties of the location object
+		var href = JavaScriptBridge.eval("window.location.href")
+		var search = JavaScriptBridge.eval("window.location.search")
+		var hostname = JavaScriptBridge.eval("window.location.hostname")
+
+		print("URL href:", href)
+		print("URL search params:", search)
+		print("URL hostname:", hostname)
+
+		# Parse URL parameters more directly
+		var params_str = JavaScriptBridge.eval("""
+			(function() {
+				var result = {};
+				var params = new URLSearchParams(window.location.search);
+				params.forEach(function(value, key) {
+					result[key] = value;
+				});
+				return JSON.stringify(result);
+			})()
+		""")
+
+		# Parse the JSON string to get a Dictionary
+		var params = JSON.parse_string(params_str)
+		print("URL parameters:", params)
+
+		# Now access and process the missions parameter if it exists
+		if params and "missions" in params:
+			var missions_json = params["missions"]
+			var missions = JSON.parse_string(missions_json)
+			print("Missions from URL:", missions)
+			var mission_data = {"missions": missions}
+			Globals.receive_data_from_browser(mission_data)
+
+	# Also process the directly passed missions_data
+	if missions_data and missions_data != "test":
+		print("Processing passed missions data")
+		emit_signal("init_data_received", missions_data)
+
+	
+func _process_pending_signals():
+	if _pending_signals.size() > 0:
+		print("Processing pending signals...")
+		for signal_data in _pending_signals:
+			emit_signal(signal_data.signal_name, signal_data.data)
+		_pending_signals.clear()
+		print("All pending signals processed")
+
+# Static methods for interface checks
+static func has_interface() -> bool:
+	return JavaScript.has_interface()
+
 static func get_interface():
-	if has_interface():
-		return JavaScriptGlobal
-	return null
-
-# JavaScriptGlobal is a mock class that provides fallback implementations
-# for platforms that don't support JavaScript
-class JavaScriptGlobal:
-	# Check if a JavaScript function exists
-	static func has_function(function_name: String) -> bool:
-		if not OS.has_feature("web"):
-			return false
-		
-		print("Checking if function exists: " + function_name)	
-		var script = "typeof %s === 'function'" % function_name
-		
-		# Use Engine.get_singleton for consistency with sound_manager.gd
-		if Engine.has_singleton("JavaScriptBridge"):
-			var js = Engine.get_singleton("JavaScriptBridge")
-			var result = js.eval(script)
-			
-			# If result is null, the JavaScript eval failed
-			if result == null:
-				print("JavaScript eval failed when checking for function: " + function_name)
-				return false
-				
-			print("Function check result for " + function_name + ": " + str(result))
-			return result
-		else:
-			print("JavaScriptBridge singleton not available")
-			return false
-		
-	# Evaluate JavaScript code
-	static func eval(script: String):
-		if not OS.has_feature("web"):
-			return null
-		
-		# Use Engine.get_singleton for consistency with sound_manager.gd
-		if Engine.has_singleton("JavaScriptBridge"):
-			var js = Engine.get_singleton("JavaScriptBridge")
-			return js.eval(script)
-		else:
-			print("JavaScriptBridge singleton not available")
-			return null
-		
-	# Call a JavaScript function with arguments
-	static func call_js_function(function_name: String, args = []):
-		if not OS.has_feature("web"):
-			return null
-		
-		var formatted_args = []
-		for arg in args:
-			if arg is String:
-				formatted_args.append("\"%s\"" % arg.replace("\"", "\\\""))
-			elif arg is Dictionary or arg is Array:
-				formatted_args.append(JSON.stringify(arg))
-			else:
-				formatted_args.append(str(arg))
-				
-		var script = "%s(%s)" % [function_name, ",".join(formatted_args)]
-		
-		# Use Engine.get_singleton for consistency with sound_manager.gd
-		if Engine.has_singleton("JavaScriptBridge"):
-			var js = Engine.get_singleton("JavaScriptBridge")
-			return js.eval(script)
-		else:
-			print("JavaScriptBridge singleton not available")
-			return null
-		
-	# Connect to the learning companion - legacy method with postMessage fallback
-	static func connectLearningCompanion(success_callback = null, error_callback = null):
-		print("Attempting to connect to learning companion")
-		
-		if not OS.has_feature("web"):
-			print("Skipping learning companion connection on non-web platform")
-			if error_callback != null and error_callback.is_valid():
-				error_callback.call()
-			return
-		
-		# Always use postMessage approach regardless of function availability
-		connectLearningCompanionViaPostMessage(success_callback, error_callback)
+	return JavaScript.get_interface()
 	
-	# Connect to the learning companion using only postMessage
-	static func connectLearningCompanionViaPostMessage(success_callback = null, error_callback = null):
-		print("Connecting to learning companion via postMessage")
-		
-		if not OS.has_feature("web"):
-			print("Skipping learning companion connection on non-web platform")
-			if error_callback != null and error_callback.is_valid():
-				error_callback.call()
-			return
-		
-		# Use postMessage approach exclusively - note: no return statements allowed in the script
+# Helper method to convert Godot Dictionary to JSON string
+static func JSON_stringify(data) -> String:
+	return JSON.stringify(data)
+
+#static func send_signal(signal_name: String, data = null):
+#	if JavaScript.has_interface():
+#		if _interface and _interface.has_method("emit_signal"):
+#			_interface.emit_signal(signal_name, data)
+#		else:
+#			_pending_signals.append({"signal_name": signal_name, "data": data})
+#	else:
+#		_pending_signals.append({"signal_name": signal_name, "data": data})
+
+#func send_mission_progress(mission_id: String, objective_index: int, current_count: int, target_count: int):
+#	send_signal("mission_progress_updated", {
+#		"mission_id": mission_id,
+#		"objective_index": objective_index,
+#		"current_count": current_count,
+#		"target_count": target_count
+#	})
+#
+#func send_mission_completed(mission_id: String):
+#	send_signal("mission_completed", {
+#		"mission_id": mission_id
+#	})
+
+static func send_open_graph(graph_data: Dictionary):
+	# Format the message to match what React expects
+	var message = {
+		"source": "godot-game",
+		"type": "open_react_graph",
+		"data": graph_data
+	}
+	
+	# First, emit the Godot signal for internal listeners
+
+	
+	# Then, send the message directly to React via postMessage for external listeners
+	if OS.has_feature("web"):
+#		send_signal("open_react_graph", graph_data)
+		var message_json = JSON_stringify(message)
 		var script = """
 		(function() {
 			try {
-				// Send a message directly to the parent window
 				if (window.parent) {
-					console.log('Sending connection message to parent window');
+					console.log('Sending missionStarted message to parent window');
 					window.parent.postMessage({ 
-						type: 'stemCity_connect',
+						type: 'open_react_graph',
+						data: %s,
 						source: 'godot-game',
 						timestamp: Date.now()
 					}, '*');
-					
-					// Set up a global event listener for responses if not already set up
-					if (!window._stemCityListenerInitialized) {
-						window._stemCityListenerInitialized = true;
-						window.addEventListener('message', function(event) {
-							console.log('Game received message:', event.data);
-							if (event.data && event.data.type === 'stemCity_connect_ack') {
-								console.log('Received connection acknowledgment from parent');
-							}
-						});
-					}
-					
-					// Don't use return statements here - they're not allowed in top-level eval
-					var result = true; 
 				} else {
-					console.log('No parent window found');
-					var result = false;
+					console.log('No parent window found for missionStarted event');
 				}
 			} catch (e) {
-				console.error('Error connecting via postMessage:', e);
-				var result = false;
+				console.error('Error sending missionStarted via postMessage:', e);
 			}
 		})();
-		"""
-		
-		# Use Engine.get_singleton for consistency with sound_manager.gd
+		""" % message_json
+
 		if Engine.has_singleton("JavaScriptBridge"):
 			var js = Engine.get_singleton("JavaScriptBridge")
 			js.eval(script)
-			
-			# Always consider this a success - we'll use the force connection timer as backup
-			print("Sent connection message via postMessage")
-			
-			# Try to ensure audio is initialized as well since we now have user interaction
-			JavaScriptGlobal.ensure_audio_initialized()
-			
-			if success_callback != null and success_callback.is_valid():
-				success_callback.call()
 		else:
 			print("JavaScriptBridge singleton not available")
-			if error_callback != null and error_callback.is_valid():
-				error_callback.call()
-				
-	# The following methods call the JavaScript functions for game events using postMessage
+	else:
+		# For non-web platforms, add to pending signals
+		_pending_signals.append({"signal_name": "open_react_graph", "data": graph_data})
+
+static func send_open_table(table_data: Dictionary):
+	# Format the message to match what React expects
+	var message = {
+		"source": "godot-game", 
+		"type": "open_react_table",
+		"data": table_data
+	}
 	
-	static func onGameStarted():
-		if not OS.has_feature("web"):
-			return
-			
-		print("Sending game started event via postMessage")
-		var script = """
-		(function() {
-			try {
-				if (window.parent) {
-					console.log('Sending gameStarted message to parent window');
-					window.parent.postMessage({ 
-						type: 'stemCity_gameStarted',
-						source: 'godot-game',
-						timestamp: Date.now() 
-					}, '*');
-				} else {
-					console.log('No parent window found for gameStarted event');
-				}
-			} catch (e) {
-				console.error('Error sending gameStarted via postMessage:', e);
-			}
-		})();
-		"""
-		
-		# Use Engine.get_singleton for consistency with sound_manager.gd
-		if Engine.has_singleton("JavaScriptBridge"):
-			var js = Engine.get_singleton("JavaScriptBridge")
-			js.eval(script)
-		else:
-			print("JavaScriptBridge singleton not available")
-				
-	static func onMissionStarted(mission_data: Dictionary):
-		if not OS.has_feature("web"):
-			return
-			
-		print("Sending mission started event for mission: " + str(mission_data.get("id", "unknown")))
-		var mission_json = JSON.stringify(mission_data)
+	# First, emit the Godot signal for internal listeners
+#	emit_signal("open_react_table", table_data)
+	
+	# Then, send the message directly to React via postMessage for external listeners
+	if OS.has_feature("web"):
+		var message_json = JSON_stringify(message)
 		var script = """
 		(function() {
 			try {
@@ -229,312 +236,39 @@ class JavaScriptGlobal:
 				console.error('Error sending missionStarted via postMessage:', e);
 			}
 		})();
-		""" % mission_json
+		""" % message_json
 		
-		# Use Engine.get_singleton for consistency with sound_manager.gd
 		if Engine.has_singleton("JavaScriptBridge"):
 			var js = Engine.get_singleton("JavaScriptBridge")
 			js.eval(script)
 		else:
 			print("JavaScriptBridge singleton not available")
-				
-	static func onMissionCompleted(mission_data: Dictionary):
-		if not OS.has_feature("web"):
-			return
-			
-		print("Sending mission completed event for mission: " + str(mission_data.get("id", "unknown")))
-		var mission_json = JSON.stringify(mission_data)
-		var script = """
-		(function() {
-			try {
-				if (window.parent) {
-					console.log('Sending missionCompleted message to parent window');
-					window.parent.postMessage({ 
-						type: 'stemCity_missionCompleted',
-						data: %s,
-						source: 'godot-game',
-						timestamp: Date.now()
-					}, '*');
-				} else {
-					console.log('No parent window found for missionCompleted event');
-				}
-			} catch (e) {
-				console.error('Error sending missionCompleted via postMessage:', e);
-			}
-		})();
-		""" % mission_json
 		
-		# Use Engine.get_singleton for consistency with sound_manager.gd
-		if Engine.has_singleton("JavaScriptBridge"):
-			var js = Engine.get_singleton("JavaScriptBridge")
-			js.eval(script)
-		else:
-			print("JavaScriptBridge singleton not available")
-				
-	static func onAllMissionsCompleted():
-		if not OS.has_feature("web"):
-			return
-			
-		print("Sending all missions completed event")
-		var script = """
-		(function() {
-			try {
-				if (window.parent) {
-					console.log('Sending allMissionsCompleted message to parent window');
-					window.parent.postMessage({ 
-						type: 'stemCity_allMissionsCompleted',
-						source: 'godot-game',
-						timestamp: Date.now()
-					}, '*');
-				} else {
-					console.log('No parent window found for allMissionsCompleted event');
-				}
-			} catch (e) {
-				console.error('Error sending allMissionsCompleted via postMessage:', e);
-			}
-		})();
-		"""
-		
-		# Use Engine.get_singleton for consistency with sound_manager.gd
-		if Engine.has_singleton("JavaScriptBridge"):
-			var js = Engine.get_singleton("JavaScriptBridge") 
-			js.eval(script)
-		else:
-			print("JavaScriptBridge singleton not available")
-			
-	static func sendCompanionDialog(key: String, dialog_data: Dictionary):
-		if not OS.has_feature("web"):
-			return
-			
-		print("Sending companion dialog for key: " + key)
-		var dialog_json = JSON.stringify(dialog_data)
-		var script = """
-		(function() {
-			try {
-				if (window.parent) {
-					console.log('Sending companion dialog to parent window');
-					window.parent.postMessage({ 
-						type: 'stemCity_companionDialog',
-						key: '%s',
-						data: %s,
-						source: 'godot-game',
-						timestamp: Date.now()
-					}, '*');
-				} else {
-					console.log('No parent window found for companion dialog');
-				}
-			} catch (e) {
-				console.error('Error sending companion dialog via postMessage:', e);
-			}
-		})();
-		""" % [key, dialog_json]
-		
-		# Use Engine.get_singleton for consistency with sound_manager.gd
-		if Engine.has_singleton("JavaScriptBridge"):
-			var js = Engine.get_singleton("JavaScriptBridge")
-			js.eval(script)
-		else:
-			print("JavaScriptBridge singleton not available")
+	else:
+		# For non-web platforms, add to pending signals
+		_pending_signals.append({"signal_name": "open_react_table", "data": table_data})
 
-	# Handle audio actions via JavaScript
-	static func handle_audio_action(action: String, sound_name: String = "", volume: float = -1.0):
-		if not OS.has_feature("web"):
-			return false
-		
-		print("Handling audio action via JavaScript bridge: " + action)
-		
-		var action_data = {
-			"action": action,
-			"sound": sound_name,
-		}
-		
-		if volume >= 0.0:
-			action_data["volume"] = volume
-			
-		var action_json = JSON.stringify(action_data)
-		var script = """
-		(function() {
-			try {
-				if (window.parent) {
-					console.log('Sending audio action to parent window:', %s);
-					window.parent.postMessage({ 
-						type: 'stemCity_audio',
-						data: %s,
-						source: 'godot-game',
-						timestamp: Date.now()
-					}, '*');
-					return true;
-				} else {
-					console.log('No parent window found for audio action');
-					return false;
-				}
-			} catch (e) {
-				console.error('Error sending audio action via postMessage:', e);
-				return false;
-			}
-		})();
-		""" % [action_json, action_json]
-		
-		if Engine.has_singleton("JavaScriptBridge"):
-			var js = Engine.get_singleton("JavaScriptBridge")
-			return js.eval(script)
-		else:
-			print("JavaScriptBridge singleton not available")
-			return false
-	
-	# Helper method to ensure the sound manager's audio is initialized
-	# Call this method after user interaction to ensure audio works
-	static func ensure_audio_initialized():
-		if not OS.has_feature("web"):
-			return true # Audio always works on non-web platforms
-			
-		print("Ensuring audio is initialized via JavaScript bridge")
-		
-		# Setup audio message listener if it's not already set up
-		setup_audio_message_listener()
-		
-		# Try to initialize audio through the sound manager if it exists
-		var sound_manager = _get_sound_manager()
-			
-		if sound_manager and sound_manager.has_method("init_web_audio_from_js"):
-			print("Found SoundManager, calling init_web_audio_from_js")
-			sound_manager.init_web_audio_from_js()
-			
-			# Follow up with direct JavaScript audio context unlocking for extra reliability
-			if Engine.has_singleton("JavaScriptBridge"):
-				var js = Engine.get_singleton("JavaScriptBridge")
-				_run_audio_unlock_script(js)
-			
-			return true
-		else:
-			# Fallback: directly try to unlock web audio using JavaScript
-			if Engine.has_singleton("JavaScriptBridge"):
-				var js = Engine.get_singleton("JavaScriptBridge")
-				var result = _run_audio_unlock_script(js)
-				return result
-			else:
-				print("JavaScriptBridge singleton not available for audio initialization")
-				return false
-				
-	# Helper method to run the audio unlocking script with maximum compatibility
-	static func _run_audio_unlock_script(js_interface):
-		var script = """
-		(function() {
-			var result = false;
-			try {
-				// Simple approach to unlock audio
-				console.log('Running simplified audio unlock');
-				
-				// Create audio context if needed
-				if (!window._godotAudioContext) {
-					window._godotAudioContext = new (window.AudioContext || window.webkitAudioContext)();
-				}
-				
-				var audioCtx = window._godotAudioContext;
-				console.log('Audio context state:', audioCtx.state);
-				
-				// Resume it (for Chrome/Safari)
-				if (audioCtx.state === 'suspended') {
-					audioCtx.resume();
-				}
-				
-				// Play a short, quiet beep
-				var oscillator = audioCtx.createOscillator();
-				var gainNode = audioCtx.createGain();
-				gainNode.gain.value = 0.01; // Very quiet
-				oscillator.connect(gainNode);
-				gainNode.connect(audioCtx.destination);
-				oscillator.start(0);
-				oscillator.stop(0.1);
-				
-				// Add event listeners for future interactions
-				['click', 'touchstart', 'touchend'].forEach(function(event) {
-					document.addEventListener(event, function() {
-						if (audioCtx.state === 'suspended') {
-							audioCtx.resume();
-						}
-					}, {once: false});
-				});
-				
-				result = audioCtx.state === 'running';
-			} catch (e) {
-				console.error("JavaScript bridge: Audio unlock error:", e);
-				result = false;
-			}
-			return result;
-		})()
-		"""
-		
-#		var result = js_interface.eval(script)
-#		print("JavaScript audio initialization result:", result)
-#		return result
-		
-	# Setup audio message listener from JavaScript
-	static func setup_audio_message_listener():
-		if not OS.has_feature("web"):
-			return false
-			
-		print("Setting up audio message listener via JavaScript bridge")
-		
-		if not Engine.has_singleton("JavaScriptBridge"):
-			print("JavaScriptBridge singleton not available")
-			return false
-			
-		var js = Engine.get_singleton("JavaScriptBridge")
-		
-		# Register the callback function
-		js.set_callback("godot_audio_callback", Callable(_get_sound_manager(), "process_js_audio_state"))
-		
-		# Set up a listener for audio state messages
-		var script = """
-		(function() {
-			// Set up message listener if not already done
-			if (!window.godot_audio_listener_initialized) {
-				window.addEventListener('message', function(event) {
-					if (event.data && event.data.type === 'stemCity_audio_state') {
-						console.log('Godot received audio state:', event.data);
-						// Call our Godot callback with the state data
-						if (typeof godot_audio_callback === 'function') {
-							console.log('Sending audio state to Godot');
-							godot_audio_callback(event.data.data);
-						} else {
-							console.warn('godot_audio_callback is not available');
-						}
-					}
-				});
-				
-				console.log('Audio message listener initialized');
-				window.godot_audio_listener_initialized = true;
-				
-				// Request initial audio state from parent
-				window.parent.postMessage({
-					type: 'stemCity_audio',
-					data: { action: 'GET_STATE' },
-					source: 'godot-game',
-					timestamp: Date.now()
-				}, '*');
-				
-				return true;
-			}
-			return false;
-		})();
-		"""
-		
-		var result = js.eval(script)
-		print("Audio message listener setup result: ", result)
-		return result
-	
-	# Helper to get the sound manager instance
-	static func _get_sound_manager():
-		var sound_manager = null
-		
-		# Try to find using meta
-		if Engine.get_main_loop().has_meta("sound_manager"):
-			sound_manager = Engine.get_main_loop().get_meta("sound_manager")
-		else:
-			# Try to find in scene tree
-			var scene_tree = Engine.get_main_loop() as SceneTree
-			if scene_tree:
-				sound_manager = scene_tree.root.get_node_or_null("/root/SoundManager")
-				
-		return sound_manager
+#func send_companion_dialog(dialog_type: String, dialog_data: Dictionary):
+#	send_signal("companion_dialog", {
+#		"type": dialog_type,
+#		"data": dialog_data
+#	})
+#
+#func send_audio_action(action: String, data: Dictionary = {}):
+#	send_signal("audio_action", {
+#		"action": action,
+#		"data": data
+#	})
+
+# Static wrappers so send_open_ functions can be called on the class directly
+#static func send_open_graph(graph_data: Dictionary) -> void:
+#	if instance:
+#		instance.send_open_graph(graph_data)
+#	else:
+#		push_error("JavaScriptBridge not initialized; cannot send_open_graph")
+
+#static func send_open_table(table_data: Dictionary) -> void:
+#	if instance:
+#		instance.send_open_table(table_data)
+#	else:
+#		push_error("JavaScriptBridge not initialized; cannot send_open_table")

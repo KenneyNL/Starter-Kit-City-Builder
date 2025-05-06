@@ -1,0 +1,56 @@
+[gd_scene load_steps=2 format=3 uid="uid://b6x8v0j6y5n3q"]
+
+[ext_resource type="Script" uid="uid://dnquivpg0ead" path="res://scripts/mission/learning_panel.gd" id="1_2k4m3"]
+
+[node name="LearningPanel" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_2k4m3")
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/MarginContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 20
+
+[node name="TitleLabel" type="Label" parent="PanelContainer/MarginContainer/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Learning Panel"
+horizontal_alignment = 1
+
+[node name="ContentLabel" type="Label" parent="PanelContainer/MarginContainer/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "Welcome to the learning panel!"
+autowrap_mode = 3
+
+[node name="SubmitButtonContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="SubmitButton" type="Button" parent="PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/SubmitButtonContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Submit"

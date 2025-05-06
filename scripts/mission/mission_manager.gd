@@ -5,6 +5,10 @@ class_name MissionManager
 # This ensures JavaScript is available and degrades gracefully on other platforms
 const JSBridge = preload("res://scripts/javascript_bridge.gd")
 const ObjectiveType = preload("res://configs/data.config.gd").ObjectiveType
+const StructureUnlocking = preload("res://scripts/mission/structure_unlocking.gd")
+
+# Add to the top with other preloads
+const MissionLoader = preload("res://scripts/mission/mission_loader.gd")
 
 signal mission_started(mission: MissionData)
 signal mission_completed(mission: MissionData)
@@ -12,6 +16,9 @@ signal objective_completed(objective: MissionObjective)
 signal objective_progress(objective: MissionObjective, new_count: int)
 signal game_started()
 signal all_missions_completed()
+signal structures_unlocked()  # New signal for when structures are unlocked
+signal bridge_connection_completed
+
 
 @export var missions: Array[MissionData] = []
 @export var mission_ui: Control
@@ -40,67 +47,64 @@ const SKIP_KEY = KEY_TAB  # The key to press for skipping missions
 var learning_panel
 var fullscreen_learning_panel
 
-func _ready():
+# Add after other variables
+var learning_panel_scene: PackedScene
+var mission_loader: MissionLoader
+var fullscreen_learning_panel_scene: PackedScene
 
+func _ready() -> void:
+	print("\n=== Starting Mission Manager Initialization ===")
+	
+	# Set up communication with the learning companion first, before ANY other initialization
+	print("Attempting to establish JavaScript bridge...")
+	await _setup_learning_companion_communication()
+	print("JavaScript bridge setup completed")
+	
+	# Connect to the generic_text_panel closed signal if it exists
+	var generic_text_panel = get_node_or_null("/root/Main/CanvasLayer/GenericTextPanel")
+	if generic_text_panel and generic_text_panel.has_signal("closed"):
+		print("Found generic_text_panel, connecting to closed signal")
+		if generic_text_panel.is_connected("closed", _on_learning_panel_closed_for_react):
+			generic_text_panel.disconnect("closed", _on_learning_panel_closed_for_react)
+		generic_text_panel.closed.connect(_on_learning_panel_closed_for_react)
+	
+	# Only proceed with other initialization after bridge is established
+	print("\n=== Starting Mission Loader Initialization ===")
+	# Initialize mission loader
+	mission_loader = MissionLoader.new(self, builder)
+	print("Mission loader initialized")
+	
+	# Connect to event bus and builder signals
+	print("\n=== Setting up Event Connections ===")
 	EventBus.population_update.connect(population_updated)
+	EventBus.receive_data_from_browser.connect(_on_init_data_received)
+	print("Connected to population update event")
+
+#	init_data_received.connect(_on_init_data_received)	
+	# Connect to the JavaScript bridge
+#	if OS.has_feature("web"):
+#		var js = Engine.get_singleton("JavaScriptBridge")
+#		if js:
+#			print("Connecting Javascript to ")
+#			js.connect("init_data_received", Callable(self, "_on_init_data_received"))
+
 	if builder:
 		# Connect to builder signals
 		builder.connect("structure_placed", _on_structure_placed)
+		print("Connected to structure_placed signal")
+		# Connect to construction manager signals
+		if builder.construction_manager:
+			builder.construction_manager.construction_completed.connect(_on_construction_completed)
+			print("Connected to construction_completed signal")
 	
+	print("\n=== Setting up Learning Panels ===")
 	# Find and remove existing learning panel to avoid conflicts
 	var old_panel = get_node_or_null("LearningPanel")
 	if old_panel:
 		old_panel.queue_free()
+		print("Removed existing learning panel")
 		
-	# Load the learning panel scene fresh each time
-	var learning_panel_scene = load("res://scenes/learning_panel.tscn")
-	if learning_panel_scene:
-		learning_panel = learning_panel_scene.instantiate()
-		learning_panel.name = "LearningPanelFromScene"
-		add_child(learning_panel)
-	else:
-		print("ERROR: Could not load learning_panel.tscn scene")
-	
-	# Load the fullscreen learning panel scene
-	var fullscreen_panel_scene = load("res://scenes/fullscreen_learning_panel.tscn")
-	if fullscreen_panel_scene:
-		fullscreen_learning_panel = fullscreen_panel_scene.instantiate()
-		fullscreen_learning_panel.name = "FullscreenLearningPanel"
-		add_child(fullscreen_learning_panel)
-	else:
-		print("ERROR: Could not load fullscreen_learning_panel.tscn scene")
-		
-	# Fall back to existing panels if needed
-	if not learning_panel:
-		learning_panel = get_node_or_null("/root/Main/LearningPanel")
-	
-	# Connect signals for both panel types
-	if learning_panel:
-		learning_panel.completed.connect(_on_learning_completed)
-		learning_panel.panel_opened.connect(_on_learning_panel_opened)
-		learning_panel.panel_closed.connect(_on_learning_panel_closed)
-	else:
-		print("WARNING: Regular learning panel not found!")
-	
-	if fullscreen_learning_panel:
-		fullscreen_learning_panel.completed.connect(_on_learning_completed)
-		fullscreen_learning_panel.panel_opened.connect(_on_learning_panel_opened)
-		fullscreen_learning_panel.panel_closed.connect(_on_learning_panel_closed)
-	else:
-		print("WARNING: Fullscreen learning panel not found!")
-	
-	# For web builds, try to proactively initialize audio on load
-#	if OS.has_feature("web"):
-#		# Try to find sound manager and init audio
-#		var sound_manager = get_node_or_null("/root/SoundManager")
-#		if sound_manager and not sound_manager.audio_initialized:
-#			# Connect to user input to detect interaction
-#			get_viewport().gui_focus_changed.connect(_on_gui_focus_for_audio)
-#			get_tree().get_root().connect("gui_input", _on_gui_input_for_audio)
-	
-	# Set up communication with the learning companion
-	_setup_learning_companion_communication()
-	
+	print("\n=== Setting up Connection Timer ===")
 	# Create a simple timer to force a learning companion connection in 3 seconds
 	# This is a fallback in case the normal connection doesn't work
 	var connection_timer = Timer.new()
@@ -110,16 +114,20 @@ func _ready():
 	connection_timer.name = "ConnectionTimer"
 	add_child(connection_timer)
 	connection_timer.timeout.connect(_force_learning_companion_connection)
-	print("Created timer to force learning companion connection in 3 seconds")
+	print("Connection timer set up")
 	
-			
-	
+	print("\n=== Emitting Game Started Signal ===")
 	# Emit game_started signal before starting the first mission
 	game_started.emit()
 	
 	# Start the first mission if available
 	if missions.size() > 0:
+		print("Starting first mission")
 		start_mission(missions[0])
+	else:
+		print("No missions available to start")
+	
+	print("=== Mission Manager Initialization Complete ===\n")
 
 # Web-specific audio initialization helper methods
 func _on_gui_focus_for_audio(_control=null):
@@ -156,7 +164,7 @@ func _input(event):
 			if skip_key_presses >= skip_key_required:
 				skip_key_presses = 0
 				_skip_current_mission()
-	
+
 	# For web builds, use any input to initialize audio
 	if OS.has_feature("web"):
 		if event is InputEventMouseButton or event is InputEventKey:
@@ -168,7 +176,6 @@ func _try_init_audio_on_interaction():
 	# Find the sound manager
 	var sound_manager = get_node_or_null("/root/SoundManager")
 	if sound_manager and not sound_manager.audio_initialized:
-		print("User interaction detected in MissionManager, attempting audio init")
 		sound_manager._initialize_web_audio()
 		
 		# Also use JavaScript bridge to help with audio
@@ -181,254 +188,262 @@ func _try_init_audio_on_interaction():
 			game_manager._start_background_music()
 		
 # Function to set up communication with the learning companion
-func _setup_learning_companion_communication():
+func _setup_learning_companion_communication() -> void:
+	print("\n=== Setting up JavaScript Bridge ===")
 	# First, check if JavaScript is available
 	if JSBridge.has_interface():
-		print("Setting up learning companion communication via postMessage")
-		
-		# Try to initialize audio first since we now have user interaction
-		JSBridge.get_interface().ensure_audio_initialized()
-		
-		# Connect directly using the simpler postMessage approach
-		JSBridge.get_interface().connectLearningCompanionViaPostMessage(
-			# Success callback
-			func():
-				learning_companion_connected = true
-				print("Successfully connected to learning companion")
-
-				# Connect signals to JavaScript callbacks
-				game_started.connect(_on_game_started_for_companion)
-				mission_started.connect(_on_mission_started_for_companion)
-				mission_completed.connect(_on_mission_completed_for_companion)
-				all_missions_completed.connect(_on_all_missions_completed_for_companion)
-
-				print("Learning companion event handlers connected")
-
-				# Try to initialize audio again to ensure it works
-				JSBridge.get_interface().ensure_audio_initialized(),
-			func():
-				learning_companion_connected = false
-				print("Failed to connect to learning companion via postMessage")
-
-		)
+		print("JavaScript interface found")
+		var js_interface = JSBridge.get_interface()
+		if js_interface:
+			print("JavaScript interface initialized")
+			#init_data_received.connect(_on_init_data_received)
+			
+			# In web environment, we'll skip audio initialization for now
+			if OS.has_feature("web"):
+				print("Running in web environment - skipping audio initialization")
+			else:
+				# Try to initialize audio first since we now have user interaction
+				if js_interface.has_method("ensure_audio_initialized"):
+					print("Initializing audio...")
+					js_interface.ensure_audio_initialized()
+					print("Audio initialization complete")
+			
+			# Connect directly using the simpler postMessage approach
+			if js_interface.has_method("connectLearningCompanionViaPostMessage"):
+				print("Setting up learning companion connection...")
+				
+				# Create a safe callback wrapper
+				var success_wrapper = func():
+					print("Learning companion connection successful")
+					learning_companion_connected = true
+					# Connect signals to JavaScript callbacks
+					game_started.connect(_on_game_started_for_companion)
+					mission_started.connect(_on_mission_started_for_companion)
+					mission_completed.connect(_on_mission_completed_for_companion)
+					all_missions_completed.connect(_on_all_missions_completed_for_companion)
+					print("Connected all JavaScript callbacks")
+					
+					# Request initial mission data if available
+					if js_interface.has_method("requestInitialMissionData"):
+						print("Requesting initial mission data...")
+						js_interface.requestInitialMissionData()
+						print("Initial mission data request sent")
+					
+					# Emit signal that connection is complete
+					bridge_connection_completed.emit()
+				
+				var error_wrapper = func():
+					print("Learning companion connection failed")
+					learning_companion_connected = false
+					# Still emit signal even on failure
+					bridge_connection_completed.emit()
+				
+				# Call the connection method with our wrapped callbacks
+				js_interface.connectLearningCompanionViaPostMessage(success_wrapper, error_wrapper)
+				
+				print("Waiting for learning companion connection...")
+				# Wait for the connection to be established
+				await bridge_connection_completed
+				print("Learning companion connection process complete")
+			else:
+				print("WARNING: connectLearningCompanionViaPostMessage method not found - continuing without JavaScript bridge")
+				bridge_connection_completed.emit()
+		else:
+			print("WARNING: Failed to get JavaScript interface - continuing without JavaScript bridge")
+			bridge_connection_completed.emit()
 	else:
-		print("JavaScript interface for learning companion not available")
+		print("WARNING: No JavaScript interface available - continuing without JavaScript bridge")
+		bridge_connection_completed.emit()
+	print("=== JavaScript Bridge Setup Complete ===\n")
 
-func start_mission(mission: MissionData):
-	# Check that the mission data is valid
-	if mission == null:
-		push_error("Null mission data provided to start_mission")
+# Helper function to safely find UI elements
+func _find_ui_element(path: String, required: bool = true) -> Node:
+	var element = get_node_or_null(path)
+	if required and not element:
+		push_warning("Required UI element not found: " + path)
+	return element
+
+# Function to show learning panel with error handling
+func _show_learning_panel(mission: MissionData) -> void:
+	if not learning_panel:
+		push_warning("Learning panel not found")
 		return
+		
+	# Check for required UI elements
+	var submit_button = _find_ui_element("LearningPanelFromScene/PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent/UserInputContainer/SubmitButton", false)
+	if not submit_button:
+		push_warning("Submit button not found in learning panel - some functionality may be limited")
+		# Continue anyway since this is not critical
 	
-	# If the unlocked items panel is currently showing, queue this mission to start later
-	if is_unlocked_panel_showing:
-		print("Unlocked items panel is showing, queueing mission start: " + mission.id)
-		delayed_mission_start_queue.append(mission)
+	# Show the panel
+	learning_panel.show_learning_panel(mission)
+	
+	# We set current_mission when starting a mission, so there's no need to store it again
+	# We now use the generic_text_panel.closed signal configured in _ready()
+
+# We use current_mission directly now, no need for _current_learning_mission
+	
+# This function handles showing graph or table data after panel closes
+func _on_learning_panel_closed_for_react() -> void:
+	# For generic text panel, we don't need to disconnect since the signal connection is handled in _ready
+	
+	# We now use the current_mission property directly instead of _current_learning_mission
+	print("Panel closed, checking for graph/table data to display")
+	
+	# Check if we have a current mission
+	if not current_mission:
+		print("No current mission")
+		return
+		
+	print("Current mission: ", current_mission.id, ", open_react_graph: ", current_mission.open_react_graph, ", open_react_table: ", current_mission.open_react_table)
+	
+	# Send React data via the autoloaded JavaScriptBridge node
+	if current_mission.open_react_graph:
+		print("Opening React graph with data:", current_mission.react_data)
+		JSBridge.send_open_graph(current_mission.react_data)
+	elif current_mission.open_react_table:
+		print("Opening React table with data:", current_mission.react_table_data)
+		JSBridge.send_open_table(current_mission.react_table_data)
+	
+	# We're now using current_mission directly, so no need to clear anything
+
+# Function to start mission with error handling
+func start_mission(mission: MissionData):
+	if not mission:
+		push_error("Cannot start mission: mission is null")
 		return
 		
 	current_mission = mission
-	active_missions[mission.id] = mission
-	mission_started.emit(current_mission)
 	
-	# Set the first objective as the current objective
+	# Process structure unlocking
+	if builder:
+		var structures = builder.get_structures()
+		if structures:
+			# Only unlock starting structures at mission start
+			if mission.starting_structures.size() > 0:
+				for structure_path in mission.starting_structures:
+					if not ResourceLoader.exists(structure_path):
+						push_error("Structure not found: " + structure_path)
+						continue
+					mission_loader._unlock_starting_structures([structure_path])
+				builder.update_structure()  # Update the current structure display
+				
+				# Emit signal that structures have been unlocked
+				structures_unlocked.emit()
+	
+	# Set first objective as current
 	if mission.objectives.size() > 0:
 		current_objective = mission.objectives[0]
-		print("Set current objective: " + str(current_objective.type) + " - " + current_objective.description)
-	
-	
+		# Find the index of the current objective in the array
+		var objective_index = 0
+		for i in range(mission.objectives.size()):
+			if mission.objectives[i] == current_objective:
+				objective_index = i
+				break
+		
+	# Update UI
+	if mission_ui:
+		mission_ui.update_mission_display(mission)
+		
+	# Show intro text if available
+	if mission.intro_text:
+		_show_learning_panel(mission)
+			
+	# Add mission to active missions
+	active_missions[mission.id] = mission
+			
+	# Emit signal that mission has started
+	mission_started.emit(mission)
 
 func complete_mission(mission_id: String):
 	if not active_missions.has(mission_id):
-		print("ERROR: Mission " + mission_id + " not found in active_missions!")
 		return
 	
 	var mission = active_missions[mission_id]
-	print("Completing mission: " + mission.id + " - " + mission.title)
 	
 	# Grant rewards
 	if mission.rewards.has("cash") and builder:
 		builder.map.cash += mission.rewards.cash
 		builder.update_cash()
-		print("Granted " + str(mission.rewards.cash) + " cash reward")
 	
 	# Handle structure unlocking when mission is completed
-	print("Handling structure unlocking for mission: " + mission.id)
 	_handle_structure_unlocking(mission)
 	
 	# Keep a copy of the mission for UI display during transition
 	var completed_mission = mission
 	
-	# Figure out if there's a next mission
-	var next_mission: MissionData
-	if mission.next_mission_id:
-		# Find mission with that ID
-		for m in missions:
-			if m.id == mission.next_mission_id:
-				next_mission = m
-				break
-				
 	# Emit mission completed signal
 	mission_completed.emit(mission)
 	
 	# Only remove from active missions after we're ready to show the next one
-	# This ensures the UI always has a mission to display
+	await get_tree().create_timer(2.0).timeout
+	active_missions.erase(mission_id)
+	
+	var next_mission = get_next_mission(mission_id)
 	if next_mission:
-		# Keep the active mission during the delay
-		await get_tree().create_timer(2.0).timeout
-		
-		# Only now remove the old mission
-		active_missions.erase(mission_id)
-		
-		# Start the next mission
-		start_mission(next_mission)
+		if is_unlocked_panel_showing:
+			print("Unlock panel showing, queueing next mission start.")
+			delayed_mission_start_queue.append(next_mission)
+		else:
+			print("Starting next mission: " + str(next_mission.id))
+			start_mission(next_mission)
 	else:
-		# Only remove after delay for last mission too
-		await get_tree().create_timer(2.0).timeout
-		active_missions.erase(mission_id)
-		
+		print("No more missions to start.")
 		all_missions_completed.emit()
-		print("No more missions available - all complete!")
-		
-		# Send the "end" event to the companion
 		await get_tree().create_timer(2.0).timeout
-	
+
 func update_objective_progress(structure:Structure = null):
-	match current_objective.type:
-		ObjectiveType.BUILD_RESIDENTIAL:
-			current_objective.current_count += structure.population_count
-			if current_objective.target_count <= current_objective.current_count:
-				current_objective.completed = true
-				objective_completed.emit(current_objective)
-				var dialog_key = "objective_completed_" + str(current_objective.type)
-				_send_companion_dialog(dialog_key, current_mission) ## So Companion can react
-				update_current_objective(current_mission)
-		ObjectiveType.BUILD_STRUCTURE:
-			current_objective.current_count += 1
-			if current_objective.target_count <= current_objective.current_count:
-				current_objective.completed = true
-				objective_completed.emit(current_objective)
-				var dialog_key = "objective_completed_" + str(current_objective.type)
-				_send_companion_dialog(dialog_key, current_mission) ## So Companion can react
-				update_current_objective(current_mission)  # Go ahead and progress to nex objective if it exists.
-		ObjectiveType.REACH_POPULATION:
-			if Globals.population >= current_objective.target_count:
-				current_objective.completed = true
-				objective_completed.emit(current_objective)
-				var dialog_key = "objective_completed_" + str(current_objective.type)
-				_send_companion_dialog(dialog_key, current_mission) ## So Companion can react
-				update_current_objective(current_mission)  # Go ahead and progress to nex objective if it exists.
-
-	# IF this is true then objectives are completed
+	print("\n=== Updating Objective Progress ===")
+	print("Objective type: ", current_objective.type)
+	print("Current count: ", current_objective.current_count)
+	print("Target count: ", current_objective.target_count)
 	
-		
-		
-	update_mission_ui()
+	if current_objective.type == ObjectiveType.BUILD_RESIDENTIAL:
+		print("Updating BUILD_RESIDENTIAL objective")
+		print("Structure population count: ", structure.population_count)
+		current_objective.current_count += structure.population_count
+		print("New count: ", current_objective.current_count)
+		if current_objective.target_count <= current_objective.current_count:
+			current_objective.completed = true
+			objective_completed.emit(current_objective)
+			var dialog_key = "objective_completed_" + str(current_objective.type)
+			_send_companion_dialog(dialog_key, current_mission)
+			update_current_objective(current_mission)
+	elif current_objective.type == ObjectiveType.BUILD_STRUCTURE:
+		print("Updating BUILD_STRUCTURE objective")
+		current_objective.current_count += 1
+		print("New count: ", current_objective.current_count)
+		if current_objective.target_count <= current_objective.current_count:
+			current_objective.completed = true
+			objective_completed.emit(current_objective)
+			var dialog_key = "objective_completed_" + str(current_objective.type)
+			_send_companion_dialog(dialog_key, current_mission)
+			update_current_objective()
+	elif current_objective.type == ObjectiveType.REACH_POPULATION:
+		if Globals.population >= current_objective.target_count:
+			current_objective.completed = true
+			objective_completed.emit(current_objective)
+			var dialog_key = "objective_completed_" + str(current_objective.type)
+			_send_companion_dialog(dialog_key, current_mission)
+			update_current_objective()
+
 	objective_progress.emit(current_objective, current_objective.current_count)
-
 	
-	
-
+	# Force UI update after objective progress
+	if mission_ui:
+		mission_ui.update_mission_display(current_mission)
 
 func is_structure_of_current_mission(structure:Structure):
 	if not current_mission:
-		print("ERROR: No current mission to check structure against")
-		return false
-	if current_objective.structure == structure:
-		return true
-	else:
-		return false
-	if not current_mission:
-		print("ERROR: No current mission to check structure against")
 		return false
 		
-	# Handle BUILD_STRUCTURE objective type with COMMERCIAL_BUILDING type
-	if current_objective.type == ObjectiveType.BUILD_STRUCTURE and current_objective.structure.type == Structure.StructureType.COMMERCIAL_BUILDING:
-		# For commercial buildings, check if the placed structure is also a commercial building
-		if structure.type == Structure.StructureType.COMMERCIAL_BUILDING:
-			print("Commercial building match for store objective")
-			return true
+	# Handle BUILD_STRUCTURE objective type
+	if current_objective.type == ObjectiveType.BUILD_STRUCTURE:
+		# Check if the placed structure matches the objective's structure exactly
+		if current_objective.structure and structure.model:
+			return current_objective.structure.resource_path == structure.model.resource_path
 			
-	# Exact match check (original behavior)
-	if current_objective.structure == structure:
-		return true
-	else:
-		return false
-	
-			
-func check_objective_completion(mission_id, objective_type):
-	if not active_missions.has(mission_id):
-		return false
-		
-	var mission = active_missions[mission_id]
-	for objective in mission.objectives:
-		if objective.type == objective_type:
-			return objective.completed
-	
 	return false
-	
-# Function to reset an objective's count to a specific value
-func reset_objective_count(objective_type, new_count):
-	if not current_mission:
-		print("ERROR: No current mission to reset objective count for")
-		return
-		
-	var mission_id = current_mission.id
-	if not active_missions.has(mission_id):
-		print("ERROR: Current mission ID " + mission_id + " not found in active_missions!")
-		return
-		
-	var mission = active_missions[mission_id]
-	for objective in mission.objectives:
-		if objective.type == objective_type:
-			print("Resetting objective count for type " + str(objective_type) + " from " + str(objective.current_count) + " to " + str(new_count))
-			objective.current_count = new_count
-			
-			# Update completion status based on new count
-			objective.completed = objective.current_count >= objective.target_count
-			
-			# If newly completed, emit signal
-			if objective.completed and objective.current_count >= objective.target_count:
-				objective_completed.emit(objective)
-				
-				# Send dialog event if available
-				var dialog_key = "objective_completed_" + str(objective.type)
-				_send_companion_dialog(dialog_key, mission)
-				
-				# Update current objective to next incomplete one
-				update_current_objective(mission)
-			
-			# Update UI
-			update_mission_ui()
-			
-			# Emit progress signal for objective
-			objective_progress.emit(objective, objective.current_count)
-			
-			# Check if the mission is complete
-			check_mission_completion(mission_id)
-			break
-
-func check_mission_completion(mission_id):
-	if not active_missions.has(mission_id):
-		return
-		
-	var mission = active_missions[mission_id]
-	var all_complete = true
-	
-	for objective in mission.objectives:
-		if not objective.completed:
-			all_complete = false
-			break
-	
-	if all_complete:
-		# All objectives complete, complete the mission
-		complete_mission(mission_id)
-		return true
-		
-	return false
-
-func update_mission_ui():
-	if mission_ui:
-		mission_ui.update_missions(active_missions)
 
 func _on_structure_placed(structure_index, position):
 	# Get the structure that was placed
@@ -436,47 +451,71 @@ func _on_structure_placed(structure_index, position):
 		return
 		
 	var structure = builder.structures[structure_index]
-	print("Structure placed: " + structure.model.resource_path)
 	
 	# Check if this structure is needed for the current objective
-	if current_mission and is_structure_of_current_mission(structure):
-		# Update the objective progress
-		update_objective_progress(structure)
-			
-	if current_mission:
-		if structure.type == Structure.StructureType.RESIDENTIAL_BUILDING:
-			# Note: for mission 3, the objective update happens after construction is complete
-			# See builder.gd -> _on_construction_completed
-			
-			# Special check for mission 1 since we might need to manually spawn a character
-			if character_spawned:
-				# Only spawn a new character if:
-				# 1. This is mission 1
-				# 2. We haven't spawned a character yet
-				# 3. All objectives except character spawning are complete
-				
-				# Check if all non-character objectives are complete
-				var spawn_character = true
-				for objective in current_mission.objectives:
-						spawn_character = false
-						break
-				
-				if spawn_character:
-					# This will be done after construction completes in mission_manager._on_construction_completed
-					print("Character will be spawned after construction completes")
-			
-	# Check for power plant unlocking in normal gameplay
-	if structure.type == Structure.StructureType.POWER_PLANT:
-		# This should increase the city's power production
-		var power_produced = structure.kW_production
-		if power_produced > 0:
-			# Get the HUD if available
-			var hud = get_node_or_null("/root/Main/CanvasLayer/HUD")
-			if hud:
-				# Update the power display
-				hud.total_kW_production += power_produced
-				hud.update_hud()
-				
+	if current_mission and current_objective:
+		# Handle structure-based objectives
+		if current_objective.type == ObjectiveType.BUILD_STRUCTURE:
+			# Check if the structure matches the objective's required structure exactly
+			if current_objective.structure and structure.model and current_objective.structure.resource_path == structure.model.resource_path:
+				# For buildings, we'll update progress after construction completes
+				if structure.type == Structure.StructureType.RESIDENTIAL_BUILDING:
+					# Connect to the construction_completed signal if it exists
+					if builder.has_signal("construction_completed"):
+						if not builder.is_connected("construction_completed", _on_construction_completed):
+							builder.construction_completed.connect(_on_construction_completed)
+				else:
+					# For non-building structures, update progress immediately
+					update_objective_progress(structure)
+		elif current_objective.type == ObjectiveType.BUILD_RESIDENTIAL and structure.type == Structure.StructureType.RESIDENTIAL_BUILDING:
+			# For residential buildings, update progress after construction completes
+			if builder.has_signal("construction_completed"):
+				if not builder.is_connected("construction_completed", _on_construction_completed):
+					builder.construction_completed.connect(_on_construction_completed)
+
+# Handle construction completion
+func _on_construction_completed(position: Vector3):
+	if not current_mission or not current_objective:
+		return
+		
+	# Find the structure at this position
+	var structure = null
+	if builder and builder.gridmap:
+		var cell = builder.gridmap.get_cell_item(position)
+		if cell >= 0 and cell < builder.structures.size():
+			structure = builder.structures[cell]
+	
+	if structure:
+		print("\n=== Checking Structure for Objective ===")
+		print("Structure type: ", structure.type)
+		print("Structure model: ", structure.model.resource_path if structure.model else "null")
+		print("Current objective type: ", current_objective.type)
+		print("Current objective structure: ", current_objective.structure.resource_path if current_objective.structure else "null")
+		
+		# Check if this structure counts for our current objective
+		if current_objective.type == ObjectiveType.BUILD_STRUCTURE:
+			# Check if the structure matches the objective's required structure
+			if current_objective.structure and structure.model:
+				var model_name = structure.model.resource_path.get_file().get_basename()
+				var structure_name = current_objective.structure.resource_path.get_file().get_basename()
+				if model_name == structure_name:
+					print("Structure matches BUILD_STRUCTURE objective")
+					update_objective_progress(structure)
+				else:
+					print("Structure does not match BUILD_STRUCTURE objective")
+		elif current_objective.type == ObjectiveType.BUILD_RESIDENTIAL:
+			# Check both the structure type AND the specific structure required
+			if structure.type == Structure.StructureType.RESIDENTIAL_BUILDING and current_objective.structure and structure.model:
+				var model_name = structure.model.resource_path.get_file().get_basename()
+				var structure_name = current_objective.structure.resource_path.get_file().get_basename()
+				if model_name == structure_name:
+					print("Structure matches BUILD_RESIDENTIAL objective")
+					update_objective_progress(structure)
+				else:
+					print("Structure does not match BUILD_RESIDENTIAL objective")
+		else:
+			print("Structure does not match any objective criteria")
+
 # Only used for mission 3, to disable builder functionality during the companion dialog
 func _on_learning_panel_opened():
 	if builder:
@@ -489,7 +528,6 @@ func _on_learning_panel_closed():
 	
 func _on_learning_completed(mission):
 	if mission:
-		print("Learning completed for mission: " + mission.id)
 		# If the mission has a learning objective, mark it as completed
 		for objective in mission.objectives:
 			if objective.type == MissionObjective.ObjectiveType.LEARNING:
@@ -535,14 +573,14 @@ func _check_learning_panel_state():
 		# If all learning is complete but we still have other objectives, auto close
 		if learning_objectives_complete and other_objectives_incomplete:
 			should_auto_close = true
-	
+
 	# Automatically close the panel if appropriate
 	if should_auto_close:
 		if learning_panel and learning_panel.visible:
 			learning_panel.hide_learning_panel()
 		if fullscreen_learning_panel and fullscreen_learning_panel.visible:
 			fullscreen_learning_panel.hide_fullscreen_panel()
-	
+
 # Skip to the next mission (for debug/testing)
 func _skip_current_mission():
 	if current_mission:
@@ -550,7 +588,6 @@ func _skip_current_mission():
 		var next_mission_id = current_mission.next_mission_id
 		
 		# Complete the current mission
-		print("Skipping mission: " + current_mission.id)
 		
 		# Force all objectives to be complete
 		for objective in current_mission.objectives:
@@ -559,8 +596,6 @@ func _skip_current_mission():
 		
 		# Complete the mission
 		complete_mission(current_mission.id)
-	else:
-		print("No current mission to skip")
 
 # Called when the unlocked panel is shown - used for additional state tracking
 func _on_unlocked_panel_shown():
@@ -573,14 +608,10 @@ func _on_unlocked_panel_shown():
 	
 	if fullscreen_learning_panel and fullscreen_learning_panel.visible:
 		fullscreen_learning_panel.hide_fullscreen_panel()
-		
-	print("Unlocked panel shown, game paused")
 
 # Helper function to process any delayed mission starts after panel closes
 func _process_delayed_mission_starts():
 	if delayed_mission_start_queue.size() > 0:
-		print("Processing " + str(delayed_mission_start_queue.size()) + " delayed mission starts")
-		
 		# Get the first mission in the queue
 		var next_mission = delayed_mission_start_queue.pop_front()
 		
@@ -590,7 +621,6 @@ func _process_delayed_mission_starts():
 		
 		# Start the mission
 		if next_mission:
-			print("Starting delayed mission: " + next_mission.id)
 			# Use a short delay to ensure the UI is fully updated
 			await get_tree().create_timer(0.5).timeout
 			start_mission(next_mission)
@@ -598,20 +628,15 @@ func _process_delayed_mission_starts():
 # Function to spawn a character at a residential building
 func _spawn_character_on_road(building_position: Vector3):
 	if not character_scene:
-		print("ERROR: No character scene provided for spawning")
 		return
 		
 	if not builder:
-		print("ERROR: Builder reference missing, can't spawn character")
 		return
 		
 	# Find the nearest road to the building
 	var nearby_road = _find_nearest_road(building_position, builder.gridmap)
 	if nearby_road == Vector3.ZERO:
-		print("ERROR: Could not find a road near the building to spawn character")
 		return
-		
-	print("Spawning character on road at: " + str(nearby_road))
 	
 	# Check if the road is associated with a navigation mesh
 	var has_navigation = false
@@ -621,9 +646,6 @@ func _spawn_character_on_road(building_position: Vector3):
 	if nav_region:
 		has_navigation = true
 	
-	if not has_navigation:
-		print("WARNING: No navigation mesh found near spawn point")
-		
 	# Create the character
 	var character = character_scene.instantiate()
 	character.name = "Resident_" + str(int(building_position.x)) + "_" + str(int(building_position.z))
@@ -668,7 +690,6 @@ func _spawn_character_on_road(building_position: Vector3):
 		
 	# Set character as spawned to prevent multiple spawns
 	character_spawned = true
-	
 	
 	# Make sure the character has auto-patrol is enabled if the character supports it
 	if character.get("auto_patrol") != null:
@@ -816,164 +837,68 @@ func _get_connected_road_length(road_position: Vector3, gridmap: GridMap) -> flo
 # This function handles structure unlocking when a mission is completed
 func _handle_structure_unlocking(mission):
 	if not builder:
-		print("ERROR: Builder is null, can't unlock structures")
+		print("[Unlock] No builder found, aborting unlocking.")
 		return
 	
-	print("Builder has " + str(builder.structures.size()) + " structures")
+	var structures = builder.get_structures()
+	print("[Unlock] Builder has ", structures.size(), " structures.")
 	
 	var unlocked_structures = []
 	
-	# Check mission properties
-	print("Mission properties check:")
-	print("- mission is Resource: " + str(mission is Resource))
-	if mission is Resource:
-		print("- 'unlocked_items' in mission: " + str("unlocked_items" in mission))
-		if "unlocked_items" in mission:
-			print("- unlocked_items size: " + str(mission.unlocked_items.size()))
-			print("- unlocked_items content: " + str(mission.unlocked_items))
-	
 	# Check for explicitly defined unlocked items in mission
 	if mission is Resource and "unlocked_items" in mission and mission.unlocked_items.size() > 0:
-		print("Found unlocked_items in mission: " + mission.id)
-		print("Unlocked items: " + str(mission.unlocked_items))
-		
+		print("[Unlock] Mission unlocked_items: ", mission.unlocked_items)
 		var items = mission.unlocked_items
 		for item_path in items:
-			print("Looking for structure with path: " + item_path)
+			print("[Unlock] Checking item_path: ", item_path)
 			var found = false
-			
-			# DEBUG: Print all builder structures for comparison
-			print("Available builder structures:")
-			for i in range(builder.structures.size()):
-				var s = builder.structures[i]
-				if s.model:
-					print(str(i) + ": " + s.model.resource_path + " (type: " + str(s.type) + ")")
-				else:
-					print(str(i) + ": <no model>")
-			
-			# Find the structure in builder's structures that matches this path
-			for structure in builder.structures:
+			var item_base = item_path.get_file().get_basename()
+			for structure in structures:
 				if structure.model:
-					# Try exact match
-					if structure.model.resource_path == item_path:
-						found = true
-						print("EXACT MATCH: " + structure.model.resource_path)
-						
-						# Make sure structure has the unlocked property before setting it
+					var model_base = structure.model.resource_path.get_file().get_basename()
+					print("[Unlock]   Structure model: ", structure.model.resource_path, " base: ", model_base, " unlocked: ", (structure.unlocked if "unlocked" in structure else "N/A"))
+					if item_base == model_base:
+						print("[Unlock]   Base name match found!")
 						if "unlocked" in structure:
 							structure.unlocked = true
 							unlocked_structures.append(structure)
-							print("SUCCESS: Unlocked structure: " + structure.model.resource_path)
-						else:
-							print("WARNING: Structure doesn't have an 'unlocked' property")
-					
-					# Try matching just the filename part
-					elif structure.model.resource_path.get_file() == item_path.get_file():
 						found = true
-						print("FILENAME MATCH: " + structure.model.resource_path + " = " + item_path.get_file())
-						
-						# Make sure structure has the unlocked property before setting it
-						if "unlocked" in structure:
-							structure.unlocked = true
-							unlocked_structures.append(structure)
-							print("SUCCESS: Unlocked structure: " + structure.model.resource_path)
-						else:
-							print("WARNING: Structure doesn't have an 'unlocked' property") 
-							
-					# Try contains match for more flexible path matching (handles directory differences)
-					elif item_path.get_file() in structure.model.resource_path:
-						found = true
-						print("CONTAINS MATCH: " + structure.model.resource_path + " contains " + item_path.get_file())
-						
-						# Make sure structure has the unlocked property before setting it
-						if "unlocked" in structure:
-							structure.unlocked = true
-							unlocked_structures.append(structure)
-							print("SUCCESS: Unlocked structure: " + structure.model.resource_path)
-						else:
-							print("WARNING: Structure doesn't have an 'unlocked' property")
-			
 			if not found:
-				print("ERROR: Couldn't find any structure with path: " + item_path)
+				print("[Unlock]   No match found for item_path: ", item_path)
+	else:
+		print("[Unlock] No unlocked_items in mission or mission is not a Resource.")
 	
-	# If we already have explicit unlocked items defined, skip the hardcoded rules
-	var has_explicit_unlocks = mission is Resource and "unlocked_items" in mission and mission.unlocked_items.size() > 0
-	
-	# Commented out hardcoded power plant unlocking
-	# Only use explicit unlocks from the mission data's unlocked_items array
-	# No more hardcoded behavior for specific mission IDs
-	
-	# Commented out hardcoded curved roads and decorations unlocking
-	# Only use explicit unlocks from the mission data's unlocked_items array
-	# No more hardcoded behavior for specific mission IDs
-	
-	# Make sure the builder starts with a valid unlocked structure selected
+	# Update builder's current structure if needed
 	var found_unlocked = false
-	for i in range(builder.structures.size()):
-		var structure = builder.structures[i]
+	for i in range(structures.size()):
+		var structure = structures[i]
 		if "unlocked" in structure and structure.unlocked:
-			builder.index = i
-			builder.update_structure()
+			if not (structures[builder.index].unlocked if "unlocked" in structures[builder.index] else false):
+				builder.index = i
+				builder.update_structure()
 			found_unlocked = true
 			break
-			
-	# If no structures are unlocked, unlock ONLY the road for the first mission
-	if not found_unlocked and builder.structures.size() > 0:
-		# Find and unlock only the straight road structure
-		var road_index = -1
-		for i in range(builder.structures.size()):
-			var structure = builder.structures[i]
-			if structure.model and structure.model.resource_path.contains("road-straight"):
-				if "unlocked" in structure:
-					structure.unlocked = true
-					road_index = i
-					print("Unlocked initial road structure: " + structure.model.resource_path)
-					break
-					
-		# Set builder to use the road as the initial structure
-		if road_index >= 0:
-			builder.index = road_index
-			builder.update_structure()
-		else:
-			# Fallback to first structure if road not found
-			var structure = builder.structures[0]
-			if "unlocked" in structure:
-				structure.unlocked = true
-				builder.index = 0
-				builder.update_structure()
-			else:
-				print("WARNING: First structure doesn't have an 'unlocked' property")
 	
+	print("[Unlock] unlocked_structures size: ", unlocked_structures.size())
 	# Show the unlocked items panel if we unlocked anything
-	print("Unlocked " + str(unlocked_structures.size()) + " structures in total")
 	if unlocked_structures.size() > 0:
-		print("Showing unlocked items panel...")
-		# Make sure all structures in the unlock list are properly marked as unlocked
-		for structure in unlocked_structures:
-			if "unlocked" in structure:
-				structure.unlocked = true
-				print("Confirmed structure is unlocked: " + structure.model.resource_path)
-		
-		# If we have no structures explicitly unlocked from mission data,
-		# show all currently unlocked structures
-		if unlocked_structures.size() == 0 and builder.structures.size() > 0:
-			var all_unlocked = []
-			for structure in builder.structures:
-				if "unlocked" in structure and structure.unlocked:
-					all_unlocked.append(structure)
-			
-			if all_unlocked.size() > 0:
-				print("No new structures, showing all " + str(all_unlocked.size()) + " unlocked structures")
-				unlocked_structures = all_unlocked
-		
+		print("[Unlock] Emitting structures_unlocked signal and showing panel.")
+		structures_unlocked.emit()
+		builder._on_structures_unlocked()
 		_show_unlocked_items_panel(unlocked_structures)
 	else:
-		print("No structures unlocked, not showing panel")
+		print("[Unlock] No new structures unlocked.")
 
 # Shows a panel with the newly unlocked items
 func _show_unlocked_items_panel(unlocked_structures):
-	print("Showing unlocked items panel with " + str(unlocked_structures.size()) + " structures")
+	print("\n=== Showing Unlocked Items Panel ===")
+	print("Number of unlocked structures: ", unlocked_structures.size())
 	
+	# Check if panel is already showing
+	if is_unlocked_panel_showing:
+		print("Panel already showing, returning")
+		return
+		
 	# Set panel state to showing - prevents mission starts while panel is visible
 	is_unlocked_panel_showing = true
 	
@@ -985,7 +910,6 @@ func _show_unlocked_items_panel(unlocked_structures):
 	if hud:
 		for child in hud.get_children():
 			if child.name.contains("UnlockedItems") or (child is Control and child.get_script() != null and "unlocked" in child.get_script().resource_path.to_lower()):
-				print("Found existing panel in HUD: " + child.name)
 				existing_panels.append(child)
 	
 	# Check in CanvasLayer
@@ -993,12 +917,11 @@ func _show_unlocked_items_panel(unlocked_structures):
 	if canvas:
 		for child in canvas.get_children():
 			if child.name.contains("UnlockedItems") or (child is Control and child.get_script() != null and "unlocked" in child.get_script().resource_path.to_lower()):
-				print("Found existing panel in CanvasLayer: " + child.name)
 				existing_panels.append(child)
 	
 	# Remove any existing panels
 	for panel in existing_panels:
-		print("Removing existing panel: " + panel.name)
+		print("Removing existing panel: ", panel.name)
 		panel.queue_free()
 	
 	# Wait a short delay before showing the panel
@@ -1007,7 +930,7 @@ func _show_unlocked_items_panel(unlocked_structures):
 	# Load the panel scene
 	var unlocked_panel_scene = load("res://scenes/unlocked_items_panel.tscn")
 	if unlocked_panel_scene:
-		print("Successfully loaded unlocked_items_panel.tscn")
+		print("Loaded unlocked items panel scene")
 		var unlocked_panel = unlocked_panel_scene.instantiate()
 		
 		# Always add to HUD if available
@@ -1032,30 +955,32 @@ func _show_unlocked_items_panel(unlocked_structures):
 		unlocked_panel.show()
 		
 		# Setup and show the panel
+		print("Setting up panel with structures")
 		unlocked_panel.setup(unlocked_structures)
 		unlocked_panel.show_panel()
 		
 		# Connect the closed signal
 		unlocked_panel.closed.connect(func():
-			print("Unlocked panel was closed")
+			print("Unlocked panel closed")
 			# Reset the panel showing state
 			is_unlocked_panel_showing = false
 			
 			# Make sure the game is unpaused
 			get_tree().paused = false
 			
+			# Update the mission UI with the current objective
+			if mission_ui and current_mission:
+				mission_ui.update_mission_display(current_mission)
+			
 			# Process any delayed mission starts
 			_process_delayed_mission_starts()
 		)
 	else:
-		push_error("Could not load unlocked_items_panel scene")
-		# Even if we couldn't load the panel, make sure to reset the state
-		is_unlocked_panel_showing = false
-	
+		push_error("Failed to load unlocked items panel scene")
+
 # Public function to show all unlocked structures when requested
 func show_unlocked_structures_panel():
 	if not builder:
-		print("Cannot show unlocked structures - builder not found")
 		return
 		
 	var all_unlocked = []
@@ -1063,7 +988,6 @@ func show_unlocked_structures_panel():
 		if "unlocked" in structure and structure.unlocked:
 			all_unlocked.append(structure)
 		
-	print("Showing panel with all " + str(all_unlocked.size()) + " unlocked structures")
 	# Pause the game when showing the panel
 	get_tree().paused = true
 	_show_unlocked_items_panel(all_unlocked)
@@ -1071,38 +995,47 @@ func show_unlocked_structures_panel():
 # Functions for communication with learning companion
 func _on_game_started_for_companion():
 	if learning_companion_connected and JSBridge.has_interface():
-		print("Sending gameStarted event to learning companion")
-		JSBridge.get_interface().sendGameStarted()
+		var js_interface = JSBridge.get_interface()
+		if js_interface and js_interface.has_method("onGameStarted"):
+			js_interface.onGameStarted()
 
 func _on_mission_started_for_companion(mission):
 	if learning_companion_connected and JSBridge.has_interface():
-		print("Sending missionStarted event to learning companion for mission: " + mission.id)
-		
-		# Only send dialog if it exists
-		if mission.companion_dialog.has("mission_started"):
-			var dialog_data = mission.companion_dialog["mission_started"]
-			JSBridge.get_interface().sendCompanionDialog("mission_started", dialog_data)
+		var js_interface = JSBridge.get_interface()
+		if js_interface and js_interface.has_method("sendCompanionDialog"):
+			# Only send dialog if it exists and is valid
+			if mission.companion_dialog and mission.companion_dialog.has("mission_started"):
+				var dialog_data = mission.companion_dialog["mission_started"]
+				if dialog_data:
+					js_interface.sendCompanionDialog("mission_started", dialog_data)
 
 func _on_mission_completed_for_companion(mission):
 	if learning_companion_connected and JSBridge.has_interface():
-		print("Sending missionCompleted event to learning companion for mission: " + mission.id)
-		
-		# Only send dialog if it exists
-		if mission.companion_dialog.has("mission_completed"):
-			var dialog_data = mission.companion_dialog["mission_completed"]
-			JSBridge.get_interface().sendCompanionDialog("mission_completed", dialog_data)
+		var js_interface = JSBridge.get_interface()
+		if js_interface and js_interface.has_method("sendCompanionDialog"):
+			# Only send dialog if it exists and is valid
+			if mission.companion_dialog and mission.companion_dialog.has("mission_completed"):
+				var dialog_data = mission.companion_dialog["mission_completed"]
+				if dialog_data:
+					js_interface.sendCompanionDialog("mission_completed", dialog_data)
 
 func _on_all_missions_completed_for_companion():
 	if learning_companion_connected and JSBridge.has_interface():
-		print("Sending allMissionsCompleted event to learning companion")
-		JSBridge.get_interface().sendAllMissionsCompleted()
+		var js_interface = JSBridge.get_interface()
+		if js_interface and js_interface.has_method("sendAllMissionsCompleted"):
+			js_interface.sendAllMissionsCompleted()
 
 # Helper function to send dialog to the companion
 func _send_companion_dialog(dialog_key, mission):
-	if learning_companion_connected and JSBridge.has_interface() and mission.companion_dialog.has(dialog_key):
-		var dialog_data = mission.companion_dialog[dialog_key]
-		JSBridge.get_interface().sendCompanionDialog(dialog_key, dialog_data)
-		return true
+	if learning_companion_connected and JSBridge.has_interface():
+		var js_interface = JSBridge.get_interface()
+		if js_interface and js_interface.has_method("sendCompanionDialog"):
+			# Only send dialog if it exists and is valid
+			if mission.companion_dialog and mission.companion_dialog.has(dialog_key):
+				var dialog_data = mission.companion_dialog[dialog_key]
+				if dialog_data:
+					js_interface.sendCompanionDialog(dialog_key, dialog_data)
+					return true
 	return false
 	
 # Helper function to update the current objective to the next incomplete one
@@ -1114,25 +1047,37 @@ func update_current_objective(mission = null):
 	if not mission:
 		return
 	
-	# Look for the first incomplete objective
+	# Find the next incomplete objective
+	var found_current = false
 	for objective in mission.objectives:
+		# If we haven't found the current objective yet, keep looking
+		if not found_current:
+			if objective == current_objective:
+				found_current = true
+			continue
+		
+		# Once we've found the current objective, look for the next incomplete one
 		if not objective.completed:
 			current_objective = objective
-			print("Updated current objective: " + str(current_objective.type) + " - " + current_objective.description)
+			
+			# Force UI update
+			if mission_ui:
+				mission_ui.update_mission_display(mission)
 			return
 			
-	# If all objectives are complete, keep the last one as current and complete the mission
-	if mission.objectives.size() > 0:
-		current_objective = mission.objectives[-1]
-		print("All objectives complete, keeping last one as current objective")
-		# Complete the mission when we've found that all objectives are complete
-		if mission.id in active_missions:
-			check_mission_completion(mission.id)
+	# If we didn't find a next incomplete objective, check if all are complete
+	var all_complete = true
+	for objective in mission.objectives:
+		if not objective.completed:
+			all_complete = false
+			break
+			
+	if all_complete:
+		complete_mission(mission.id)
 
 # Fallback to force a connection if the normal method doesn't work
 func _force_learning_companion_connection():
 	if not learning_companion_connected and JSBridge.has_interface():
-		print("Forcing learning companion connection")
 		learning_companion_connected = true
 		
 		# Connect signals
@@ -1145,7 +1090,156 @@ func _force_learning_companion_connection():
 		if current_mission:
 			_on_mission_started_for_companion(current_mission)
 
-
 func population_updated(new_population: Variant) -> void:
-	if current_objective.type == ObjectiveType.REACH_POPULATION:
-		update_objective_progress()
+	if current_mission and current_objective and current_objective.type == ObjectiveType.REACH_POPULATION:
+		# Update the current count to match the actual population
+		current_objective.current_count = new_population
+		
+		# Check if objective is complete
+		if current_objective.current_count >= current_objective.target_count:
+			current_objective.completed = true
+			objective_completed.emit(current_objective)
+			update_current_objective(current_mission)
+		
+		# Emit progress signal
+		objective_progress.emit(current_objective, current_objective.current_count)
+		
+		# Update the mission UI
+		if mission_ui:
+			mission_ui.update_mission_display(current_mission)
+
+func check_objective_completion(mission_id, objective_type):
+	if not active_missions.has(mission_id):
+		return false
+		
+	var mission = active_missions[mission_id]
+	for objective in mission.objectives:
+		if objective.type == objective_type:
+			return objective.completed
+	
+	return false
+	
+# Function to reset an objective's count to a specific value
+func reset_objective_count(objective_type, new_count):
+	if not current_mission:
+		return
+		
+	var mission_id = current_mission.id
+	if not active_missions.has(mission_id):
+		return
+		
+	var mission = active_missions[mission_id]
+	for objective in mission.objectives:
+		if objective.type == objective_type:
+			objective.current_count = new_count
+			
+			# Update completion status based on new count
+			objective.completed = objective.current_count >= objective.target_count
+			
+			# If newly completed, emit signal
+			if objective.completed and objective.current_count >= objective.target_count:
+				objective_completed.emit(objective)
+				
+				# Send dialog event if available
+				var dialog_key = "objective_completed_" + str(objective.type)
+				_send_companion_dialog(dialog_key, mission)
+				
+				# Update current objective to next incomplete one
+				update_current_objective(mission)
+			
+			# Update UI
+			update_mission_ui()
+			
+			# Emit progress signal for objective
+			objective_progress.emit(objective, objective.current_count)
+			
+			# Check if the mission is complete
+			check_mission_completion(mission_id)
+			break
+
+func check_mission_completion(mission_id):
+	if not active_missions.has(mission_id):
+		return
+		
+	var mission = active_missions[mission_id]
+	var all_complete = true
+	
+	for objective in mission.objectives:
+		if not objective.completed:
+			all_complete = false
+			break
+	
+	if all_complete:
+		# All objectives complete, complete the mission
+		complete_mission(mission_id)
+		return true
+		
+	return false
+
+func update_mission_ui():
+	if mission_ui:
+		mission_ui.update_missions(active_missions)
+
+# Add new function to load custom configurations
+func load_mission_config(config: MissionData) -> void:
+	if mission_loader:
+		# Convert the mission data to a dictionary format
+		var mission_dict = {
+			"missions": [{
+				"id": config.id,
+				"title": config.title,
+				"description": config.description,
+				"objectives": config.objectives,
+				"rewards": config.rewards,
+				"next_mission_id": config.next_mission_id,
+				"graph_path": config.graph_path,
+				"full_screen_path": config.full_screen_path,
+				"intro_text": config.intro_text,
+				"question_text": config.question_text,
+				"correct_answer": config.correct_answer,
+				"feedback_text": config.feedback_text,
+				"incorrect_feedback": config.incorrect_feedback,
+				"company_data": config.company_data,
+				"power_math_content": config.power_math_content,
+				"num_of_user_inputs": config.num_of_user_inputs,
+				"input_labels": config.input_labels,
+				"companion_dialog": config.companion_dialog,
+				"unlocked_items": config.unlocked_items,
+				"starting_structures": config.starting_structures
+			}]
+		}
+		mission_loader.load_from_js(mission_dict)
+
+func _on_init_data_received(data):
+	print("Godot received mission data: ", data)
+	print("Type: ", typeof(data), " Keys: ", data.keys() if typeof(data) == TYPE_DICTIONARY else "")
+	
+	if typeof(data) == TYPE_STRING:
+		var parsed = JSON.parse_string(data)
+		if typeof(parsed) == TYPE_DICTIONARY:
+			data = parsed
+		else:
+			print("Failed to parse mission data string!")
+	
+	if not data:
+		push_error("Received empty initialization data")
+		return
+		
+	if not data.has("missions"):
+		push_error("No missions found in initialization data")
+		return
+		
+	# Use mission loader helper to populate missions
+	mission_loader.load_from_js(data)
+	# Start the first loaded mission if available
+	if missions.size() > 0:
+		print("Starting first mission: ", missions[0].id)
+		start_mission(missions[0])
+	else:
+		push_error("No missions available to start")
+
+func get_next_mission(current_mission_id):
+	for i in range(missions.size()):
+		if missions[i].id == current_mission_id and i + 1 < missions.size():
+			return missions[i + 1]
+	return null

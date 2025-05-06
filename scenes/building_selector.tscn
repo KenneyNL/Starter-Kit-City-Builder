@@ -1,0 +1,223 @@
+[gd_scene load_steps=4 format=3 uid="uid://b4k3xfm8pd8qw"]
+
+[ext_resource type="Script" uid="uid://bsjmj0qu3xfrr" path="res://scripts/building_selector.gd" id="1_jybm7"]
+[ext_resource type="Resource" uid="uid://bljpugjou1cxo" path="res://resources/building_selector.tres" id="2_resource"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.145098, 0.172549, 0.231373, 0.941176)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.356863, 0.670588, 0.768627, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="BuildingSelector" type="PanelContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+script = ExtResource("1_jybm7")
+resource_data = ExtResource("2_resource")
+
+[node name="ClickBlocker" type="ColorRect" parent="."]
+visible = false
+z_index = 1000
+layout_mode = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0.01)
+
+[node name="MainButton" type="Button" parent="."]
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 4
+mouse_filter = 2
+text = "▶"
+flat = true
+
+[node name="SelectionPanel" type="Panel" parent="."]
+visible = false
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="MarginContainer" type="MarginContainer" parent="SelectionPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="SelectionPanel/MarginContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 10
+
+[node name="HBoxContainer" type="HBoxContainer" parent="SelectionPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="TitleLabel" type="Label" parent="SelectionPanel/MarginContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 18
+text = "Building Selector"
+
+[node name="CloseButton" type="Button" parent="SelectionPanel/MarginContainer/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+mouse_filter = 2
+text = "✕"
+flat = true
+
+[node name="SearchBar" type="LineEdit" parent="SelectionPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+mouse_filter = 2
+placeholder_text = "Search structures..."
+
+[node name="FilterButtons" type="HBoxContainer" parent="SelectionPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 5
+
+[node name="AllButton" type="Button" parent="SelectionPanel/MarginContainer/VBoxContainer/FilterButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+toggle_mode = true
+button_pressed = true
+text = "All"
+flat = true
+
+[node name="GroundButton" type="Button" parent="SelectionPanel/MarginContainer/VBoxContainer/FilterButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+toggle_mode = true
+text = "Ground"
+flat = true
+
+[node name="BuildingButton" type="Button" parent="SelectionPanel/MarginContainer/VBoxContainer/FilterButtons"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+toggle_mode = true
+text = "Buildings"
+flat = true
+
+[node name="ScrollContainer" type="ScrollContainer" parent="SelectionPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="SelectionPanel/MarginContainer/VBoxContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+
+[node name="GroundSection" type="VBoxContainer" parent="SelectionPanel/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="SelectionPanel/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/GroundSection"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Ground Structures"
+
+[node name="GroundOptions" type="GridContainer" parent="SelectionPanel/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/GroundSection"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+columns = 4
+
+[node name="BuildingSection" type="VBoxContainer" parent="SelectionPanel/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="SelectionPanel/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/BuildingSection"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Building Structures"
+
+[node name="BuildingOptions" type="GridContainer" parent="SelectionPanel/MarginContainer/VBoxContainer/ScrollContainer/VBoxContainer/BuildingSection"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 10
+columns = 4
+
+[node name="DescriptionPanel" type="Panel" parent="SelectionPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="MarginContainer" type="MarginContainer" parent="SelectionPanel/MarginContainer/VBoxContainer/DescriptionPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="SelectionPanel/MarginContainer/VBoxContainer/DescriptionPanel/MarginContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 10
+
+[node name="TitleLabel" type="Label" parent="SelectionPanel/MarginContainer/VBoxContainer/DescriptionPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Structure Name"
+
+[node name="DescriptionLabel" type="Label" parent="SelectionPanel/MarginContainer/VBoxContainer/DescriptionPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Structure description goes here..."
+autowrap_mode = 2
+
+[node name="StatsContainer" type="HBoxContainer" parent="SelectionPanel/MarginContainer/VBoxContainer/DescriptionPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 20
+
+[node name="PriceLabel" type="Label" parent="SelectionPanel/MarginContainer/VBoxContainer/DescriptionPanel/MarginContainer/VBoxContainer/StatsContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Price: $0"
+
+[node name="PopulationLabel" type="Label" parent="SelectionPanel/MarginContainer/VBoxContainer/DescriptionPanel/MarginContainer/VBoxContainer/StatsContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Population: 0"
+
+[node name="PowerLabel" type="Label" parent="SelectionPanel/MarginContainer/VBoxContainer/DescriptionPanel/MarginContainer/VBoxContainer/StatsContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Power: 0"
+
+[connection signal="pressed" from="MainButton" to="." method="_on_main_button_pressed"]
+[connection signal="pressed" from="SelectionPanel/MarginContainer/VBoxContainer/HBoxContainer/CloseButton" to="." method="hide_panel"]
+[connection signal="text_changed" from="SelectionPanel/MarginContainer/VBoxContainer/SearchBar" to="." method="_on_search_text_changed"]
+[connection signal="pressed" from="SelectionPanel/MarginContainer/VBoxContainer/FilterButtons/AllButton" to="." method="_on_filter_button_pressed" binds= ["All"]]
+[connection signal="pressed" from="SelectionPanel/MarginContainer/VBoxContainer/FilterButtons/GroundButton" to="." method="_on_filter_button_pressed" binds= ["Ground"]]
+[connection signal="pressed" from="SelectionPanel/MarginContainer/VBoxContainer/FilterButtons/BuildingButton" to="." method="_on_filter_button_pressed" binds= ["Buildings"]]

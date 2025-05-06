@@ -16,4 +16,4 @@ selector_scale = 2.8
 unlocked = false
 spawn_builder = false
 description = "An illuminated road segment that provides safety and visibility for your citizens at night."
-thumbnail = "res://sprites/roads/road-straight-lampposts.png"
+thumbnail = "res://sprites/updated/road-straight-light.png"

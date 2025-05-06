@@ -1,4 +1,4 @@
-[gd_scene load_steps=71 format=3 uid="uid://vgwrcfy1qawf"]
+[gd_scene load_steps=38 format=3 uid="uid://vgwrcfy1qawf"]
 
 [ext_resource type="Script" uid="uid://c37h6na3e4twn" path="res://scripts/builder.gd" id="1_jybm7"]
 [ext_resource type="Environment" uid="uid://jbptgqvstei3" path="res://scenes/main-environment.tres" id="1_yndf3"]
@@ -17,51 +17,20 @@
 [ext_resource type="PackedScene" uid="uid://dmsy06s02tcw4" path="res://scenes/generic_text_panel.tscn" id="13_7i6dj"]
 [ext_resource type="Resource" uid="uid://bh65eqgid4kxy" path="res://structures/building-small-c.tres" id="13_kf5aa"]
 [ext_resource type="Script" uid="uid://ctqqmg4ydlbse" path="res://scripts/mission/mission_ui.gd" id="13_xvw5w"]
-[ext_resource type="Script" uid="uid://bt3emc1vt40gq" path="res://resources/generic_text_panel.resource.gd" id="14_76jlq"]
+[ext_resource type="Script" uid="uid://n26k1k7243dd" path="res://resources/generic_text_panel.resource.gd" id="14_76jlq"]
 [ext_resource type="Script" uid="uid://dnquivpg0ead" path="res://scripts/mission/learning_panel.gd" id="14_q2ymb"]
 [ext_resource type="Resource" uid="uid://dqqe3iofnleup" path="res://structures/pavement-fountain.tres" id="14_t5ykj"]
-[ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="14_vcrh8"]
 [ext_resource type="Resource" uid="uid://dveu4dnue0d54" path="res://structures/road-intersection.tres" id="15_e755i"]
-[ext_resource type="Resource" uid="uid://x5h4xutbldq3" path="res://mission/unit_1.02/census_planning_1.tres" id="15_obmwc"]
-[ext_resource type="Resource" uid="uid://cjr36hqnmyn0x" path="res://mission/unit_1.02/census_planning_2.tres" id="16_rl54y"]
-[ext_resource type="Resource" uid="uid://dykbopx8n3c3v" path="res://mission/unit_1.02/census_planning_3.tres" id="17_rrdy6"]
 [ext_resource type="FontFile" uid="uid://d0cxd77jybrcn" path="res://fonts/lilita_one_regular.ttf" id="17_vlub6"]
 [ext_resource type="PackedScene" uid="uid://b4gkfwf4i3ydl" path="res://scenes/character.tscn" id="18_8lrh8"]
 [ext_resource type="PackedScene" uid="uid://cgk66f6rg03mj" path="res://scenes/hud.tscn" id="18_hud"]
 [ext_resource type="PackedScene" uid="uid://bqjnp7uypupog" path="res://scenes/controls_panel.tscn" id="19_controls"]
 [ext_resource type="Script" uid="uid://b5nubrdeseay4" path="res://scripts/game_manager.gd" id="20_game_manager"]
-[ext_resource type="Resource" uid="uid://442cwthak2pa" path="res://mission/unit_1.02/market_research_1.tres" id="20_ngu16"]
 [ext_resource type="PackedScene" uid="uid://b4s46k58ddpyc" path="res://scenes/sound_panel.tscn" id="21_sound_panel"]
 [ext_resource type="Resource" uid="uid://dtal0tl2ee336" path="res://structures/store.tres" id="21_y11qv"]
 [ext_resource type="PackedScene" uid="uid://btfwonjc8uj0w" path="res://scenes/mission_select_menu.tscn" id="24_ro3en"]
-[ext_resource type="Resource" uid="uid://bom5bu47dy5kp" path="res://mission/unit_1.02/market_research_2.tres" id="24_xud6a"]
-[ext_resource type="Resource" uid="uid://csrqvfwp63ygr" path="res://mission/unit_1.02/market_research_3.tres" id="25_6hx7u"]
-[ext_resource type="Resource" uid="uid://qwiwim2pg88f" path="res://mission/unit_1.02/market_research_4.tres" id="26_lvk23"]
-[ext_resource type="Resource" uid="uid://cfgw8dblm55c5" path="res://mission/unit_1.03_1.05/grid_growth_1.tres" id="27_s0e58"]
-[ext_resource type="Resource" uid="uid://ba3ndftq7dht7" path="res://mission/unit_1.03_1.05/grid_growth_2.tres" id="28_hurxs"]
-[ext_resource type="Resource" uid="uid://dgimr2v12rjqu" path="res://mission/unit_1.03_1.05/grid_growth_3.tres" id="29_rhn1n"]
-[ext_resource type="Resource" uid="uid://dm2o4dq2oml53" path="res://mission/unit_1.03_1.05/grid_growth_4.tres" id="30_4rwkv"]
-[ext_resource type="Resource" uid="uid://btwrfq37q8vey" path="res://mission/unit_1.03_1.05/traffic_flow_1.tres" id="31_j2idb"]
-[ext_resource type="Resource" uid="uid://cf7gpb4j7gq1g" path="res://mission/unit_1.03_1.05/traffic_flow_2.tres" id="32_ipu0c"]
-[ext_resource type="Resource" uid="uid://ddmxjjyxgxyxo" path="res://mission/unit_1.03_1.05/traffic_flow_3.tres" id="33_c0l5e"]
-[ext_resource type="Resource" uid="uid://doxd30r8qbgdq" path="res://mission/unit_1.03_1.05/traffic_flow_4.tres" id="34_21t20"]
-[ext_resource type="Resource" uid="uid://duaxn13myfx22" path="res://mission/unit_1.06/sustainable_dev_1.tres" id="35_o0bjh"]
-[ext_resource type="Resource" uid="uid://fuxb3pfbbwjm" path="res://mission/unit_1.06/sustainable_dev_2.tres" id="36_2wodh"]
-[ext_resource type="Resource" uid="uid://byd5jxiutxpky" path="res://mission/unit_1.06/sustainable_dev_3.tres" id="37_psgx1"]
-[ext_resource type="Resource" uid="uid://daug1o7kppqit" path="res://mission/unit_1.06/sustainable_dev_4.tres" id="38_hw762"]
-[ext_resource type="Resource" uid="uid://cp7tcpktwlrkt" path="res://mission/unit_1.06/urban_planning_1.tres" id="39_ymw5p"]
-[ext_resource type="Resource" uid="uid://c3q1afcvwi4rk" path="res://mission/unit_1.06/urban_planning_2.tres" id="40_uggp1"]
-[ext_resource type="Resource" uid="uid://ct1k7n2oopwdu" path="res://mission/unit_1.06/urban_planning_3.tres" id="41_f0dxf"]
-[ext_resource type="Resource" uid="uid://d1fykuxfmh2q1" path="res://mission/unit_1.06/urban_planning_4.tres" id="42_fv8gl"]
-[ext_resource type="Resource" uid="uid://detwnqsq87r30" path="res://mission/unit_1.07/economic_forecast_1.tres" id="43_qvne6"]
-[ext_resource type="Resource" uid="uid://bj7tjuknfaeyg" path="res://mission/unit_1.07/economic_forecast_2.tres" id="44_haub2"]
-[ext_resource type="Resource" uid="uid://ctyrlnq5cxuiu" path="res://mission/unit_1.07/economic_forecast_3.tres" id="45_xs8xk"]
-[ext_resource type="Resource" uid="uid://bwrkqv42wk8f" path="res://mission/unit_1.07/resource_alloc_1.tres" id="47_6w4y8"]
-[ext_resource type="Resource" uid="uid://d0nblitd4ixir" path="res://mission/unit_1.07/resource_alloc_2.tres" id="48_ck35a"]
-[ext_resource type="Resource" uid="uid://cxh8dgf54oimx" path="res://mission/unit_1.07/resource_alloc_3.tres" id="49_cvgxw"]
-[ext_resource type="Resource" uid="uid://cpfr2xnjtpcog" path="res://mission/unit_1.07/resource_alloc_4.tres" id="50_6ke0d"]
-[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="51_kf5aa"]
-[ext_resource type="Resource" uid="uid://bsic030rpgh08" path="res://mission/unit_1.06/sustainable_dev_2b.tres" id="57_e755i"]
+[ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="26_tel4y"]
+[ext_resource type="Resource" uid="uid://cua0khnbyusip" path="res://mission/unit_1.02/unlock_buildings.tres" id="27_qkpxi"]
 
 [sub_resource type="Resource" id="Resource_1gdbm"]
 script = ExtResource("14_76jlq")
@@ -95,49 +64,6 @@ body_text = "Congratulations, City Planner!
   The future of Stem City is now in your hands - keep building and exploring!
 "
 button_text = "Close"
-
-[sub_resource type="Resource" id="Resource_f1uf2"]
-script = ExtResource("51_kf5aa")
-type = 2
-target_count = 1000
-current_count = 0
-description = "Maintain a minimum of 1000 money"
-completed = false
-
-[sub_resource type="Resource" id="Resource_t5ykj"]
-script = ExtResource("14_vcrh8")
-id = "27"
-title = "Economic Forecasting"
-description = "Financial reserves are critical for economic stability. Use your forecasting model to ensure your city maintains a healthy treasury."
-objectives = Array[ExtResource("51_kf5aa")]([SubResource("Resource_f1uf2")])
-rewards = {
-"cash": 500
-}
-next_mission_id = "28"
-graph_path = ""
-full_screen_path = ""
-intro_text = "Let's forecast financial stability! Maintain a minimum treasury of 1000 money to ensure your city's economic health."
-question_text = ""
-correct_answer = ""
-feedback_text = ""
-incorrect_feedback = ""
-company_data = ""
-power_math_content = ""
-num_of_user_inputs = 1
-input_labels = Array[String]([])
-companion_dialog = {
-"mission_completed": {
-"animation": "happy",
-"duration": 6000,
-"text": ["Well done maintaining a healthy treasury! Your financial forecasting model shows strong fiscal health."]
-},
-"mission_started": {
-"animation": "excited",
-"duration": 6000,
-"text": ["Time to focus on fiscal forecasting! A strong treasury indicates good economic management."]
-}
-}
-unlocked_items = Array[String]([])
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mission"]
 bg_color = Color(0.145098, 0.172549, 0.231373, 0.941176)
@@ -253,7 +179,7 @@ visible = false
 
 [node name="MissionManager" type="Node" parent="." node_paths=PackedStringArray("mission_ui", "builder")]
 script = ExtResource("10_oe3re")
-missions = Array[ExtResource("14_vcrh8")]([ExtResource("15_obmwc"), ExtResource("16_rl54y"), ExtResource("17_rrdy6"), ExtResource("20_ngu16"), ExtResource("24_xud6a"), ExtResource("25_6hx7u"), ExtResource("26_lvk23"), ExtResource("27_s0e58"), ExtResource("28_hurxs"), ExtResource("29_rhn1n"), ExtResource("30_4rwkv"), ExtResource("31_j2idb"), ExtResource("32_ipu0c"), ExtResource("33_c0l5e"), ExtResource("34_21t20"), ExtResource("35_o0bjh"), ExtResource("36_2wodh"), ExtResource("37_psgx1"), ExtResource("38_hw762"), ExtResource("39_ymw5p"), ExtResource("40_uggp1"), ExtResource("41_f0dxf"), ExtResource("42_fv8gl"), ExtResource("43_qvne6"), ExtResource("44_haub2"), ExtResource("45_xs8xk"), SubResource("Resource_t5ykj"), ExtResource("47_6w4y8"), ExtResource("48_ck35a"), ExtResource("49_cvgxw"), ExtResource("50_6ke0d"), ExtResource("57_e755i")])
+missions = Array[ExtResource("26_tel4y")]([ExtResource("27_qkpxi")])
 mission_ui = NodePath("MissionPanel")
 builder = NodePath("../Builder")
 character_scene = ExtResource("18_8lrh8")

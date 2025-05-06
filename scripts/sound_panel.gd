@@ -1,6 +1,12 @@
 extends PanelContainer
 
+# Import GenericText resource type
+const GenericText = preload("res://resources/generic_text_panel.resource.gd")
+
 signal closed
+
+# Resource data property for compatibility with generic panel system
+@export var resource_data: GenericText
 
 # References to UI controls
 @onready var music_slider = $MarginContainer/VBoxContainer/MusicSection/MusicControls/MusicSlider
@@ -74,15 +80,11 @@ func _on_music_mute_button_toggled(toggled_on):
 	var sound_manager = get_node_or_null("/root/SoundManager")
 	if sound_manager:
 		sound_manager.music_muted = toggled_on
-		sound_manager._apply_music_volume()
-		sound_manager.music_muted_changed.emit(toggled_on)
 
 func _on_sfx_mute_button_toggled(toggled_on):
 	var sound_manager = get_node_or_null("/root/SoundManager")
 	if sound_manager:
 		sound_manager.sfx_muted = toggled_on
-		sound_manager._apply_sfx_volume()
-		sound_manager.sfx_muted_changed.emit(toggled_on)
 
 # Update UI from SoundManager events
 func _on_music_volume_changed(new_volume):
@@ -99,11 +101,15 @@ func _on_music_muted_changed(is_muted):
 func _on_sfx_muted_changed(is_muted):
 	sfx_mute_button.button_pressed = is_muted
 
-# Helper functions to update percentage labels
-func _update_music_label(value):
-	var percentage = int(value * 100)
-	music_value_label.text = str(percentage) + "%"
+# Helper functions to update labels
+func _update_music_label(value: float):
+	music_value_label.text = str(int(value * 100)) + "%"
 
-func _update_sfx_label(value):
-	var percentage = int(value * 100)
-	sfx_value_label.text = str(percentage) + "%"
+func _update_sfx_label(value: float):
+	sfx_value_label.text = str(int(value * 100)) + "%"
+
+# Function to apply resource data (required for compatibility with generic panel system)
+func apply_resource_data(data):
+	# This function is required for compatibility with the generic panel system
+	# but doesn't need to do anything for the sound panel
+	pass

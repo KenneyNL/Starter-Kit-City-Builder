@@ -16,4 +16,4 @@ selector_scale = 2.8
 unlocked = false
 spawn_builder = false
 description = "A crucial junction where roads meet, allowing traffic to flow in multiple directions throughout your city."
-thumbnail = "res://sprites/roads/intersection.png"
+thumbnail = "res://sprites/updated/road-intersection.png"

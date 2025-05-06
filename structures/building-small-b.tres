@@ -5,7 +5,7 @@
 
 [resource]
 script = ExtResource("2_a2t3e")
-title = ""
+title = "Residential Building B"
 model = ExtResource("1_klt7o")
 type = 1
 price = 60
@@ -14,5 +14,6 @@ kW_usage = 1.0
 kW_production = 0.0
 selector_scale = 2.8
 unlocked = false
-description = "Description"
-thumbnail = "Thumbnail"
+spawn_builder = false
+description = "A slightly larger residential building that can house 1 person. A good upgrade from the basic house!"
+thumbnail = "res://sprites/updated/building-small-b.png"

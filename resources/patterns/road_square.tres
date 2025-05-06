@@ -1,0 +1,39 @@
+[gd_resource type="Resource" script_class="PatternRules" load_steps=9 format=3 uid="uid://dykbopx8n3c3v"]
+
+[ext_resource type="Script" path="res://scripts/mission/pattern_rules.gd" id="1_rules"]
+[ext_resource type="Script" path="res://scripts/mission/pattern_rule.gd" id="2_rule"]
+[ext_resource type="Resource" uid="uid://d2jplegnkl6u2" path="res://structures/road-corner.tres" id="3_corner"]
+[ext_resource type="Resource" uid="uid://dv14kkhb6umkv" path="res://structures/road-straight.tres" id="4_straight"]
+
+[sub_resource type="Resource" id="Resource_corner1"]
+script = ExtResource("2_rule")
+type = 0
+offset = Vector2i(0, 0)
+structure = ExtResource("3_corner")
+rotation = 0
+
+[sub_resource type="Resource" id="Resource_straight1"]
+script = ExtResource("2_rule")
+type = 0
+offset = Vector2i(1, 0)
+structure = ExtResource("4_straight")
+rotation = 0
+
+[sub_resource type="Resource" id="Resource_straight2"]
+script = ExtResource("2_rule")
+type = 0
+offset = Vector2i(0, 1)
+structure = ExtResource("4_straight")
+rotation = 90
+
+[sub_resource type="Resource" id="Resource_corner2"]
+script = ExtResource("2_rule")
+type = 0
+offset = Vector2i(1, 1)
+structure = ExtResource("3_corner")
+rotation = 180
+
+[resource]
+script = ExtResource("1_rules")
+pattern_size = Vector2i(2, 2)
+rules = Array[ExtResource("2_rule")]([SubResource("Resource_corner1"), SubResource("Resource_straight1"), SubResource("Resource_straight2"), SubResource("Resource_corner2")])

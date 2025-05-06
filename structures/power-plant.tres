@@ -16,4 +16,4 @@ selector_scale = 2.8
 unlocked = false
 spawn_builder = false
 description = "A power-generating facility that produces electricity to keep your city's buildings operational and citizens happy. Produces 40 kW of energy."
-thumbnail = "res://sprites/power_plants/coal_power_plant.png"
+thumbnail = "res://sprites/updated/power-plant.png"

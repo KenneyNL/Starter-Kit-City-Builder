@@ -32,7 +32,7 @@ func _ready():
 	
 	# Only get references needed for signal connections
 	user_input = get_node_or_null("PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent/UserInputContainer/UserInput")
-	submit_button = get_node_or_null("PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/SubmitButtonContainer/SubmitButton")
+	submit_button = get_node_or_null("PanelContainer/MarginContainer/ScrollContainer/VBoxContainer/MainContent/UserInputContainer/SubmitButton")
 	
 	# Clear the user inputs array
 	user_inputs = []
@@ -46,69 +46,73 @@ func _ready():
 		push_error("Submit button not found in learning panel")
 	
 func show_learning_panel(mission_data: MissionData):
-	# Check if the mission data is valid
-	if mission_data == null:
-		push_error("Invalid mission data provided to learning panel")
-		return
+	# Disabled learning panel
+	return
 	
-	mission = mission_data
-	
-	# Make panel fully visible and ensure process mode is set to handle input while paused
-	visible = true
-	process_mode = Node.PROCESS_MODE_ALWAYS
-	
-	# First, reset the panel to a clean state
-	_reset_panel()
-	
-	# Use traditional text and graph mode
-	_setup_traditional_mode()
-	
-	# Set up the correct answer from mission data
-	if not mission.correct_answer.is_empty():
-		correct_answer = mission.correct_answer
-	else:
-		# Default answer based on mission type
-		correct_answer = "1" if not mission.power_math_content.is_empty() else "A"
-	
-	# Set up user input fields based on mission data
-	if mission.num_of_user_inputs > 1:
-		_setup_multiple_user_inputs()
-		# Set focus to the first input field after a short delay
-		get_tree().create_timer(0.2).timeout.connect(func():
-			if user_inputs.size() > 0 and user_inputs[0]:
-				user_inputs[0].grab_focus()
-				print("Set focus to the first input field in multi-input")
-		)
-	else:
-		# Traditional single input
-		if user_input:
-			user_input.placeholder_text = mission.question_text if not mission.question_text.is_empty() else "Enter your answer"
-			# Set focus to the single input field after a short delay
-			get_tree().create_timer(0.2).timeout.connect(func():
-				user_input.grab_focus()
-				print("Set focus to the single input field")
-			)
-	
-	# Hide the HUD when learning panel is shown
-	var hud = get_node_or_null("/root/Main/CanvasLayer/HUD")
-	if hud:
-		hud.visible = false
-	
-	# Make sure we're on top
-	if get_parent():
-		get_parent().move_child(self, get_parent().get_child_count() - 1)
-	
-	# Make sure we're at the proper z-index
-	z_index = 100
-	
-	# Disable background interaction by creating a fullscreen invisible barrier
-	_disable_background_interaction()
-	
-	# Emit signal to lock building controls
-	panel_opened.emit()
-	
-	print("Panel is now visible = ", visible)
-	
+	# Original code commented out
+	## Check if the mission data is valid
+	#if mission_data == null:
+	#	push_error("Invalid mission data provided to learning panel")
+	#	return
+	#
+	#mission = mission_data
+	#
+	## Make panel fully visible and ensure process mode is set to handle input while paused
+	#visible = true
+	#process_mode = Node.PROCESS_MODE_ALWAYS
+	#
+	## First, reset the panel to a clean state
+	#_reset_panel()
+	#
+	## Use traditional text and graph mode
+	#_setup_traditional_mode()
+	#
+	## Set up the correct answer from mission data
+	#if not mission.correct_answer.is_empty():
+	#	correct_answer = mission.correct_answer
+	#else:
+	#	# Default answer based on mission type
+	#	correct_answer = "1" if not mission.power_math_content.is_empty() else "A"
+	#
+	## Set up user input fields based on mission data
+	#if mission.num_of_user_inputs > 1:
+	#	_setup_multiple_user_inputs()
+	#	# Set focus to the first input field after a short delay
+	#	get_tree().create_timer(0.2).timeout.connect(func():
+	#		if user_inputs.size() > 0 and user_inputs[0]:
+	#			user_inputs[0].grab_focus()
+	#			print("Set focus to the first input field in multi-input")
+	#	)
+	#else:
+	#	# Traditional single input
+	#	if user_input:
+	#		user_input.placeholder_text = mission.question_text if not mission.question_text.is_empty() else "Enter your answer"
+	#		# Set focus to the single input field after a short delay
+	#		get_tree().create_timer(0.2).timeout.connect(func():
+	#			user_input.grab_focus()
+	#			print("Set focus to the single input field")
+	#		)
+	#
+	## Hide the HUD when learning panel is shown
+	#var hud = get_node_or_null("/root/Main/CanvasLayer/HUD")
+	#if hud:
+	#	hud.visible = false
+	#
+	## Make sure we're on top
+	#if get_parent():
+	#	get_parent().move_child(self, get_parent().get_child_count() - 1)
+	#
+	## Make sure we're at the proper z-index
+	#z_index = 100
+	#
+	## Disable background interaction by creating a fullscreen invisible barrier
+	#_disable_background_interaction()
+	#
+	## Emit signal to lock building controls
+	#panel_opened.emit()
+	#
+	#print("Panel is now visible = ", visible)
+
 # Creates an invisible fullscreen barrier to block clicks on the background
 func _disable_background_interaction():
 	# Remove any existing barrier

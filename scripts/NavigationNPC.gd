@@ -63,7 +63,6 @@ func _physics_process(delta:float)->void:
 		stuck_timer += delta
 		if stuck_timer > stuck_threshold:
 			# Character is stuck, pick a new random target
-			print("Character stuck at ", global_position, ", picking new target")
 			pick_random_target()
 			stuck_timer = 0.0
 	else:

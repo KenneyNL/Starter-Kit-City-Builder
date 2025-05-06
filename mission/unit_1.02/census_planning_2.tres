@@ -6,7 +6,7 @@
 
 [sub_resource type="Resource" id="Resource_7c02e"]
 script = ExtResource("1_dhx01")
-type = 0
+type = 1
 target_count = 3
 current_count = 0
 description = "Build 3 residential buildings"
@@ -62,3 +62,4 @@ companion_dialog = {
 }
 }
 unlocked_items = Array[String](["res://models/road-corner.glb"])
+starting_structures = Array[String]([])

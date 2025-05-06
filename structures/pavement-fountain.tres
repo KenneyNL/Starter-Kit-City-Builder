@@ -16,4 +16,4 @@ selector_scale = 2.8
 unlocked = false
 spawn_builder = false
 description = "A beautiful centerpiece that adds charm to your city while providing citizens with a place to relax and socialize."
-thumbnail = "res://sprites/terrain/fountain.png"
+thumbnail = "res://sprites/updated/fountain.png"

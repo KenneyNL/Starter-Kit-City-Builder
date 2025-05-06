@@ -3,9 +3,8 @@ extends Node
 # This script handles overall game management tasks, including audio management and UI interactions.
 var config = ConfigFile.new()
 
-
-
-
+# Sound manager reference
+var sound_manager: Node
 
 var music_player: AudioStreamPlayer
 var building_sfx: AudioStreamPlayer
@@ -17,50 +16,81 @@ var construction_sfx: AudioStreamPlayer
 @export var intro_text_resource: GenericText
 @export var outro_text_resource: GenericText
 
+# Node references
+@onready var building_selector = get_node_or_null("CanvasLayer/BuildingSelector")
+@onready var resource_display = get_node_or_null("CanvasLayer/ResourceDisplay")
+@onready var game_menu = get_node_or_null("CanvasLayer/GameMenu")
 
 func _ready():
-
+	print("GameManager: Initializing...")
 	# Load data from a file.
-	#var err = config.load("global://config.cfg")
-	## If the file didn't load, ignore it.
-	#if err != OK:
-		#return
-	# Register SoundManager in the main loop for JavaScript bridge to find
-	Engine.get_main_loop().set_meta("sound_manager", get_node_or_null("/root/SoundManager"))
+	var err = config.load("user://config.cfg")
+	# If the file didn't load, ignore it.
+	if err != OK:
+		print("GameManager: No config file found, using defaults")
+		config = ConfigFile.new()
+		
+	# Get sound manager reference
+	sound_manager = get_node_or_null("/root/SoundManager")
+	if sound_manager:
+		print("GameManager: Found sound manager, connecting signals")
+		# Connect to sound manager signals
+		sound_manager.music_volume_changed.connect(_on_music_volume_changed)
+		sound_manager.sfx_volume_changed.connect(_on_sfx_volume_changed)
+		sound_manager.music_muted_changed.connect(_on_music_muted_changed)
+		sound_manager.sfx_muted_changed.connect(_on_sfx_muted_changed)
+		
+		# Load saved volume settings
+		var saved_music_volume = config.get_value("audio", "music_volume", 0.1)
+		var saved_sfx_volume = config.get_value("audio", "sfx_volume", 0.1)
+		var saved_music_muted = config.get_value("audio", "music_muted", false)
+		var saved_sfx_muted = config.get_value("audio", "sfx_muted", false)
+		
+		print("GameManager: Loading saved settings - Music: ", saved_music_volume, " SFX: ", saved_sfx_volume)
+		print("GameManager: Loading saved mute states - Music: ", saved_music_muted, " SFX: ", saved_sfx_muted)
+		
+		# Apply saved settings
+		sound_manager.music_volume = saved_music_volume
+		sound_manager.sfx_volume = saved_sfx_volume
+		sound_manager.music_muted = saved_music_muted
+		sound_manager.sfx_muted = saved_sfx_muted
+	else:
+		print("GameManager: Warning - Sound manager not found!")
 	
-	# Reference to the controls panel, sound panel, and HUD
-	var controls_panel = $CanvasLayer/ControlsPanel
-	var sound_panel = $CanvasLayer/SoundPanel
-	var hud = $CanvasLayer/HUD
+	# Register SoundManager in the main loop for JavaScript bridge to find
+	Engine.get_main_loop().set_meta("sound_manager", sound_manager)
+	
+	# Reference to the controls panel and HUD
+	var controls_panel = get_node_or_null("CanvasLayer/ControlsPanel")
+	var hud = get_node_or_null("CanvasLayer/HUD")
 	
 	# Set up the HUD's reference to the panels
-	hud.controls_panel = controls_panel
-	hud.sound_panel = sound_panel
+	if hud and controls_panel:
+		hud.controls_panel = controls_panel
 	
+	# Show intro text if available
+	#if generic_text_panel and intro_text_resource:
+		#generic_text_panel.apply_resource_data(intro_text_resource)
+		#generic_text_panel.show_panel()
+		#
+		#generic_text_panel.closed.connect(func():
+			#if generic_text_panel and generic_text_panel.resource_data and generic_text_panel.resource_data.panel_type == 0 and controls_panel:
+				#controls_panel.show_panel()
+			#)
 	
-	if generic_text_panel and intro_text_resource:
-		generic_text_panel.apply_resource_data(intro_text_resource)
-		generic_text_panel.show_panel()
-		
-		generic_text_panel.closed.connect(func():
-			if generic_text_panel.resource_data.panel_type == 0 and controls_panel:
-				controls_panel.show_panel()
-			)
-	
-	# Auto-show controls at start
+	# Connect controls panel closed signal
 	if controls_panel:
 		controls_panel.closed.connect(_on_controls_panel_closed)
 	
 	# Check for audio initialization status (important for web)
-	var sound_manager = get_node_or_null("/root/SoundManager")
 	var can_initialize_audio = true
-#	
-#	if OS.has_feature("web") and sound_manager:
-#		can_initialize_audio = sound_manager.audio_initialized
-#		
-#		if not can_initialize_audio:
-#			# For web, wait for the audio_ready signal before initializing audio
-#			sound_manager.audio_ready.connect(_initialize_game_audio)
+	
+	if OS.has_feature("web") and sound_manager:
+		can_initialize_audio = sound_manager.audio_initialized
+		
+		if not can_initialize_audio:
+			# For web, wait for the audio_ready signal before initializing audio
+			sound_manager.audio_ready.connect(_initialize_game_audio)
 	
 	# Set up audio if allowed (immediate for desktop, after interaction for web)
 	if can_initialize_audio:
@@ -70,14 +100,81 @@ func _ready():
 	var builder = get_node_or_null("/root/Main/Builder")
 	if builder:
 		builder.structure_placed.connect(_on_structure_placed)
+		print("GameManager: Connected to Builder signals")
 		
 	# Connect to construction signals via deferred call to make sure everything is ready
 	call_deferred("_setup_construction_signals")
 	
 	# Make sure sound buses are properly configured
 	call_deferred("_setup_sound_buses")
+	
+	# Connect the building selector to the builder
+	if building_selector:
+		if builder:
+			building_selector.builder = builder
+			print("GameManager: Connected BuildingSelector to Builder")
+		else:
+			print("GameManager: Warning - Builder not found!")
+	else:
+		print("GameManager: Warning - BuildingSelector not found!")
+	
+	# Connect builder's cash display to HUD
+	if builder and hud:
+		builder.cash_display = hud.get_node("HBoxContainer/CashItem/CashLabel")
+	
+	# Start background music
+	_start_background_music()
+	
+	# Connect economy manager signals to HUD
+	var economy_manager = get_node_or_null("EconomyManager")
+	var hud_manager = get_node_or_null("CanvasLayer/HUD")
+	
+	if economy_manager and hud_manager:
+		economy_manager.money_changed.connect(hud_manager.update_money)
+		economy_manager.population_changed.connect(hud_manager.update_population_count)
+		economy_manager.energy_balance_changed.connect(hud_manager.update_energy_balance)
 
-# Initialize all game audio - called immediately on desktop, after user interaction on web
+	# Initialize managers
+	_initialize_managers()
+	
+	# Connect signals
+	_connect_signals()
+	
+	# Initialize game state
+	_initialize_game_state()
+	
+	# Start the game
+	start_game()
+
+func _on_music_volume_changed(new_volume: float):
+	print("GameManager: Music volume changed to ", new_volume)
+	config.set_value("audio", "music_volume", new_volume)
+	var err = config.save("user://config.cfg")
+	if err != OK:
+		print("GameManager: Error saving music volume: ", err)
+
+func _on_sfx_volume_changed(new_volume: float):
+	print("GameManager: SFX volume changed to ", new_volume)
+	config.set_value("audio", "sfx_volume", new_volume)
+	var err = config.save("user://config.cfg")
+	if err != OK:
+		print("GameManager: Error saving SFX volume: ", err)
+
+func _on_music_muted_changed(is_muted: bool):
+	print("GameManager: Music mute changed to ", is_muted)
+	config.set_value("audio", "music_muted", is_muted)
+	var err = config.save("user://config.cfg")
+	if err != OK:
+		print("GameManager: Error saving music mute: ", err)
+
+func _on_sfx_muted_changed(is_muted: bool):
+	print("GameManager: SFX mute changed to ", is_muted)
+	config.set_value("audio", "sfx_muted", is_muted)
+	var err = config.save("user://config.cfg")
+	if err != OK:
+		print("GameManager: Error saving SFX mute: ", err)
+
+# Initialize all game audio - called immediately on desktop, after user interaction for web
 func _initialize_game_audio():
 	# Set up all audio systems
 	setup_background_music()
@@ -87,17 +184,6 @@ func _initialize_game_audio():
 # This function is called when the controls panel is closed
 func _on_controls_panel_closed():
 	pass
-	# This is the perfect place to initialize audio for web builds
-	# since we know the user has interacted with the game
-#	if OS.has_feature("web"):
-#		# Force initialize the sound manager (will have no effect if already initialized)
-#		var sound_manager = get_node_or_null("/root/SoundManager")
-#		if sound_manager and not sound_manager.audio_initialized:
-#			sound_manager._initialize_web_audio()
-#		
-#		# Make sure our music is playing
-#		if music_player and music_player.stream and not music_player.playing:
-#			music_player.play()
 
 # Function to set up the sound buses
 func _setup_sound_buses():
@@ -149,6 +235,10 @@ func setup_background_music():
 		music_player.stream = music
 		music_player.bus = "Music"  # Use the Music bus
 		
+		# Set initial volume
+		if sound_manager:
+			music_player.volume_db = sound_manager.linear_to_db(sound_manager.music_volume)
+		
 		# Check if we can play audio immediately (desktop) or need to wait (web)
 		var can_play_now = true
 		if OS.has_feature("web"):
@@ -164,11 +254,16 @@ func setup_background_music():
 		if can_play_now:
 			_start_background_music()
 	else:
+		print("GameManager: Warning - Could not load music file!")
 		# Try a fallback sound as music
 		var fallback_sound = load("res://sounds/building_placing.wav")
 		if fallback_sound:
 			music_player.stream = fallback_sound
 			music_player.bus = "Music"
+			
+			# Set initial volume
+			if sound_manager:
+				music_player.volume_db = sound_manager.linear_to_db(sound_manager.music_volume)
 			
 			# Check if we can play immediately
 			var can_play_now = true
@@ -179,6 +274,8 @@ func setup_background_music():
 			
 			if can_play_now:
 				music_player.play()
+		else:
+			print("GameManager: Error - Could not load fallback sound!")
 
 # Start background music playing (called directly or via signal)
 func _start_background_music():
@@ -280,8 +377,6 @@ func stop_construction_sound():
 	# but we need to keep this function for backward compatibility
 	pass
 	
-# Removed duplicate _retry_music_play function that was here
-	
 # Setup construction signals properly
 func _setup_construction_signals():
 	var builder = get_node_or_null("/root/Main/Builder")
@@ -324,3 +419,23 @@ func _on_mission_manager_mission_started(mission: MissionData) -> void:
 		generic_text_panel.apply_resource_data(mission_text)
 		generic_text_panel.show_panel()
 		
+
+func _initialize_managers():
+	print("GameManager: Initializing managers")
+	# Initialize any required managers here
+	pass
+
+func _connect_signals():
+	print("GameManager: Connecting signals")
+	# Connect any required signals here
+	pass
+
+func _initialize_game_state():
+	print("GameManager: Initializing game state")
+	# Initialize game state here
+	pass
+
+func start_game():
+	print("GameManager: Starting game")
+	# Start game logic here
+	pass

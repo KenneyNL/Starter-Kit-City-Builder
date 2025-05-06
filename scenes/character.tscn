@@ -80,7 +80,7 @@ transform = Transform3D(0.6, 0, 0, 0, 0.6, 0, 0, 0, 0.6, 0, 0, 0)
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 libraries = {
-"": SubResource("AnimationLibrary_8ib1s")
+&"": SubResource("AnimationLibrary_8ib1s")
 }
 autoplay = "walk"
 speed_scale = 3.0

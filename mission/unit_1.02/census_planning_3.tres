@@ -1,14 +1,14 @@
-[gd_resource type="Resource" script_class="MissionData" load_steps=4 format=3 uid="uid://dykbopx8n3c3v"]
+[gd_resource type="Resource" script_class="MissionData" load_steps=4 format=3 uid="uid://cjr36hqnmyn0x"]
 
-[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_l3spi"]
+[ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_dhx01"]
 [ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="2_b4llw"]
 
 [sub_resource type="Resource" id="Resource_c06be"]
-script = ExtResource("1_l3spi")
-type = 3
-target_count = 50
+script = ExtResource("1_dhx01")
+type = 4
+target_count = 1
 current_count = 0
-description = "Reach a population of 50 citizens"
+description = "Study the construction company data and determine which company is more efficient"
 completed = false
 
 [resource]
@@ -16,7 +16,7 @@ script = ExtResource("2_b4llw")
 id = "3"
 title = "Census Planning"
 description = "As your city grows, you need to interpret your two-way frequency tables. Increase your population to see relative frequencies and possible associations between resident demographics and infrastructure usage."
-objectives = Array[ExtResource("1_l3spi")]([SubResource("Resource_c06be")])
+objectives = Array[ExtResource("1_dhx01")]([SubResource("Resource_c06be")])
 rewards = {
 "cash": 500
 }
@@ -60,3 +60,11 @@ companion_dialog = {
 }
 }
 unlocked_items = Array[String](["res://models/store.glb"])
+starting_structures = Array[String]([])
+open_react_graph = false
+open_react_table = false
+react_data = {}
+react_table_data = {
+"headers": [],
+"rows": []
+}

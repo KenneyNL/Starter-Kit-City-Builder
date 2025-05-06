@@ -16,4 +16,4 @@ selector_scale = 2.8
 unlocked = false
 spawn_builder = true
 description = "A commercial building where citizens can purchase goods, providing essential services while generating income for your city."
-thumbnail = "res://sprites/stores/store.png"
+thumbnail = "res://sprites/updated/store.png"

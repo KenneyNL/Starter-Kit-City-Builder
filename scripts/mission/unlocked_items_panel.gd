@@ -33,7 +33,6 @@ func setup(unlocked_structures):
 	# Debug info about structures
 	for i in range(unlocked_structures.size()):
 		if unlocked_structures[i].model:
-			print("Structure " + str(i) + ": " + unlocked_structures[i].model.resource_path)
 			if "title" in unlocked_structures[i]:
 				print("  Title: " + unlocked_structures[i].title)
 			if "description" in unlocked_structures[i]:
@@ -163,7 +162,12 @@ func show_all_unlocked_structures():
 	var all_unlocked = []
 	
 	# Get all unlocked structures from the builder
-	for structure in builder.structures:
+	var structures = builder.get_structures()
+	if not structures:
+		print("ERROR: No structures available")
+		return
+		
+	for structure in structures:
 		if "unlocked" in structure and structure.unlocked:
 			all_unlocked.append(structure)
 			

@@ -24,14 +24,14 @@ var population_tooltip: Control
 var electricity_tooltip: Control
 var controls_panel: PanelContainer
 var sound_panel: PanelContainer
-var builder: Node
+var structure_menu: Control
+@onready var _builder = get_node_or_null("/root/Main/Builder")
 
 func _ready():
 	# Connect to signals from the builder
-	builder = get_node_or_null("/root/Main/Builder")
-	if builder:
-		builder.structure_placed.connect(_on_structure_placed)
-		builder.structure_removed.connect(_on_structure_removed)
+	if _builder:
+		_builder.structure_placed.connect(_on_structure_placed)
+		_builder.structure_removed.connect(_on_structure_removed)
 
 	# Initialize UI elements
 	population_label = $HBoxContainer/PopulationItem/PopulationLabel
@@ -44,13 +44,23 @@ func _ready():
 	# Get references to panels
 	controls_panel = get_node_or_null("/root/Main/CanvasLayer/ControlsPanel")
 	sound_panel = get_node_or_null("/root/Main/CanvasLayer/SoundPanel")
+	structure_menu = get_node_or_null("/root/Main/CanvasLayer/StructureMenu")
 	
 	# Setup mission select button
 	if mission_select_button:
-		mission_select_button.connect("pressed", _on_mission_select_button_pressed)
+		if not mission_select_button.pressed.is_connected(_on_mission_select_button_pressed):
+			mission_select_button.pressed.connect(_on_mission_select_button_pressed)
+	else:
+		push_error("Mission select button not found in HUD")
 	
 	# Setup mission select menu
 	_setup_mission_select_menu()
+	
+	# Setup structure menu
+	_setup_structure_menu()
+	
+	# Wait a frame to ensure all nodes are ready
+	await get_tree().process_frame
 	
 	# Update mission select visibility based on export variable
 	_update_mission_select_visibility()
@@ -93,25 +103,54 @@ func _setup_mission_select_menu():
 			var canvas_layer = get_node_or_null("/root/Main/CanvasLayer")
 			if canvas_layer:
 				canvas_layer.add_child(mission_select_menu)
-				#mission_select_menu.hide() # Initially hidden
+				# Make sure it's initially hidden
+				mission_select_menu.hide()
+
+# Set up the structure menu
+func _setup_structure_menu():
+	# Check if the structure menu already exists
+	structure_menu = get_node_or_null("/root/Main/CanvasLayer/StructureMenu")
+	
+	# If not, instantiate and add it
+	if not structure_menu:
+		var structure_menu_scene = load("res://scenes/structure_menu.tscn")
+		if structure_menu_scene:
+			structure_menu = structure_menu_scene.instantiate()
+			var canvas_layer = get_node_or_null("/root/Main/CanvasLayer")
+			if canvas_layer:
+				# Use call_deferred to add the child
+				canvas_layer.add_child.call_deferred(structure_menu)
+				# Set the builder reference after a frame to ensure the node is added
+				await get_tree().process_frame
+				if _builder:
+					structure_menu.builder = _builder
 	
 # Update mission select visibility based on export variable
 func _update_mission_select_visibility():
-	var mission_select_item = $HBoxContainer/MissionSelectItem
+	if not is_inside_tree():
+		# If we're not in the tree yet, wait until we are
+		await ready
+		
+	var mission_select_item = get_node_or_null("HBoxContainer/MissionSelectItem")
 	if mission_select_item:
 		mission_select_item.visible = show_mission_select
+	else:
+		push_warning("MissionSelectItem node not found in HUD")
 		
 # Handle mission select button press
 func _on_mission_select_button_pressed():
+	print("Mission select button pressed")
+	
+	# Make sure the menu exists
+	if not mission_select_menu:
+		_setup_mission_select_menu()
+	
 	if mission_select_menu:
+		print("Toggling mission select menu visibility")
 		mission_select_menu.toggle_visibility()
 	else:
-		# Try to set up the menu if it doesn't exist yet
-		_setup_mission_select_menu()
-		if mission_select_menu:
-			mission_select_menu.show()
-	
-	
+		push_error("Mission select menu not found after setup attempt")
+
 func _process(delta):
 	# Update the population label if it changes
 	if population_label and Globals.population != total_population:
@@ -121,10 +160,10 @@ func _process(delta):
 
 # Called when a structure is placed
 func _on_structure_placed(structure_index, position):
-	if !builder or structure_index < 0 or structure_index >= builder.structures.size():
+	if !_builder or structure_index < 0 or structure_index >= _builder.structures.size():
 		return
 	
-	var structure = builder.structures[structure_index]
+	var structure = _builder.structures[structure_index]
 	
 	# Only update population for non-residential buildings or if we're NOT in the construction mission
 	var is_residential = structure.type == Structure.StructureType.RESIDENTIAL_BUILDING
@@ -146,13 +185,13 @@ func _on_structure_placed(structure_index, position):
 	
 # Called when a structure is removed
 func _on_structure_removed(structure_index, position):
-	if !builder or structure_index < 0 or structure_index >= builder.structures.size():
+	if !_builder or structure_index < 0 or structure_index >= _builder.structures.size():
 		return
 	
-	var structure = builder.structures[structure_index]
+	var structure = _builder.structures[structure_index]
 	
 	# Update population (but only for non-residential buildings in mission 3)
-	# For residential buildings in mission 3, we handle population separately in builder._remove_resident_for_building
+	# For residential buildings in mission 3, we handle population separately in _builder._remove_resident_for_building
 	var skip_population_update = false
 	var mission_manager = get_node_or_null("/root/Main/MissionManager")
 	
@@ -161,7 +200,7 @@ func _on_structure_removed(structure_index, position):
 			# Only update population for one resident, since we're removing them one by one
 			# We don't do total reset based on structure.population_count
 			skip_population_update = true
-			# We decrement by 1 in builder._remove_resident_for_building instead
+			# We decrement by 1 in _builder._remove_resident_for_building instead
 			
 	if !skip_population_update:
 		total_population = max(0, total_population - structure.population_count)
@@ -257,3 +296,24 @@ func _on_help_button_pressed():
 	
 	if controls_panel:
 		controls_panel.show_panel()
+
+# Called when the music volume is changed
+func _on_music_volume_changed(new_volume):
+	pass  # Sound panel handles this through signals
+
+# Called when the sfx volume is changed
+func _on_sfx_volume_changed(new_volume):
+	pass  # Sound panel handles this through signals
+
+# Called when the music is muted
+func _on_music_muted_changed(is_muted):
+	pass  # Sound panel handles this through signals
+
+# Called when the sfx is muted
+func _on_sfx_muted_changed(is_muted):
+	pass  # Sound panel handles this through signals
+
+func is_mouse_over_structure_menu() -> bool:
+	if structure_menu and structure_menu.has_method("is_mouse_over_menu"):
+		return structure_menu.is_mouse_over_menu()
+	return false
