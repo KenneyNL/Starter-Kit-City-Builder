@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://cgk66f6rg03mj"]
+[gd_scene load_steps=16 format=3 uid="uid://cgk66f6rg03mj"]
 
 [ext_resource type="Script" uid="uid://delou5bqioyxe" path="res://scripts/hud_manager.gd" id="1_6vdxc"]
 [ext_resource type="Texture2D" uid="uid://dour774ndxwyw" path="res://sprites/UI/Group 386.png" id="2_5pdws"]
@@ -6,8 +6,10 @@
 [ext_resource type="FontFile" uid="uid://d0cxd77jybrcn" path="res://fonts/lilita_one_regular.ttf" id="4_qfmf5"]
 [ext_resource type="Texture2D" uid="uid://bbllo67mdcs4a" path="res://sprites/UI/iconStreak.png" id="5_5pdws"]
 [ext_resource type="Texture2D" uid="uid://dv24uyern6qg0" path="res://sprites/UI/buttonSound-on.png" id="6_5pdws"]
+[ext_resource type="Texture2D" uid="uid://gmajxeoeg488" path="res://sprites/UI/buttonSound-hover.png" id="7_0m4u7"]
 [ext_resource type="Texture2D" uid="uid://susaiduvwqc5" path="res://sprites/UI/buttonHelp-primary.png" id="7_5pdws"]
 [ext_resource type="Texture2D" uid="uid://bktcydqta33pv" path="res://sprites/UI/buttonMissions primary.png" id="8_hd3ao"]
+[ext_resource type="Texture2D" uid="uid://dmskbkdcedteb" path="res://sprites/UI/buttonHelp-hover.png" id="8_mphia"]
 [ext_resource type="Texture2D" uid="uid://d1r8pkrwo3dc4" path="res://sprites/UI/buttonMissions hover.png" id="9_0i1j5"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_q176i"]
@@ -144,6 +146,7 @@ layout_mode = 2
 size_flags_vertical = 4
 mouse_default_cursor_shape = 2
 texture_normal = ExtResource("6_5pdws")
+texture_hover = ExtResource("7_0m4u7")
 stretch_mode = 5
 
 [node name="Separator4" type="VSeparator" parent="HBoxContainer"]
@@ -162,6 +165,7 @@ layout_mode = 2
 size_flags_vertical = 4
 mouse_default_cursor_shape = 2
 texture_normal = ExtResource("7_5pdws")
+texture_hover = ExtResource("8_mphia")
 stretch_mode = 5
 
 [node name="Separator5" type="VSeparator" parent="HBoxContainer"]
