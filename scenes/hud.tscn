@@ -17,7 +17,6 @@ shadow_color = Color(0, 0, 0, 0.392157)
 
 [sub_resource type="StyleBoxLine" id="StyleBoxLine_5pdws"]
 color = Color(0.0823529, 0.152941, 0.415686, 1)
-thickness = 2
 vertical = true
 
 [sub_resource type="StyleBoxLine" id="StyleBoxLine_hd3ao"]
