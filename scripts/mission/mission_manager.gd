@@ -935,19 +935,13 @@ func _show_unlocked_items_panel(unlocked_structures):
 		print("Loaded unlocked items panel scene")
 		var unlocked_panel = unlocked_panel_scene.instantiate()
 		
-		# Always add to HUD if available
-		if hud:
-			print("Adding panel to HUD")
-			hud.add_child(unlocked_panel)
+		# Always add to canvas if available
+		if canvas:
+			canvas.add_child(unlocked_panel)
 		else:
-			# Fallback to CanvasLayer if HUD not available
-			if canvas:
-				print("Adding panel to CanvasLayer")
-				canvas.add_child(unlocked_panel)
-			else:
-				# Final fallback to root
-				print("Adding panel to root")
-				get_tree().root.add_child(unlocked_panel)
+			# Final fallback to root
+			print("Adding panel to root")
+			get_tree().root.add_child(unlocked_panel)
 		
 		# Wait for panel to be added
 		await get_tree().process_frame

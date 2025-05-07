@@ -1,17 +1,36 @@
-[gd_scene load_steps=10 format=3 uid="uid://cgk66f6rg03mj"]
+[gd_scene load_steps=17 format=3 uid="uid://cgk66f6rg03mj"]
 
 [ext_resource type="Script" uid="uid://delou5bqioyxe" path="res://scripts/hud_manager.gd" id="1_6vdxc"]
-[ext_resource type="Texture2D" uid="uid://hendpftbt4iw" path="res://sprites/population_icon.png" id="2_28oy1"]
-[ext_resource type="Texture2D" uid="uid://jk3mremfu7lm" path="res://sprites/electricity_icon.png" id="3_2u5bk"]
-[ext_resource type="FontFile" uid="uid://d0cxd77jybrcn" path="res://fonts/lilita_one_regular.ttf" id="4_qfmf5"]
-[ext_resource type="Texture2D" uid="uid://bng0d1sou7c8a" path="res://sprites/coin.png" id="5_vd1bj"]
-[ext_resource type="Texture2D" uid="uid://cgpwknjrqnuae" path="res://sprites/help_icon.png" id="6_i1y88"]
-[ext_resource type="Texture2D" uid="uid://hx3maksi7ma" path="res://sprites/unmuted.png" id="7_80m3c"]
+[ext_resource type="Texture2D" uid="uid://dour774ndxwyw" path="res://sprites/UI/Group 386.png" id="2_5pdws"]
+[ext_resource type="FontFile" uid="uid://cvsh0nooeeuwy" path="res://fonts/Roboto-Bold.ttf" id="3_0m4u7"]
+[ext_resource type="Texture2D" uid="uid://bf57ngjubst77" path="res://sprites/UI/iconFriends.png" id="4_5pdws"]
+[ext_resource type="Texture2D" uid="uid://bbllo67mdcs4a" path="res://sprites/UI/iconStreak.png" id="5_5pdws"]
+[ext_resource type="Texture2D" uid="uid://dv24uyern6qg0" path="res://sprites/UI/buttonSound-on.png" id="6_5pdws"]
+[ext_resource type="Texture2D" uid="uid://gmajxeoeg488" path="res://sprites/UI/buttonSound-hover.png" id="7_0m4u7"]
+[ext_resource type="Texture2D" uid="uid://susaiduvwqc5" path="res://sprites/UI/buttonHelp-primary.png" id="7_5pdws"]
+[ext_resource type="Texture2D" uid="uid://bktcydqta33pv" path="res://sprites/UI/buttonMissions primary.png" id="8_hd3ao"]
+[ext_resource type="Texture2D" uid="uid://dmskbkdcedteb" path="res://sprites/UI/buttonHelp-hover.png" id="8_mphia"]
+[ext_resource type="Texture2D" uid="uid://d1r8pkrwo3dc4" path="res://sprites/UI/buttonMissions hover.png" id="9_0i1j5"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0m4u7"]
+content_margin_left = 45.0
+content_margin_top = 25.0
+content_margin_right = 25.0
+content_margin_bottom = 15.0
+bg_color = Color(0.0509804, 0.105882, 0.301961, 1)
 
 [sub_resource type="LabelSettings" id="LabelSettings_q176i"]
-font = ExtResource("4_qfmf5")
+font = ExtResource("3_0m4u7")
 font_size = 24
 shadow_color = Color(0, 0, 0, 0.392157)
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_5pdws"]
+color = Color(0.0823529, 0.152941, 0.415686, 1)
+vertical = true
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_hd3ao"]
+color = Color(0.0823529, 0.152941, 0.415686, 1)
+vertical = true
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7b8hq"]
 bg_color = Color(0.0784314, 0.0784314, 0.0784314, 0.588235)
@@ -35,138 +54,140 @@ grow_vertical = 2
 script = ExtResource("1_6vdxc")
 show_mission_select = true
 
-[node name="HBoxContainer" type="HBoxContainer" parent="."]
-layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_left = 20.0
-offset_top = 24.0
-offset_right = -20.0
-offset_bottom = 84.0
-grow_horizontal = 2
-scale = Vector2(0.8, 0.8)
+[node name="PanelContainer" type="PanelContainer" parent="."]
+layout_mode = 0
+offset_right = 1410.0
+offset_bottom = 90.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_0m4u7")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer"]
+layout_mode = 2
 mouse_filter = 0
 theme_override_constants/separation = 40
 
-[node name="CashItem" type="HBoxContainer" parent="HBoxContainer"]
+[node name="CashItem" type="HBoxContainer" parent="PanelContainer/HBoxContainer"]
 layout_mode = 2
 mouse_filter = 0
 theme_override_constants/separation = 8
 
-[node name="CashIcon" type="TextureRect" parent="HBoxContainer/CashItem"]
+[node name="CashIcon" type="TextureRect" parent="PanelContainer/HBoxContainer/CashItem"]
 layout_mode = 2
-texture = ExtResource("5_vd1bj")
+texture = ExtResource("2_5pdws")
 expand_mode = 3
 stretch_mode = 5
 
-[node name="CashLabel" type="Label" parent="HBoxContainer/CashItem"]
+[node name="CashLabel" type="Label" parent="PanelContainer/HBoxContainer/CashItem"]
 layout_mode = 2
 text = "$10,000"
 label_settings = SubResource("LabelSettings_q176i")
 
-[node name="Separator1" type="VSeparator" parent="HBoxContainer"]
+[node name="Separator1" type="VSeparator" parent="PanelContainer/HBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 10
+theme_override_styles/separator = SubResource("StyleBoxLine_5pdws")
 
-[node name="PopulationItem" type="HBoxContainer" parent="HBoxContainer"]
+[node name="PopulationItem" type="HBoxContainer" parent="PanelContainer/HBoxContainer"]
 layout_mode = 2
 mouse_filter = 0
 theme_override_constants/separation = 8
 
-[node name="PopulationIcon" type="TextureRect" parent="HBoxContainer/PopulationItem"]
+[node name="PopulationIcon" type="TextureRect" parent="PanelContainer/HBoxContainer/PopulationItem"]
 layout_mode = 2
-texture = ExtResource("2_28oy1")
+texture = ExtResource("4_5pdws")
 expand_mode = 3
 stretch_mode = 5
 
-[node name="PopulationLabel" type="Label" parent="HBoxContainer/PopulationItem"]
+[node name="PopulationLabel" type="Label" parent="PanelContainer/HBoxContainer/PopulationItem"]
 layout_mode = 2
 text = "0"
 label_settings = SubResource("LabelSettings_q176i")
 
-[node name="Separator2" type="VSeparator" parent="HBoxContainer"]
+[node name="Separator2" type="VSeparator" parent="PanelContainer/HBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 10
+theme_override_styles/separator = SubResource("StyleBoxLine_hd3ao")
 
-[node name="ElectricityItem" type="HBoxContainer" parent="HBoxContainer"]
+[node name="ElectricityItem" type="HBoxContainer" parent="PanelContainer/HBoxContainer"]
 layout_mode = 2
 mouse_filter = 0
 theme_override_constants/separation = 8
 
-[node name="ElectricityIcon" type="TextureRect" parent="HBoxContainer/ElectricityItem"]
+[node name="ElectricityIcon" type="TextureRect" parent="PanelContainer/HBoxContainer/ElectricityItem"]
 layout_mode = 2
-texture = ExtResource("3_2u5bk")
+texture = ExtResource("5_5pdws")
 expand_mode = 3
 stretch_mode = 5
 
-[node name="ElectricityValues" type="VBoxContainer" parent="HBoxContainer/ElectricityItem"]
+[node name="ElectricityValues" type="VBoxContainer" parent="PanelContainer/HBoxContainer/ElectricityItem"]
 layout_mode = 2
 size_flags_vertical = 4
 theme_override_constants/separation = 2
 
-[node name="ElectricityLabel" type="Label" parent="HBoxContainer/ElectricityItem/ElectricityValues"]
+[node name="ElectricityLabel" type="Label" parent="PanelContainer/HBoxContainer/ElectricityItem/ElectricityValues"]
 visible = false
 layout_mode = 2
 text = "0/0 kW"
 label_settings = SubResource("LabelSettings_q176i")
 
-[node name="ElectricityIndicator" type="ColorRect" parent="HBoxContainer/ElectricityItem/ElectricityValues"]
+[node name="ElectricityIndicator" type="ColorRect" parent="PanelContainer/HBoxContainer/ElectricityItem/ElectricityValues"]
 custom_minimum_size = Vector2(120, 8)
 layout_mode = 2
 size_flags_horizontal = 4
-color = Color(1, 0, 0, 1)
+color = Color(1, 0.427451, 0.341176, 1)
 
-[node name="Separator3" type="VSeparator" parent="HBoxContainer"]
+[node name="Separator3" type="VSeparator" parent="PanelContainer/HBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 10
+theme_override_styles/separator = SubResource("StyleBoxLine_hd3ao")
 
-[node name="SoundItem" type="HBoxContainer" parent="HBoxContainer"]
+[node name="SoundItem" type="HBoxContainer" parent="PanelContainer/HBoxContainer"]
 layout_mode = 2
 mouse_filter = 0
 theme_override_constants/separation = 8
 
-[node name="SoundButton" type="TextureButton" parent="HBoxContainer/SoundItem"]
+[node name="SoundButton" type="TextureButton" parent="PanelContainer/HBoxContainer/SoundItem"]
 custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
 size_flags_vertical = 4
 mouse_default_cursor_shape = 2
-texture_normal = ExtResource("7_80m3c")
-ignore_texture_size = true
+texture_normal = ExtResource("6_5pdws")
+texture_hover = ExtResource("7_0m4u7")
 stretch_mode = 5
 
-[node name="Separator4" type="VSeparator" parent="HBoxContainer"]
+[node name="Separator4" type="VSeparator" parent="PanelContainer/HBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 10
+theme_override_styles/separator = SubResource("StyleBoxLine_hd3ao")
 
-[node name="HelpItem" type="HBoxContainer" parent="HBoxContainer"]
+[node name="HelpItem" type="HBoxContainer" parent="PanelContainer/HBoxContainer"]
 layout_mode = 2
 mouse_filter = 0
 theme_override_constants/separation = 8
 
-[node name="HelpButton" type="TextureButton" parent="HBoxContainer/HelpItem"]
+[node name="HelpButton" type="TextureButton" parent="PanelContainer/HBoxContainer/HelpItem"]
 custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
 size_flags_vertical = 4
 mouse_default_cursor_shape = 2
-texture_normal = ExtResource("6_i1y88")
-ignore_texture_size = true
+texture_normal = ExtResource("7_5pdws")
+texture_hover = ExtResource("8_mphia")
 stretch_mode = 5
 
-[node name="Separator5" type="VSeparator" parent="HBoxContainer"]
+[node name="Separator5" type="VSeparator" parent="PanelContainer/HBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 10
+theme_override_styles/separator = SubResource("StyleBoxLine_hd3ao")
 
-[node name="MissionSelectItem" type="HBoxContainer" parent="HBoxContainer"]
+[node name="MissionSelectItem" type="HBoxContainer" parent="PanelContainer/HBoxContainer"]
 layout_mode = 2
 mouse_filter = 0
 theme_override_constants/separation = 8
 
-[node name="MissionSelectButton" type="Button" parent="HBoxContainer/MissionSelectItem"]
-custom_minimum_size = Vector2(120, 40)
+[node name="MissionSelectButton" type="TextureButton" parent="PanelContainer/HBoxContainer/MissionSelectItem"]
 layout_mode = 2
-size_flags_vertical = 4
-mouse_default_cursor_shape = 2
-text = "Missions"
+texture_normal = ExtResource("8_hd3ao")
+texture_hover = ExtResource("9_0i1j5")
+stretch_mode = 5
 
 [node name="PopulationTooltip" type="Control" parent="."]
 visible = false
@@ -218,10 +239,9 @@ theme_override_font_sizes/font_size = 24
 text = "Electricity supply vs demand"
 autowrap_mode = 3
 
-[connection signal="mouse_entered" from="HBoxContainer/PopulationItem/PopulationIcon" to="." method="_on_population_icon_mouse_entered"]
-[connection signal="mouse_exited" from="HBoxContainer/PopulationItem/PopulationIcon" to="." method="_on_population_icon_mouse_exited"]
-[connection signal="mouse_entered" from="HBoxContainer/ElectricityItem/ElectricityIcon" to="." method="_on_electricity_icon_mouse_entered"]
-[connection signal="mouse_exited" from="HBoxContainer/ElectricityItem/ElectricityIcon" to="." method="_on_electricity_icon_mouse_exited"]
-[connection signal="pressed" from="HBoxContainer/SoundItem/SoundButton" to="." method="_on_sound_button_pressed"]
-[connection signal="pressed" from="HBoxContainer/HelpItem/HelpButton" to="." method="_on_help_button_pressed"]
-[connection signal="pressed" from="HBoxContainer/MissionSelectItem/MissionSelectButton" to="." method="_on_mission_select_button_pressed"]
+[connection signal="mouse_entered" from="PanelContainer/HBoxContainer/PopulationItem/PopulationIcon" to="." method="_on_population_icon_mouse_entered"]
+[connection signal="mouse_exited" from="PanelContainer/HBoxContainer/PopulationItem/PopulationIcon" to="." method="_on_population_icon_mouse_exited"]
+[connection signal="mouse_entered" from="PanelContainer/HBoxContainer/ElectricityItem/ElectricityIcon" to="." method="_on_electricity_icon_mouse_entered"]
+[connection signal="mouse_exited" from="PanelContainer/HBoxContainer/ElectricityItem/ElectricityIcon" to="." method="_on_electricity_icon_mouse_exited"]
+[connection signal="pressed" from="PanelContainer/HBoxContainer/SoundItem/SoundButton" to="." method="_on_sound_button_pressed"]
+[connection signal="pressed" from="PanelContainer/HBoxContainer/HelpItem/HelpButton" to="." method="_on_help_button_pressed"]
