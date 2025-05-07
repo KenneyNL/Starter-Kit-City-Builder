@@ -13,7 +13,7 @@
 [ext_resource type="Texture2D" uid="uid://d1r8pkrwo3dc4" path="res://sprites/UI/buttonMissions hover.png" id="9_0i1j5"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0m4u7"]
-content_margin_left = 25.0
+content_margin_left = 45.0
 content_margin_top = 25.0
 content_margin_right = 25.0
 content_margin_bottom = 15.0
