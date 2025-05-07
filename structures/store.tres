@@ -1,14 +1,15 @@
 [gd_resource type="Resource" script_class="Structure" load_steps=3 format=3 uid="uid://dtal0tl2ee336"]
 
-[ext_resource type="PackedScene" uid="uid://h0vrvst3cumo" path="res://models/store.glb" id="1_3ue71"]
+[ext_resource type="PackedScene" uid="uid://rdfjckc8h1dp" path="res://models/store.glb" id="1_3ue71"]
 [ext_resource type="Script" uid="uid://uxn26t1x4ehr" path="res://scripts/structure.gd" id="2_7fhbk"]
 
 [resource]
 script = ExtResource("2_7fhbk")
 title = "Store"
-model = ExtResource("1_3ue71")
 type = 2
 price = 70
+size_category = 0
+model = ExtResource("1_3ue71")
 population_count = 0
 kW_usage = 1.0
 kW_production = 0.0

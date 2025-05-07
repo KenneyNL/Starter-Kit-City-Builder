@@ -1,4 +1,4 @@
-[gd_scene load_steps=38 format=3 uid="uid://vgwrcfy1qawf"]
+[gd_scene load_steps=39 format=3 uid="uid://vgwrcfy1qawf"]
 
 [ext_resource type="Script" uid="uid://c37h6na3e4twn" path="res://scripts/builder.gd" id="1_jybm7"]
 [ext_resource type="Environment" uid="uid://jbptgqvstei3" path="res://scenes/main-environment.tres" id="1_yndf3"]
@@ -17,7 +17,7 @@
 [ext_resource type="PackedScene" uid="uid://dmsy06s02tcw4" path="res://scenes/generic_text_panel.tscn" id="13_7i6dj"]
 [ext_resource type="Resource" uid="uid://bh65eqgid4kxy" path="res://structures/building-small-c.tres" id="13_kf5aa"]
 [ext_resource type="Script" uid="uid://ctqqmg4ydlbse" path="res://scripts/mission/mission_ui.gd" id="13_xvw5w"]
-[ext_resource type="Script" uid="uid://n26k1k7243dd" path="res://resources/generic_text_panel.resource.gd" id="14_76jlq"]
+[ext_resource type="Script" uid="uid://bt3emc1vt40gq" path="res://resources/generic_text_panel.resource.gd" id="14_76jlq"]
 [ext_resource type="Script" uid="uid://dnquivpg0ead" path="res://scripts/mission/learning_panel.gd" id="14_q2ymb"]
 [ext_resource type="Resource" uid="uid://dqqe3iofnleup" path="res://structures/pavement-fountain.tres" id="14_t5ykj"]
 [ext_resource type="Resource" uid="uid://dveu4dnue0d54" path="res://structures/road-intersection.tres" id="15_e755i"]
@@ -29,6 +29,7 @@
 [ext_resource type="PackedScene" uid="uid://b4s46k58ddpyc" path="res://scenes/sound_panel.tscn" id="21_sound_panel"]
 [ext_resource type="Resource" uid="uid://dtal0tl2ee336" path="res://structures/store.tres" id="21_y11qv"]
 [ext_resource type="PackedScene" uid="uid://btfwonjc8uj0w" path="res://scenes/mission_select_menu.tscn" id="24_ro3en"]
+[ext_resource type="PackedScene" uid="uid://h4a5rdfug811" path="res://scenes/sticky_builder.tscn" id="25_qkpxi"]
 [ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="26_tel4y"]
 [ext_resource type="Resource" uid="uid://cua0khnbyusip" path="res://mission/unit_1.02/unlock_buildings.tres" id="27_qkpxi"]
 
@@ -176,6 +177,12 @@ resource_data = ExtResource("14_76jlq")
 
 [node name="MissionSelectMenu" parent="CanvasLayer" instance=ExtResource("24_ro3en")]
 visible = false
+
+[node name="StickyBuilder" parent="CanvasLayer" instance=ExtResource("25_qkpxi")]
+offset_left = 7.0
+offset_top = 124.0
+offset_right = -2.0
+offset_bottom = -23.0
 
 [node name="MissionManager" type="Node" parent="." node_paths=PackedStringArray("mission_ui", "builder")]
 script = ExtResource("10_oe3re")

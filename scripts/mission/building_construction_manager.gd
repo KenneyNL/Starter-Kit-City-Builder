@@ -107,10 +107,9 @@ func start_construction(position: Vector3, structure_index: int, rotation_basis 
 	
 	# Place plot marker (outline/transparent version of the building)
 	var plot
-	
+	var structure = builder.structures[structure_index]
 	# Use the actual structure model for the transparent preview if available
 	if structure_index >= 0 and structure_index < builder.structures.size():
-		var structure = builder.structures[structure_index]
 		plot = structure.model.instantiate()
 		print("Created plot using structure model: ", structure.model.resource_path)
 	else:
@@ -139,8 +138,9 @@ func start_construction(position: Vector3, structure_index: int, rotation_basis 
 	construction_sites[position]["plot"] = plot
 	
 	# Always spawn a worker for construction
-	_spawn_worker_for_construction(position)
-	print("=== Construction Started ===\n")
+	if structure.spawn_builder:
+		_spawn_worker_for_construction(position)
+		print("=== Construction Started ===\n")
 	
 	# Send building_selected dialog to learning companion if available in the current mission
 	if mission_manager and mission_manager.current_mission and mission_manager.learning_companion_connected:
@@ -155,7 +155,6 @@ func start_construction(position: Vector3, structure_index: int, rotation_basis 
 		
 		# For power plant mission (mission 5), send a special dialog
 		if structure_index >= 0 and structure_index < builder.structures.size():
-			var structure = builder.structures[structure_index]
 			if structure.model.resource_path.contains("power_plant") and mission.id == "5":
 				const JSBridge = preload("res://scripts/javascript_bridge.gd")
 				if JSBridge.has_interface() and mission.companion_dialog.has("building_selected"):

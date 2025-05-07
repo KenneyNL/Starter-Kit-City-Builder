@@ -1,0 +1,89 @@
+[gd_scene load_steps=9 format=3 uid="uid://h4a5rdfug811"]
+
+[ext_resource type="Texture2D" uid="uid://x76da5uk737u" path="res://sprites/sticky_builder_icons/residential.png" id="1_mhep0"]
+[ext_resource type="Texture2D" uid="uid://ebradvwxmo3s" path="res://sprites/sticky_builder_icons/commercial.png" id="2_jwyv3"]
+[ext_resource type="Script" uid="uid://dpud3hbf66hn7" path="res://scenes/ui/sticky_builder/pop-up-menu-generator.gd" id="2_sqdls"]
+[ext_resource type="Texture2D" uid="uid://b6iwpx5ct6rfn" path="res://sprites/sticky_builder_icons/industrial.png" id="4_ebilp"]
+[ext_resource type="Texture2D" uid="uid://b8dtgbrvgfv6t" path="res://sprites/sticky_builder_icons/landscape.png" id="5_46yqr"]
+[ext_resource type="Texture2D" uid="uid://dnbpauf3umjin" path="res://sprites/sticky_builder_icons/roads.png" id="6_46yqr"]
+[ext_resource type="Texture2D" uid="uid://c1moa65wd6m5f" path="res://sprites/sticky_builder_icons/power_plant.png" id="6_r3beh"]
+
+[sub_resource type="Theme" id="Theme_r3beh"]
+
+[node name="StickyBuilder" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 0
+offset_right = 154.0
+offset_bottom = 242.0
+theme = SubResource("Theme_r3beh")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+offset_right = 148.0
+offset_bottom = 224.0
+
+[node name="Row_1_HBoxContainer" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="Roads" type="MenuButton" parent="Panel/VBoxContainer/Row_1_HBoxContainer"]
+layout_mode = 2
+tooltip_text = "Residential Structures"
+icon = ExtResource("6_46yqr")
+item_count = 1
+popup/item_0/text = "Residential"
+popup/item_0/id = 0
+script = ExtResource("2_sqdls")
+
+[node name="Residential" type="MenuButton" parent="Panel/VBoxContainer/Row_1_HBoxContainer"]
+layout_mode = 2
+tooltip_text = "Residential Structures"
+icon = ExtResource("1_mhep0")
+item_count = 1
+popup/item_0/text = "Residential"
+popup/item_0/id = 0
+script = ExtResource("2_sqdls")
+filter_type = 1
+
+[node name="Row_2_HBoxContainer2" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="Commercial" type="MenuButton" parent="Panel/VBoxContainer/Row_2_HBoxContainer2"]
+layout_mode = 2
+tooltip_text = "Commercial Structures"
+icon = ExtResource("2_jwyv3")
+script = ExtResource("2_sqdls")
+filter_type = 2
+
+[node name="Industrial" type="MenuButton" parent="Panel/VBoxContainer/Row_2_HBoxContainer2"]
+layout_mode = 2
+tooltip_text = "Residential Structures"
+icon = ExtResource("4_ebilp")
+item_count = 1
+popup/item_0/text = "Residential"
+popup/item_0/id = 0
+script = ExtResource("2_sqdls")
+filter_type = 3
+
+[node name="Row_3_HBoxContainer3" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="Power" type="MenuButton" parent="Panel/VBoxContainer/Row_3_HBoxContainer3"]
+layout_mode = 2
+tooltip_text = "Commercial Structures"
+icon = ExtResource("6_r3beh")
+script = ExtResource("2_sqdls")
+filter_type = 6
+
+[node name="Landscape" type="MenuButton" parent="Panel/VBoxContainer/Row_3_HBoxContainer3"]
+layout_mode = 2
+tooltip_text = "Commercial Structures"
+icon = ExtResource("5_46yqr")
+script = ExtResource("2_sqdls")
+filter_type = 5

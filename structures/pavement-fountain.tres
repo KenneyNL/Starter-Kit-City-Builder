@@ -5,10 +5,11 @@
 
 [resource]
 script = ExtResource("2_wqyte")
-title = ""
-model = ExtResource("1_r2n53")
-type = 6
+title = "Fountain"
+type = 5
 price = 10
+size_category = 0
+model = ExtResource("1_r2n53")
 population_count = 0
 kW_usage = 0.0
 kW_production = 0.0

@@ -22,3 +22,8 @@ func receive_data_from_browser(args) -> void:
 	# Emit the signal to notify other nodes
 	EventBus.receive_data_from_browser.emit(args)
 	
+func set_structure(structure:Structure) -> void:
+
+	# Emit the signal to notify other nodes
+	EventBus.set_structure.emit(structure)
+	

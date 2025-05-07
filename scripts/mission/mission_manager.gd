@@ -303,7 +303,7 @@ func _on_learning_panel_closed_for_react() -> void:
 		JSBridge.send_open_graph(current_mission.react_data)
 	elif current_mission.open_react_table:
 		print("Opening React table with data:", current_mission.react_table_data)
-		JSBridge.send_open_table(current_mission.react_table_data)
+		JSBridge.send_open_table({"table_data":current_mission.react_table_data, "description": current_mission.intro_text})
 	
 	# We're now using current_mission directly, so no need to clear anything
 
@@ -457,7 +457,9 @@ func _on_structure_placed(structure_index, position):
 		# Handle structure-based objectives
 		if current_objective.type == ObjectiveType.BUILD_STRUCTURE:
 			# Check if the structure matches the objective's required structure exactly
-			if current_objective.structure and structure.model and current_objective.structure.resource_path == structure.model.resource_path:
+			print(current_objective.structure.resource_path)
+			print(structure.model.resource_path)
+			if current_objective.structure and structure.model and current_objective.structure.resource_path == structure.resource_path:
 				# For buildings, we'll update progress after construction completes
 				if structure.type == Structure.StructureType.RESIDENTIAL_BUILDING:
 					# Connect to the construction_completed signal if it exists

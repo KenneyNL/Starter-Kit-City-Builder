@@ -5,10 +5,11 @@
 
 [resource]
 script = ExtResource("2_1i4lf")
-title = ""
-model = ExtResource("1_2n0ef")
-type = 6
+title = "Grass"
+type = 5
 price = 10
+size_category = 0
+model = ExtResource("1_2n0ef")
 population_count = 0
 kW_usage = 0.0
 kW_production = 0.0

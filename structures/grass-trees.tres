@@ -5,10 +5,11 @@
 
 [resource]
 script = ExtResource("2_pnpij")
-title = ""
-model = ExtResource("1_lcgc1")
-type = 6
+title = "Small Trees"
+type = 5
 price = 25
+size_category = 0
+model = ExtResource("1_lcgc1")
 population_count = 0
 kW_usage = 0.0
 kW_production = 0.0
