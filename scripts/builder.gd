@@ -89,6 +89,10 @@ func _ready():
 	plane = Plane(Vector3.UP, Vector3.ZERO)
 	hud_manager = get_node_or_null("/root/Main/CanvasLayer/HUD")
 	
+	# Connect event bus for emitting structure menu stuff
+	EventBus.set_structure.connect(action_structure_toggle)
+	
+
 	# Create invalid placement material
 	invalid_placement_material = StandardMaterial3D.new()
 	invalid_placement_material.albedo_color = Color(1, 0, 0, 0.5)  # Semi-transparent red
@@ -179,7 +183,7 @@ func _process(delta):
 	
 	# Controls
 	action_rotate() # Rotates selection 90 degrees
-	action_structure_toggle() # Toggles between structures
+	#action_structure_toggle() # Toggles between structures
 	
 	action_save() # Saving
 	action_load() # Loading
@@ -329,7 +333,7 @@ func action_build(gridmap_position, can_place: bool):
 		# For power plants, we handle them specially
 		var is_power_plant = structures[index].model.resource_path.contains("power_plant")
 		# For grass and trees (terrain), we need special handling
-		var is_terrain = structures[index].type == Structure.StructureType.TERRAIN
+		var is_terrain = structures[index].type == Structure.StructureType.LANDSCAPE
 		
 		# Check if we're in mission 3 (when we should use construction workers)
 		var use_worker_construction = true
@@ -484,7 +488,7 @@ func action_demolish(gridmap_position):
 		elif is_terrain:
 			# Find the terrain structure index
 			for i in range(structures.size()):
-				if structures[i].type == Structure.StructureType.TERRAIN:
+				if structures[i].type == Structure.StructureType.LANDSCAPE:
 					structure_index = i
 					break
 					
@@ -529,61 +533,15 @@ func action_rotate():
 
 # Toggle between structures to build
 
-func action_structure_toggle():
-	# Original keyboard controls
-	if Input.is_action_just_pressed("structure_next"):
-		print("\nE key pressed - attempting to switch to next structure")
-		# First, collect all unlocked structure indices in order
-		var unlocked_indices = []
-		for i in range(_structures.size()):
-			var structure = _structures[i]
-			if structure.model:
-				if structure.unlocked:
-					unlocked_indices.append(i)
-		
-		if unlocked_indices.is_empty():
-			print("WARNING: No unlocked structures available!")
-			return
-			
-		# Find the next unlocked structure
-		var current_pos = unlocked_indices.find(index)
-		if current_pos == -1:
-			# If current index is not in unlocked list, start from beginning
-			index = unlocked_indices[0]
-			print("Current structure not unlocked, starting from first unlocked: ", index)
-		else:
-			# Move to next structure, wrapping around to start if at end
-			index = unlocked_indices[(current_pos + 1) % unlocked_indices.size()]
-			print("Moving to next unlocked structure: ", index)
-		
+func action_structure_toggle(structure:Structure):
+	var found_index = _structures.find(structure)
+	if not found_index:
+		print("No structure found!")
+	else:
+		index = found_index
 		update_structure()
 	
-	if Input.is_action_just_pressed("structure_previous"):
-		print("\nQ key pressed - attempting to switch to previous structure")
-		# First, collect all unlocked structure indices in order
-		var unlocked_indices = []
-		for i in range(_structures.size()):
-			var structure = _structures[i]
-			if structure.model:
-				if structure.unlocked:
-					unlocked_indices.append(i)
-		
-		if unlocked_indices.is_empty():
-			print("WARNING: No unlocked structures available!")
-			return
-			
-		# Find the previous unlocked structure
-		var current_pos = unlocked_indices.find(index)
-		if current_pos == -1:
-			# If current index is not in unlocked list, start from end
-			index = unlocked_indices[-1]
-			print("Current structure not unlocked, starting from last unlocked: ", index)
-		else:
-			# Move to previous structure, wrapping around to end if at start
-			index = unlocked_indices[(current_pos - 1 + unlocked_indices.size()) % unlocked_indices.size()]
-			print("Moving to previous unlocked structure: ", index)
-		
-		update_structure()
+	
 	
 # Update the structure visual in the 'cursor'
 func update_structure():
@@ -1150,7 +1108,7 @@ func place_structure(structure_index: int, position: Vector3, rotation: float = 
 	var is_road = structures[index].type == Structure.StructureType.ROAD
 	var is_residential = structures[index].type == Structure.StructureType.RESIDENTIAL_BUILDING
 	var is_power_plant = structures[index].model.resource_path.contains("power_plant")
-	var is_terrain = structures[index].type == Structure.StructureType.TERRAIN
+	var is_terrain = structures[index].type == Structure.StructureType.LANDSCAPE
 	
 	if is_road:
 		# For roads, we'll need to track in our data without using the GridMap

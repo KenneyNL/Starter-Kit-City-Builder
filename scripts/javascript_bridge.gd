@@ -224,7 +224,7 @@ static func send_open_table(table_data: Dictionary):
 				if (window.parent) {
 					console.log('Sending missionStarted message to parent window');
 					window.parent.postMessage({ 
-						type: 'stemCity_missionStarted',
+						type: 'open_react_table',
 						data: %s,
 						source: 'godot-game',
 						timestamp: Date.now()
@@ -237,7 +237,7 @@ static func send_open_table(table_data: Dictionary):
 			}
 		})();
 		""" % message_json
-		
+
 		if Engine.has_singleton("JavaScriptBridge"):
 			var js = Engine.get_singleton("JavaScriptBridge")
 			js.eval(script)

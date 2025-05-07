@@ -6,14 +6,15 @@
 [resource]
 script = ExtResource("3_oloyn")
 title = "Road Corner"
-model = ExtResource("1_r8n8k")
 type = 0
 price = 25
+size_category = 0
+model = ExtResource("1_r8n8k")
 population_count = 0
 kW_usage = 0.0
 kW_production = 0.0
 selector_scale = 2.8
-unlocked = false
+unlocked = true
 spawn_builder = false
 description = "A gently curved road section that helps create more natural and flowing city layouts."
 thumbnail = "res://sprites/roads/road-corner.png"

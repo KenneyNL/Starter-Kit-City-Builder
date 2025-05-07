@@ -4,11 +4,13 @@
 [ext_resource type="Script" uid="uid://uxn26t1x4ehr" path="res://scripts/structure.gd" id="2_3eq5k"]
 
 [resource]
+resource_local_to_scene = true
 script = ExtResource("2_3eq5k")
-title = ""
-model = ExtResource("1_pnjl2")
+title = "Intersection"
 type = 0
 price = 25
+size_category = 0
+model = ExtResource("1_pnjl2")
 population_count = 0
 kW_usage = 0.0
 kW_production = 0.0

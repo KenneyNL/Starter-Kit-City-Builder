@@ -218,6 +218,3 @@ text = "Power: 0"
 [connection signal="pressed" from="MainButton" to="." method="_on_main_button_pressed"]
 [connection signal="pressed" from="SelectionPanel/MarginContainer/VBoxContainer/HBoxContainer/CloseButton" to="." method="hide_panel"]
 [connection signal="text_changed" from="SelectionPanel/MarginContainer/VBoxContainer/SearchBar" to="." method="_on_search_text_changed"]
-[connection signal="pressed" from="SelectionPanel/MarginContainer/VBoxContainer/FilterButtons/AllButton" to="." method="_on_filter_button_pressed" binds= ["All"]]
-[connection signal="pressed" from="SelectionPanel/MarginContainer/VBoxContainer/FilterButtons/GroundButton" to="." method="_on_filter_button_pressed" binds= ["Ground"]]
-[connection signal="pressed" from="SelectionPanel/MarginContainer/VBoxContainer/FilterButtons/BuildingButton" to="." method="_on_filter_button_pressed" binds= ["Buildings"]]
