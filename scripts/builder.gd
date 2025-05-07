@@ -225,14 +225,8 @@ func is_mouse_over_ui() -> bool:
 			return true
 			
 	# Check sticky builder panel UI overlaps
-	var sticky_builder = get_node_or_null("/root/Main/CanvasLayer/StickyBuilder")
-	if sticky_builder:
-		#Get Panel
-		var stickyPanel = sticky_builder.get_node_or_null("Panel")
-		if stickyPanel:
-			var stickyPanelRect = stickyPanel.get_global_rect()
-			if stickyPanelRect.has_point(mouse_pos):
-				return true
+	if is_mouse_over_sticky_builder():
+		return true
 	
 	# Let's try an extremely simple approach - just check coordinates
 	# most HUDs are at top of screen
@@ -277,6 +271,26 @@ func is_mouse_over_ui() -> bool:
 		if panel_rect.has_point(mouse_pos):
 			return true
 	
+	return false
+
+func is_mouse_over_sticky_builder() -> bool:
+	var sticky_builder = get_node_or_null("/root/Main/CanvasLayer/StickyBuilder")
+	if not sticky_builder:
+		return false
+
+	var mouse_pos = get_viewport().get_mouse_position()
+	return _check_visible_controls(sticky_builder, mouse_pos)
+
+# Helper function to check a node and it's control children's overlap with mouse position
+func _check_visible_controls(node: Node, mouse_pos: Vector2) -> bool:
+	if node is Control and node.is_visible_in_tree():
+		if node.get_global_rect().has_point(mouse_pos):
+			return true
+
+	for child in node.get_children():
+		if _check_visible_controls(child, mouse_pos):
+			return true
+
 	return false
 
 # Retrieve the mesh from a PackedScene, used for dynamically creating a MeshLibrary
