@@ -6,14 +6,15 @@
 [resource]
 script = ExtResource("3_oloyn")
 title = "Power Plant"
-model = ExtResource("1_r8n8k")
-type = 7
+type = 6
 price = 5000
+size_category = 0
+model = ExtResource("1_r8n8k")
 population_count = 0
 kW_usage = 0.0
 kW_production = 40.0
 selector_scale = 2.8
-unlocked = false
+unlocked = true
 spawn_builder = false
 description = "A power-generating facility that produces electricity to keep your city's buildings operational and citizens happy. Produces 40 kW of energy."
 thumbnail = "res://sprites/updated/power-plant.png"

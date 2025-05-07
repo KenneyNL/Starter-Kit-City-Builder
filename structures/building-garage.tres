@@ -5,15 +5,16 @@
 
 [resource]
 script = ExtResource("2_jrinw")
-title = ""
-model = ExtResource("1_gyclk")
-type = 1
+title = "Small Garage"
+type = 4
 price = 70
+size_category = 0
+model = ExtResource("1_gyclk")
 population_count = 0
 kW_usage = 0.0
 kW_production = 0.0
 selector_scale = 2.8
-unlocked = false
-spawn_builder = false
+unlocked = true
+spawn_builder = true
 description = "Garage"
 thumbnail = "res://sprites/updated/garage.png"

@@ -5,15 +5,16 @@
 
 [resource]
 script = ExtResource("2_b2sah")
-title = "Trees"
-model = ExtResource("1_nbdd1")
-type = 6
+title = "Tall Trees"
+type = 5
 price = 25
+size_category = 0
+model = ExtResource("1_nbdd1")
 population_count = 0
 kW_usage = 0.0
 kW_production = 0.0
 selector_scale = 2.8
-unlocked = false
+unlocked = true
 spawn_builder = false
 description = "A lush area featuring small trees that provides shade, clean air, and a pleasant atmosphere for nearby residents."
 thumbnail = "res://sprites/updated/grass-trees-tall.png"

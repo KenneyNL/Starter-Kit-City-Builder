@@ -1,17 +1,17 @@
 [gd_resource type="Resource" script_class="MissionData" load_steps=5 format=3 uid="uid://cua0khnbyusip"]
 
 [ext_resource type="Script" uid="uid://be2nkvjhpebhi" path="res://scripts/mission/mission_objective.gd" id="1_objective"]
+[ext_resource type="Resource" uid="uid://dqqe3iofnleup" path="res://structures/pavement-fountain.tres" id="2_hfe31"]
 [ext_resource type="Script" uid="uid://cjaik5ku37xqx" path="res://scripts/mission/mission_data.gd" id="2_mission"]
-[ext_resource type="Resource" uid="uid://cntgl86ianngh" path="res://structures/building-small-a.tres" id="3_building_a"]
 
 [sub_resource type="Resource" id="Resource_objective1"]
 script = ExtResource("1_objective")
-type = 1
+type = 0
 target_count = 3
 current_count = 0
 description = "Build 3 Type A houses to unlock all building types"
 completed = false
-structure = ExtResource("3_building_a")
+structure = ExtResource("2_hfe31")
 
 [resource]
 script = ExtResource("2_mission")
@@ -53,7 +53,7 @@ companion_dialog = {
 }
 }
 unlocked_items = Array[String](["res://structures/building-small-a.tres", "res://structures/building-small-b.tres", "res://structures/building-small-c.tres", "res://structures/building-garage.tres", "res://structures/road-straight.tres"])
-starting_structures = Array[String](["res://structures/building-small-a.tres", "res://structures/building-small-b.tres"])
+starting_structures = Array[String](["res://structures/building-small-a.tres", "res://structures/pavement-fountain.tres"])
 open_react_graph = false
 open_react_table = false
 react_data = {}

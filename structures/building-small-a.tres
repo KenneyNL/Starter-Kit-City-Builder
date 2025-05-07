@@ -5,15 +5,16 @@
 
 [resource]
 script = ExtResource("2_q3i1h")
-title = "Residential Building"
-model = ExtResource("1_v5apy")
+title = "Small Residential"
 type = 1
 price = 50
+size_category = 0
+model = ExtResource("1_v5apy")
 population_count = 1
 kW_usage = 1.0
 kW_production = 0.0
 selector_scale = 2.8
-unlocked = false
+unlocked = true
 spawn_builder = false
 description = "A small residential building that can house 1 person. Perfect for getting your city started!"
 thumbnail = "res://sprites/updated/building-small-a.png"

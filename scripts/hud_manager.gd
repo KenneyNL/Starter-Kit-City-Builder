@@ -44,7 +44,7 @@ func _ready():
 	# Get references to panels
 	controls_panel = get_node_or_null("/root/Main/CanvasLayer/ControlsPanel")
 	sound_panel = get_node_or_null("/root/Main/CanvasLayer/SoundPanel")
-	structure_menu = get_node_or_null("/root/Main/CanvasLayer/StructureMenu")
+#	structure_menu = get_node_or_null("/root/Main/CanvasLayer/StructureMenu")
 	
 	# Setup mission select button
 	if mission_select_button:
@@ -56,8 +56,8 @@ func _ready():
 	# Setup mission select menu
 	_setup_mission_select_menu()
 	
-	# Setup structure menu
-	_setup_structure_menu()
+#	# Setup structure menu
+#	_setup_structure_menu()
 	
 	# Wait a frame to ensure all nodes are ready
 	await get_tree().process_frame

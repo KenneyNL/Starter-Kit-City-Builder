@@ -5,15 +5,16 @@
 
 [resource]
 script = ExtResource("2_rkiq0")
-title = ""
-model = ExtResource("1_6yyww")
+title = "Large Residential"
 type = 1
 price = 70
+size_category = 2
+model = ExtResource("1_6yyww")
 population_count = 5
 kW_usage = 1.0
 kW_production = 0.0
 selector_scale = 2.8
-unlocked = false
+unlocked = true
 spawn_builder = true
 description = "A spacious multi-story apartment complex that comfortably houses 5 citizens, providing efficient population growth for your expanding city."
 thumbnail = "res://sprites/updated/building-small-c.png"
