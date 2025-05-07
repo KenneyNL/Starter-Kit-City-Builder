@@ -104,6 +104,8 @@ func _on_item_selected(id: int):
 		# Get the original structure index in the builder's structure array
 		var structure_resource_path = selected_structure.resource_path
 		Globals.set_structure(selected_structure)
+		# Consume the input event to prevent it from reaching the game
+		get_viewport().set_input_as_handled()
 
 # Method to manually refresh the menu items
 func refresh():
@@ -139,3 +141,26 @@ func _get_scaled_icon(texture: Texture2D, target_height: int) -> Texture2D:
 	
 	var new_texture = ImageTexture.create_from_image(img)
 	return new_texture
+
+# Override _gui_input to ensure we're handling all input
+func _gui_input(event: InputEvent) -> void:
+	# When menu is open, accept all input to prevent it from reaching the game
+	if get_popup().visible:
+		get_viewport().set_input_as_handled()
+
+# Override _input to catch all input events
+func _input(event: InputEvent) -> void:
+	if get_popup().visible and (event is InputEventMouseButton or event is InputEventMouseMotion):
+		# When menu is visible, accept all mouse input to prevent it from reaching the game
+		get_viewport().set_input_as_handled()
+		
+		# If it's a mouse button press, mark it as handled
+		if event is InputEventMouseButton:
+			event.pressed = false
+
+# Override _unhandled_input to catch any remaining input events
+func _unhandled_input(event: InputEvent) -> void:
+	if get_popup().visible:
+		get_viewport().set_input_as_handled()
+		if event is InputEventMouseButton:
+			event.pressed = false
