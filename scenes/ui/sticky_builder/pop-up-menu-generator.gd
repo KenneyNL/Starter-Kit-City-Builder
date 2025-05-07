@@ -80,22 +80,36 @@ func _populate_menu():
 				#popup.add_item(category_name, -1)
 				#popup.set_item_disabled(popup.item_count - 1, true)
 		
-		# Add the structure item with price in the name
+		# Create the item text with structure info
 		var item_text = structure.title
+		
+		# Create info section for price, population, and energy
+		var info_parts = []
+		
+		# Add price if available
 		if structure.price > 0:
-			item_text += " ($" + str(structure.price) + ")"
-			
+			info_parts.append("$" + str(structure.price))
+		
+		# Add population count
+		if structure.population_count > 0:
+			info_parts.append("+" + str(structure.population_count) + " pop")
+		
+		# Add energy usage and production
+		if structure.kW_usage > 0:
+			info_parts.append("-" + str(structure.kW_usage) + " kW")
+		if structure.kW_production > 0:
+			info_parts.append("+" + str(structure.kW_production) + " kW")
+		# Add the info parts to the item text
+		if info_parts.size() > 0:
+			item_text += " (" + " | ".join(info_parts) + ")"
 		
 		# Add lock/unlock icon if we're showing all structures
 		if not structure.unlocked:
 			if _lock_icon:
-				
 				popup.add_icon_item(_lock_icon, item_text)
 				popup.set_item_disabled(popup.item_count - 1, true)
 		else:
 			popup.add_item(item_text, i)
-		
-				
 
 # Handle the menu item selection
 func _on_item_selected(id: int):

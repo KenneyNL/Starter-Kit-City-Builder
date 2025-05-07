@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://uxn26t1x4ehr" path="res://scripts/structure.gd" id="2_3eq5k"]
 
 [resource]
+resource_local_to_scene = true
 script = ExtResource("2_3eq5k")
 title = "Intersection"
 type = 0
