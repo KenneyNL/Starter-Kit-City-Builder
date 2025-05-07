@@ -133,7 +133,7 @@ label_settings = SubResource("LabelSettings_q176i")
 custom_minimum_size = Vector2(120, 8)
 layout_mode = 2
 size_flags_horizontal = 4
-color = Color(1, 0, 0, 1)
+color = Color(1, 0.427451, 0.341176, 1)
 
 [node name="Separator3" type="VSeparator" parent="PanelContainer/HBoxContainer"]
 layout_mode = 2

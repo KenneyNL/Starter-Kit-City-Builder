@@ -65,9 +65,9 @@ func _ready():
 	# Update mission select visibility based on export variable
 	_update_mission_select_visibility()
 	
-	# Ensure electricity indicator starts with red color
+	# Ensure electricity indicator starts with orange color
 	if electricity_indicator:
-		electricity_indicator.color = Color(1, 0, 0)  # Start with red
+		electricity_indicator.color = Color8(255, 109, 87)  # Start with orange
 	
 	# Hide the electricity label for now (keeping implementation for later)
 	if electricity_label:
@@ -232,8 +232,8 @@ func update_hud():
 	
 	# Update electricity label and indicator
 	if electricity_label:
-		# Default to red for the electricity indicator
-		var indicator_color = Color(1, 0, 0)  # Red
+		# Default to orange for the electricity indicator
+		var indicator_color = Color8(255, 109, 87)   #Orange
 		
 		if total_kW_usage > 0:
 			# If we have usage, check if production meets or exceeds it
@@ -243,7 +243,7 @@ func update_hud():
 				indicator_color = Color(0, 1, 0)  # Green
 			else:
 				# Not enough power - keep it red
-				indicator_color = Color(1, 0, 0)  # Red
+				indicator_color = Color8(255, 109, 87)   #Orange
 				
 			# Update electricity label text (hidden for now but kept for future use)
 			electricity_label.text = str(total_kW_usage) + "/" + str(total_kW_production) + " kW"
@@ -253,8 +253,8 @@ func update_hud():
 				indicator_color = Color(0, 1, 0)  # Green
 				electricity_label.text = "0/" + str(total_kW_production) + " kW"
 			else:
-				# No usage and no production - show neutral color (gray)
-				indicator_color = Color(0.7, 0.7, 0.7)  # Gray
+				# No usage and no production - show neutral color (white)
+				indicator_color = Color(0, 0, 0)  # White
 				electricity_label.text = "0/0 kW"
 		
 		# Hide the text label for now, but keep implementation for later
