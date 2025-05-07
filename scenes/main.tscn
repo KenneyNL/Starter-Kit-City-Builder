@@ -17,7 +17,7 @@
 [ext_resource type="PackedScene" uid="uid://dmsy06s02tcw4" path="res://scenes/generic_text_panel.tscn" id="13_7i6dj"]
 [ext_resource type="Resource" uid="uid://bh65eqgid4kxy" path="res://structures/building-small-c.tres" id="13_kf5aa"]
 [ext_resource type="Script" uid="uid://ctqqmg4ydlbse" path="res://scripts/mission/mission_ui.gd" id="13_xvw5w"]
-[ext_resource type="Script" uid="uid://n26k1k7243dd" path="res://resources/generic_text_panel.resource.gd" id="14_76jlq"]
+[ext_resource type="Script" uid="uid://bt3emc1vt40gq" path="res://resources/generic_text_panel.resource.gd" id="14_76jlq"]
 [ext_resource type="Script" uid="uid://dnquivpg0ead" path="res://scripts/mission/learning_panel.gd" id="14_q2ymb"]
 [ext_resource type="Resource" uid="uid://dqqe3iofnleup" path="res://structures/pavement-fountain.tres" id="14_t5ykj"]
 [ext_resource type="Resource" uid="uid://dveu4dnue0d54" path="res://structures/road-intersection.tres" id="15_e755i"]
@@ -129,7 +129,7 @@ selector = NodePath("Selector")
 selector_container = NodePath("Selector/Container")
 view_camera = NodePath("../View/Camera")
 gridmap = NodePath("../GridMap")
-cash_display = NodePath("../CanvasLayer/HUD/HBoxContainer/CashItem/CashLabel")
+cash_display = NodePath("../CanvasLayer/HUD/PanelContainer/HBoxContainer/CashItem/CashLabel")
 
 [node name="Selector" type="Node3D" parent="Builder"]
 
