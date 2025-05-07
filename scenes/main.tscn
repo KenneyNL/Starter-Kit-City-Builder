@@ -130,7 +130,7 @@ selector = NodePath("Selector")
 selector_container = NodePath("Selector/Container")
 view_camera = NodePath("../View/Camera")
 gridmap = NodePath("../GridMap")
-cash_display = NodePath("../CanvasLayer/HUD/HBoxContainer/CashItem/CashLabel")
+cash_display = NodePath("../CanvasLayer/HUD/PanelContainer/HBoxContainer/CashItem/CashLabel")
 
 [node name="Selector" type="Node3D" parent="Builder"]
 
