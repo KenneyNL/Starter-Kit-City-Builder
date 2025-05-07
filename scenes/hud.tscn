@@ -2,8 +2,8 @@
 
 [ext_resource type="Script" uid="uid://delou5bqioyxe" path="res://scripts/hud_manager.gd" id="1_6vdxc"]
 [ext_resource type="Texture2D" uid="uid://dour774ndxwyw" path="res://sprites/UI/Group 386.png" id="2_5pdws"]
+[ext_resource type="FontFile" uid="uid://cvsh0nooeeuwy" path="res://fonts/Roboto-Bold.ttf" id="3_0m4u7"]
 [ext_resource type="Texture2D" uid="uid://bf57ngjubst77" path="res://sprites/UI/iconFriends.png" id="4_5pdws"]
-[ext_resource type="FontFile" uid="uid://d0cxd77jybrcn" path="res://fonts/lilita_one_regular.ttf" id="4_qfmf5"]
 [ext_resource type="Texture2D" uid="uid://bbllo67mdcs4a" path="res://sprites/UI/iconStreak.png" id="5_5pdws"]
 [ext_resource type="Texture2D" uid="uid://dv24uyern6qg0" path="res://sprites/UI/buttonSound-on.png" id="6_5pdws"]
 [ext_resource type="Texture2D" uid="uid://gmajxeoeg488" path="res://sprites/UI/buttonSound-hover.png" id="7_0m4u7"]
@@ -20,7 +20,7 @@ content_margin_bottom = 15.0
 bg_color = Color(0.0509804, 0.105882, 0.301961, 1)
 
 [sub_resource type="LabelSettings" id="LabelSettings_q176i"]
-font = ExtResource("4_qfmf5")
+font = ExtResource("3_0m4u7")
 font_size = 24
 shadow_color = Color(0, 0, 0, 0.392157)
 
