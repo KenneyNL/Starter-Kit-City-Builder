@@ -223,6 +223,16 @@ func is_mouse_over_ui() -> bool:
 		var panel_rect = building_selector.selection_panel.get_global_rect()
 		if panel_rect.has_point(mouse_pos):
 			return true
+			
+	# Check sticky builder panel UI overlaps
+	var sticky_builder = get_node_or_null("/root/Main/CanvasLayer/StickyBuilder")
+	if sticky_builder:
+		#Get Panel
+		var stickyPanel = sticky_builder.get_node_or_null("Panel")
+		if stickyPanel:
+			var stickyPanelRect = stickyPanel.get_global_rect()
+			if stickyPanelRect.has_point(mouse_pos):
+				return true
 	
 	# Let's try an extremely simple approach - just check coordinates
 	# most HUDs are at top of screen
