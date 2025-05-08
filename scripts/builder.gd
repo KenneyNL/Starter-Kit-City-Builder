@@ -578,8 +578,13 @@ func action_clear_selection():
 # Toggle between structures to build
 
 func action_structure_toggle(structure:Structure):
-	var found_index = _structures.find(structure)
-	if not found_index:
+	var found_index = -1
+	for i in range(_structures.size()):
+		if _structures[i].resource_path == structure.resource_path:
+			found_index = i
+			break
+			
+	if found_index == -1:
 		print("No structure found!")
 	else:
 		index = found_index

@@ -15,7 +15,10 @@ func _ready():
 	
 	# Add to group for easy refreshing of all structure menus
 	add_to_group("structure_menus")
+
+	EventBus.structure_unlocked.connect(_on_structure_unlock)
 	
+
 	# Load icons (you'll need to create or find these icons)
 	_lock_icon = load("res://sprites/sticky_builder_icons/lock.png") if ResourceLoader.exists("res://sprites/sticky_builder_icons/lock.png") else null
 	if(_lock_icon):
@@ -60,6 +63,8 @@ func _populate_menu():
 	popup.clear()
 	
 	var current_size_category = -1
+	var menu_item_to_structure_index = {}  # Map menu item IDs to structure indices
+	var current_item_id = 0
 	
 	for i in range(_structures.size()):
 		var structure = _structures[i]
@@ -67,6 +72,7 @@ func _populate_menu():
 		if structure.size_category != current_size_category:
 			if i > 0:
 				popup.add_separator()
+				current_item_id += 1
 			current_size_category = structure.size_category
 			
 			# Add size category header (optional)
@@ -107,16 +113,24 @@ func _populate_menu():
 		if not structure.unlocked:
 			if _lock_icon:
 				popup.add_icon_item(_lock_icon, item_text)
-				popup.set_item_disabled(popup.item_count - 1, true)
+				popup.set_item_disabled(current_item_id, true)
+				menu_item_to_structure_index[current_item_id] = i
+				current_item_id += 1
 		else:
-			popup.add_item(item_text, i)
+			var icon = load(structure.icon) if ResourceLoader.exists(structure.icon) else null
+			popup.add_icon_item(icon, item_text)
+			menu_item_to_structure_index[current_item_id] = i
+			current_item_id += 1
+	
+	# Store the mapping for use in _on_item_selected
+	set_meta("menu_item_to_structure_index", menu_item_to_structure_index)
 
 # Handle the menu item selection
 func _on_item_selected(id: int):
-	if id >= 0 and id < _structures.size():
-		var selected_structure = _structures[id]
-		# Get the original structure index in the builder's structure array
-		var structure_resource_path = selected_structure.resource_path
+	var menu_item_to_structure_index = get_meta("menu_item_to_structure_index", {})
+	if id in menu_item_to_structure_index:
+		var structure_index = menu_item_to_structure_index[id]
+		var selected_structure = _structures[structure_index]
 		Globals.set_structure(selected_structure)
 		# Consume the input event to prevent it from reaching the game
 		get_viewport().set_input_as_handled()
@@ -178,3 +192,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		if event is InputEventMouseButton:
 			event.pressed = false
+			
+func _on_structure_unlock(structure:Structure)->void:
+	refresh()

@@ -864,6 +864,7 @@ func _handle_structure_unlocking(mission):
 						if "unlocked" in structure:
 							structure.unlocked = true
 							unlocked_structures.append(structure)
+							Globals.structure_unlocked(structure)
 						found = true
 			if not found:
 				print("[Unlock]   No match found for item_path: ", item_path)

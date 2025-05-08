@@ -39,6 +39,10 @@ enum SizeCategory {
 
 @export_subgroup("Visual")
 @export var selector_scale:float = 1.0 # Scale factor for the selector when this structure is selected
+@export var thumbnail: String = "Thumbnail" # Display for player
+@export var icon: String = "" # Small version of thumbnail. I know thumbnail should be small... But I messed up already so here we are xD.
+
+
 
 @export_subgroup("Game Progression")
 @export var unlocked:bool = false # Whether this structure is available to the player
@@ -48,7 +52,3 @@ enum SizeCategory {
 
 @export_subgroup("Game Progression")
 @export var description: String = "Description" # Whether this structure is available to the player
-
-
-@export_subgroup("Game Progression")
-@export var thumbnail: String = "Thumbnail" # Whether this structure is available to the player

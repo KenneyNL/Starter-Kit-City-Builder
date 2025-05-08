@@ -9,7 +9,7 @@ script = ExtResource("1_objective")
 type = 0
 target_count = 3
 current_count = 0
-description = "Build 3 Type A houses to unlock all building types"
+description = "Build 3 Fountains to unlock all homes!"
 completed = false
 structure = ExtResource("2_hfe31")
 

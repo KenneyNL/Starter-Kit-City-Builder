@@ -3,6 +3,7 @@ extends Node
 signal population_update(count:int)
 signal receive_data_from_browser(args)
 signal set_structure(structure:Structure)
+signal structure_unlocked(structure:Structure)
 
 var current_scene = null
 

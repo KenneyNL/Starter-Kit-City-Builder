@@ -166,7 +166,7 @@ func _create_filter_buttons():
 	# Get unique structure types
 	var structure_types = {}
 	for structure in builder.get_structures():
-		if structure.type == Structure.StructureType.TERRAIN:
+		if structure.type == Structure.StructureType.LANDSCAPE:
 			structure_types["Ground"] = true
 		else:
 			structure_types["Buildings"] = true
@@ -216,14 +216,14 @@ func _create_option_buttons():
 		if current_filter != "All":
 			match current_filter:
 				"Ground":
-					if structure.type != Structure.StructureType.TERRAIN:
+					if structure.type != Structure.StructureType.LANDSCAPE:
 						continue
 				"Buildings":
-					if structure.type == Structure.StructureType.TERRAIN:
+					if structure.type == Structure.StructureType.LANDSCAPE:
 						continue
 		
 		# Add to appropriate list
-		if structure.type == Structure.StructureType.TERRAIN:
+		if structure.type == Structure.StructureType.LANDSCAPE:
 			ground_structures.append(structure)
 		else:
 			building_structures.append(structure)

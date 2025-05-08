@@ -26,4 +26,8 @@ func set_structure(structure:Structure) -> void:
 
 	# Emit the signal to notify other nodes
 	EventBus.set_structure.emit(structure)
+
+# Used when a new structure is unlocked	
+func structure_unlocked(structure:Structure) ->void:
+	EventBus.structure_unlocked.emit(structure)
 	
