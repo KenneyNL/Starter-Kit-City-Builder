@@ -16,6 +16,6 @@ kW_production = 0.0
 selector_scale = 2.8
 thumbnail = "res://sprites/updated/road-straight.png"
 icon = "res://sprites/updated/icon/road-straight_icon.png"
-unlocked = true
+unlocked = false
 spawn_builder = false
 description = "A basic road for connecting parts of your city."
