@@ -34,11 +34,8 @@ layout_mode = 2
 
 [node name="Roads" type="MenuButton" parent="Panel/VBoxContainer/Row_1_HBoxContainer"]
 layout_mode = 2
-tooltip_text = "Residential Structures"
+tooltip_text = "Roads"
 icon = ExtResource("6_46yqr")
-item_count = 1
-popup/item_0/text = "Residential"
-popup/item_0/id = 0
 script = ExtResource("2_sqdls")
 
 [node name="Residential" type="MenuButton" parent="Panel/VBoxContainer/Row_1_HBoxContainer"]
@@ -63,7 +60,7 @@ filter_type = 2
 
 [node name="Industrial" type="MenuButton" parent="Panel/VBoxContainer/Row_2_HBoxContainer2"]
 layout_mode = 2
-tooltip_text = "Residential Structures"
+tooltip_text = "Industrial Structures"
 icon = ExtResource("4_ebilp")
 item_count = 1
 popup/item_0/text = "Residential"
@@ -76,14 +73,14 @@ layout_mode = 2
 
 [node name="Power" type="MenuButton" parent="Panel/VBoxContainer/Row_3_HBoxContainer3"]
 layout_mode = 2
-tooltip_text = "Commercial Structures"
+tooltip_text = "Power Structures"
 icon = ExtResource("6_r3beh")
 script = ExtResource("2_sqdls")
 filter_type = 6
 
 [node name="Landscape" type="MenuButton" parent="Panel/VBoxContainer/Row_3_HBoxContainer3"]
 layout_mode = 2
-tooltip_text = "Commercial Structures"
+tooltip_text = "Landscaping"
 icon = ExtResource("5_46yqr")
 script = ExtResource("2_sqdls")
 filter_type = 5
