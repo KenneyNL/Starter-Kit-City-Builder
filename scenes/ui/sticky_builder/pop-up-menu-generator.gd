@@ -112,7 +112,8 @@ func _populate_menu():
 				popup.add_icon_item(_lock_icon, item_text)
 				popup.set_item_disabled(popup.item_count - 1, true)
 		else:
-			popup.add_item(item_text, i)
+			var icon = load(structure.icon) if ResourceLoader.exists(structure.icon) else null
+			popup.add_icon_item(icon, item_text)
 
 # Handle the menu item selection
 func _on_item_selected(id: int):
