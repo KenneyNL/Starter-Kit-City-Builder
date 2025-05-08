@@ -286,6 +286,15 @@ func _check_visible_controls(node: Node, mouse_pos: Vector2) -> bool:
 	if node is Control and node.is_visible_in_tree():
 		if node.get_global_rect().has_point(mouse_pos):
 			return true
+			
+	# check for popups
+	if "get_popup" in node and node.has_method("get_popup"):
+		var popup = node.get_popup()
+		if popup and popup is PopupMenu and popup.visible:
+			var popup_pos = popup.position
+			var popup_rect = Rect2(popup_pos, popup.size)
+			if popup_rect.has_point(mouse_pos):
+				return true
 
 	for child in node.get_children():
 		if _check_visible_controls(child, mouse_pos):
