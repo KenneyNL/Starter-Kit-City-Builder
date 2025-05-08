@@ -181,8 +181,8 @@ visible = false
 [node name="StickyBuilder" parent="CanvasLayer" instance=ExtResource("25_qkpxi")]
 offset_left = 7.0
 offset_top = 124.0
-offset_right = -2.0
-offset_bottom = -23.0
+offset_right = 162.0
+offset_bottom = 364.0
 
 [node name="MissionManager" type="Node" parent="." node_paths=PackedStringArray("mission_ui", "builder")]
 script = ExtResource("10_oe3re")
@@ -195,10 +195,12 @@ character_scene = ExtResource("18_8lrh8")
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -450.0
+offset_left = -487.365
 offset_top = 20.0
-offset_right = -20.0
+offset_right = -57.365
+offset_bottom = 203.0
 grow_horizontal = 0
+scale = Vector2(1.1, 1.1)
 size_flags_vertical = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_mission")
 script = ExtResource("13_xvw5w")
