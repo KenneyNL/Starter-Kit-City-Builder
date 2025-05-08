@@ -181,8 +181,8 @@ visible = false
 [node name="StickyBuilder" parent="CanvasLayer" instance=ExtResource("25_qkpxi")]
 offset_left = 7.0
 offset_top = 124.0
-offset_right = -1753.0
-offset_bottom = -711.0
+offset_right = 162.0
+offset_bottom = 364.0
 
 [node name="MissionManager" type="Node" parent="." node_paths=PackedStringArray("mission_ui", "builder")]
 script = ExtResource("10_oe3re")
