@@ -106,6 +106,16 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Left Mouse Button"
 
+[node name="ClearSelectionLabel" type="Label" parent="MarginContainer/VBoxContainer/ScrollContainer/ControlsGrid"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Clear Current Selection:"
+
+[node name="ClearSelectionValue" type="Label" parent="MarginContainer/VBoxContainer/ScrollContainer/ControlsGrid"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Escape Key"
+
 [node name="DemolishLabel" type="Label" parent="MarginContainer/VBoxContainer/ScrollContainer/ControlsGrid"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 22

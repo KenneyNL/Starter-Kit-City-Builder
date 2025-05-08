@@ -31,6 +31,9 @@ var invalid_placement_material: StandardMaterial3D
 # Central structure management
 var _structures: Array[Structure] = []
 
+# Variable to track selection state
+var selectionEnabled: bool = false;
+
 # Getter for structures that ensures deduplication
 func get_structures() -> Array[Structure]:
 	return _structures
@@ -145,14 +148,6 @@ func _ready():
 	
 	update_cash()
 
-# Override the setter for structures to ensure deduplication
-func _set_structures(new_structures: Array[Structure]) -> void:
-	structures = new_structures
-	_deduplicate_structures()
-	# Update construction manager with deduplicated structures
-	if construction_manager:
-		construction_manager.structures = structures
-
 # Function to add a structure to the array
 func add_structure(structure: Structure) -> void:
 	structures.append(structure)
@@ -178,8 +173,11 @@ func _process(delta):
 		return
 		
 	# Make sure selector is visible
-	if !selector.visible:
+	if !selector.visible and selectionEnabled:
 		selector.visible = true
+		
+	#Check for clear selection key press
+	action_clear_selection()
 	
 	# Controls
 	action_rotate() # Rotates selection 90 degrees
@@ -223,6 +221,10 @@ func is_mouse_over_ui() -> bool:
 		var panel_rect = building_selector.selection_panel.get_global_rect()
 		if panel_rect.has_point(mouse_pos):
 			return true
+			
+	# Check sticky builder panel UI overlaps
+	if is_mouse_over_sticky_builder():
+		return true
 	
 	# Let's try an extremely simple approach - just check coordinates
 	# most HUDs are at top of screen
@@ -269,6 +271,35 @@ func is_mouse_over_ui() -> bool:
 	
 	return false
 
+func is_mouse_over_sticky_builder() -> bool:
+	var sticky_builder = get_node_or_null("/root/Main/CanvasLayer/StickyBuilder")
+	if not sticky_builder:
+		return false
+
+	var mouse_pos = get_viewport().get_mouse_position()
+	return _check_visible_controls(sticky_builder, mouse_pos)
+
+# Helper function to check a node and it's control children's overlap with mouse position
+func _check_visible_controls(node: Node, mouse_pos: Vector2) -> bool:
+	if node is Control and node.is_visible_in_tree():
+		if node.get_global_rect().has_point(mouse_pos):
+			return true
+			
+	# check for popups
+	if "get_popup" in node and node.has_method("get_popup"):
+		var popup = node.get_popup()
+		if popup and popup is PopupMenu and popup.visible:
+			var popup_pos = popup.position
+			var popup_rect = Rect2(popup_pos, popup.size)
+			if popup_rect.has_point(mouse_pos):
+				return true
+
+	for child in node.get_children():
+		if _check_visible_controls(child, mouse_pos):
+			return true
+
+	return false
+
 # Retrieve the mesh from a PackedScene, used for dynamically creating a MeshLibrary
 
 func get_mesh(packed_scene):
@@ -311,6 +342,10 @@ func find_mesh_instance(node):
 
 func action_build(gridmap_position, can_place: bool):
 	if Input.is_action_just_pressed("build"):
+		#Check if selection is on
+		if(not selectionEnabled):
+			return
+		
 		# Check if the mouse is over any UI elements before building
 		if is_mouse_over_ui():
 			return
@@ -528,8 +563,17 @@ func remove_navigation_region(position: Vector3):
 # Rotates the 'cursor' 90 degrees
 
 func action_rotate():
-	if Input.is_action_just_pressed("rotate"):
+	if Input.is_action_just_pressed("rotate") and selectionEnabled:
 		selector.rotate_y(deg_to_rad(90))
+		
+		
+# Clear current building selection
+func action_clear_selection():
+	if Input.is_action_just_pressed("clear_selection"):
+		selectionEnabled = false
+		if selector:
+			selector.visible = false
+			index = -1
 
 # Toggle between structures to build
 
@@ -539,6 +583,7 @@ func action_structure_toggle(structure:Structure):
 		print("No structure found!")
 	else:
 		index = found_index
+		selectionEnabled = true
 		update_structure()
 	
 	
@@ -1163,7 +1208,7 @@ func _on_structures_unlocked():
 			selector.visible = false
 	else:
 		# Show the selector since we have a structure to place
-		if selector:
+		if selector and selectionEnabled:
 			selector.visible = true
 	
 	update_structure()

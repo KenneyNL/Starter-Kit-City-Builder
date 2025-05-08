@@ -58,6 +58,7 @@ show_mission_select = true
 layout_mode = 0
 offset_right = 1410.0
 offset_bottom = 90.0
+scale = Vector2(0.8, 0.8)
 theme_override_styles/panel = SubResource("StyleBoxFlat_0m4u7")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer"]
