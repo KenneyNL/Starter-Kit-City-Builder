@@ -15,7 +15,10 @@ func _ready():
 	
 	# Add to group for easy refreshing of all structure menus
 	add_to_group("structure_menus")
+
+	EventBus.structure_unlocked.connect(_on_structure_unlock)
 	
+
 	# Load icons (you'll need to create or find these icons)
 	_lock_icon = load("res://sprites/sticky_builder_icons/lock.png") if ResourceLoader.exists("res://sprites/sticky_builder_icons/lock.png") else null
 	if(_lock_icon):
@@ -178,3 +181,6 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		if event is InputEventMouseButton:
 			event.pressed = false
+			
+func _on_structure_unlock(structure:Structure)->void:
+	refresh()

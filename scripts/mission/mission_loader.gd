@@ -93,6 +93,8 @@ func _unlock_starting_structures(structure_paths: Array) -> void:
 				if structure_path == possible_path:
 					structure.unlocked = true
 					found_match = true
+					# Let the rest of the game know a structure has been unlocked
+					Globals.structure_unlocked(structure)
 					break
 			
 			if found_match:
