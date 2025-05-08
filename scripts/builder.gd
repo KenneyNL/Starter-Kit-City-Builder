@@ -175,6 +175,9 @@ func _process(delta):
 	# Make sure selector is visible
 	if !selector.visible and selectionEnabled:
 		selector.visible = true
+		
+	#Check for clear selection key press
+	action_clear_selection()
 	
 	# Controls
 	action_rotate() # Rotates selection 90 degrees
@@ -562,6 +565,15 @@ func remove_navigation_region(position: Vector3):
 func action_rotate():
 	if Input.is_action_just_pressed("rotate") and selectionEnabled:
 		selector.rotate_y(deg_to_rad(90))
+		
+		
+# Clear current building selection
+func action_clear_selection():
+	if Input.is_action_just_pressed("clear_selection"):
+		selectionEnabled = false
+		if selector:
+			selector.visible = false
+			index = -1
 
 # Toggle between structures to build
 
