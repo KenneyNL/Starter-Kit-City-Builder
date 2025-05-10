@@ -69,14 +69,14 @@ func _ready():
 		hud.controls_panel = controls_panel
 	
 	# Show intro text if available
-	#if generic_text_panel and intro_text_resource:
-		#generic_text_panel.apply_resource_data(intro_text_resource)
-		#generic_text_panel.show_panel()
-		#
-		#generic_text_panel.closed.connect(func():
-			#if generic_text_panel and generic_text_panel.resource_data and generic_text_panel.resource_data.panel_type == 0 and controls_panel:
-				#controls_panel.show_panel()
-			#)
+	if generic_text_panel and intro_text_resource:
+		generic_text_panel.apply_resource_data(intro_text_resource)
+		generic_text_panel.show_panel()
+		
+		generic_text_panel.closed.connect(func():
+			if generic_text_panel and generic_text_panel.resource_data and generic_text_panel.resource_data.panel_type == 0 and controls_panel:
+				controls_panel.show_panel()
+		)
 	
 	# Connect controls panel closed signal
 	if controls_panel:
