@@ -46,6 +46,7 @@ func _process(delta):
 	
 	action_save() # Saving
 	action_load() # Loading
+	action_load_resources() # Loading from resources
 	
 	# Map position based on mouse
 	
@@ -148,6 +149,20 @@ func action_load():
 		gridmap.clear()
 		
 		map = ResourceLoader.load("user://map.res")
+		if not map:
+			map = DataMap.new()
+		for cell in map.structures:
+			gridmap.set_cell_item(Vector3i(cell.position.x, 0, cell.position.y), cell.structure, cell.orientation)
+			
+		update_cash()
+
+func action_load_resources():
+	if Input.is_action_just_pressed("load_resources"):
+		print("Loading map...")
+		
+		gridmap.clear()
+		
+		map = ResourceLoader.load("res://sample map/map.res")
 		if not map:
 			map = DataMap.new()
 		for cell in map.structures:

@@ -3,6 +3,8 @@ extends Node3D
 var camera_position:Vector3
 var camera_rotation:Vector3
 
+var zoom:float = 30.0 # 30 = Standard zoom level, in meters
+
 @onready var camera = $Camera
 
 func _ready():
@@ -17,6 +19,10 @@ func _process(delta):
 	
 	position = position.lerp(camera_position, delta * 8)
 	rotation_degrees = rotation_degrees.lerp(camera_rotation, delta * 6)
+	
+	# Smoothly update zoom
+	
+	camera.position = camera.position.lerp(Vector3(0, 0, zoom), delta * 8)
 	
 	handle_input(delta)
 
@@ -34,6 +40,14 @@ func handle_input(_delta):
 	input = input.rotated(Vector3.UP, rotation.y).normalized()
 	
 	camera_position += input / 4
+	
+	# Zoom in/out
+	
+	if Input.is_action_just_released("zoom_in"):
+		zoom = max(15, zoom - 5) # 15 = Minimum zoom level, in meters
+		
+	if Input.is_action_just_released("zoom_out"):
+		zoom = min(80, zoom + 5) # 80 = Maximum zoom level, in meters
 	
 	# Back to center
 	
