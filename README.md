@@ -31,24 +31,27 @@ This package includes a basic template for a 3D city builder in Godot 4.5 (stabl
 
 ### Instructions
 
-**1. How to add more buildings?**
+#### 1. How to add more buildings?
 
 Duplicate one of the existing resources in the 'structures' folder, adjust the properties in the inspector. Select the 'Builder' node in the scene and add your new resources to the 'Structures' array.
 
-**2. How to adjust building models?**
+#### 2. How to adjust building models?
 
 Select the resource of the building you'd like to change in the 'structures' folder, adjust the model in the inspector.
 
-**3. How to save and load cities?**
+#### 3. How to save and load cities?
 
 Pressing F1 during gameplay will save the current city to disk, F2 will load it from the same location. The file is saved as 'map.res' in the user folder (see below). You can adjust this in the 'action_save' and 'action_load' functions found in the 'builder.gd' script.
 
 User data folder:
-- Windows: `%APPDATA%/Godot/app_userdata/Starter Kit City Builder/`
-- Linux: `~/.local/share/godot/app_userdata/Starter Kit City Builder/`
-- MacOS: `~/Library/Application Support/Godot/app_userdata/Starter Kit City Builder/`
 
-4. How to include city data in the project and load this?
+> Windows: `%APPDATA%/Godot/app_userdata/Starter Kit City Builder/`
+
+> Linux: `~/.local/share/godot/app_userdata/Starter Kit City Builder/`
+
+> MacOS: `~/Library/Application Support/Godot/app_userdata/Starter Kit City Builder/`
+
+#### 4. How to include city data in the project and load this?
 
 You'll find a sample map in the 'sample map' folder, to load this during gameplay press F3. You can find the function that handles this as 'action_load_resources' found in the 'builder.gd' script.
 
