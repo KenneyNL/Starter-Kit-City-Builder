@@ -84,27 +84,36 @@ func action_build(gridmap_position):
 		if previous_tile != index:
 			map.cash -= structures[index].price
 			update_cash()
+			
+			Audio.play("sounds/placement-a.ogg, sounds/placement-b.ogg, sounds/placement-c.ogg, sounds/placement-d.ogg", -20)
 
 # Demolish (remove) a structure
 
 func action_demolish(gridmap_position):
 	if Input.is_action_just_pressed("demolish"):
-		gridmap.set_cell_item(gridmap_position, -1)
+		if gridmap.get_cell_item(gridmap_position) != -1:
+			gridmap.set_cell_item(gridmap_position, -1)
+			
+			Audio.play("sounds/removal-a.ogg, sounds/removal-b.ogg, sounds/removal-c.ogg, sounds/removal-d.ogg", -20)
 
 # Rotates the 'cursor' 90 degrees
 
 func action_rotate():
 	if Input.is_action_just_pressed("rotate"):
 		selector.rotate_y(deg_to_rad(90))
+		
+		Audio.play("sounds/rotate.ogg", -30)
 
 # Toggle between structures to build
 
 func action_structure_toggle():
 	if Input.is_action_just_pressed("structure_next"):
 		index = wrap(index + 1, 0, structures.size())
+		Audio.play("sounds/toggle.ogg", -30)
 	
 	if Input.is_action_just_pressed("structure_previous"):
 		index = wrap(index - 1, 0, structures.size())
+		Audio.play("sounds/toggle.ogg", -30)
 
 	update_structure()
 
